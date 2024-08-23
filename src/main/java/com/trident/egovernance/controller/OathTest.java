@@ -3,23 +3,17 @@ package com.trident.egovernance.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.trident.egovernance.service.UserDataFetcherFromMS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.security.Principal;
 import java.util.Map;
 
 @RestController
@@ -38,6 +32,12 @@ public class OathTest {
     private String tokenUri;
 
     private final Logger logger = LoggerFactory.getLogger(OathTest.class);
+    private final UserDataFetcherFromMS userDataFetcherFromMS;
+
+    public OathTest(UserDataFetcherFromMS userDataFetcherFromMS) {
+        this.userDataFetcherFromMS = userDataFetcherFromMS;
+    }
+
     @GetMapping("/oauth2/authorization/azure")
     public String testing(){
         return "Working";
@@ -90,12 +90,6 @@ public class OathTest {
     }
     @GetMapping("/test/myapi")
     public ResponseEntity<Map<String,Object>> testmyapi(){
-        Jwt jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Map<String,Object> claims = jwt.getClaims();
-        StringBuilder tokenDetails = new StringBuilder("Token Claims : ");
-        claims.forEach((key,value)->tokenDetails.append(key).append(": ").append(value).append(", "));
-//        String tokenDetails = "Username: " + jwt.getClaimAsString("preferred_username") +
-//                ", Scopes : " +  jwt.getClaimAsStringList("scp");
-        return ResponseEntity.ok(claims);
+        return ResponseEntity.ok(userDataFetcherFromMS.getClaims());
     }
 }
