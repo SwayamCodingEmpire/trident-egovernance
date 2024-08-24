@@ -1,10 +1,10 @@
 package com.trident.egovernance.config;
 
-import com.nimbusds.jose.KeySourceException;
 import com.nimbusds.jose.proc.JWSAlgorithmFamilyJWSKeySelector;
 import com.nimbusds.jose.proc.JWSKeySelector;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
+import com.trident.egovernance.filters.CustomAuthorityFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -26,6 +27,12 @@ public class SecurityConfig {
     @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
     private String jwkSetUri;
     private URL jwkSetUrl;
+
+    private final CustomAuthorityFilter customAuthorityFilter;
+
+    public SecurityConfig(CustomAuthorityFilter customAuthorityFilter) {
+        this.customAuthorityFilter = customAuthorityFilter;
+    }
 //    private final OAuthenticationSuccessHandler handler;
 
 //    public SecurityConfig(OAuthenticationSuccessHandler handler) {
@@ -49,6 +56,7 @@ public class SecurityConfig {
                         .jwt(jwt -> jwt.decoder(jwtDecoder())
                         )
         );
+        httpSecurity.addFilterAfter(customAuthorityFilter, BearerTokenAuthenticationFilter.class);
         return httpSecurity.build();
     }
 
