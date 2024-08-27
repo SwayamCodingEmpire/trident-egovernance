@@ -3,6 +3,7 @@ package com.trident.egovernance.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.trident.egovernance.dto.AuthorizationCodeDto;
 import com.trident.egovernance.service.MenuBladeFetcherService;
 import com.trident.egovernance.service.UserDataFetcherFromMS;
 import org.slf4j.Logger;
@@ -12,25 +13,26 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-@Controller
+@RestController
 public class CallBackAfterLoginController {
 
-    @Value("${spring.security.oauth2.client.registration.azure.client-id}")
+    @Value("${trident.client-id}")
     private String clientId;
 
-    @Value("${spring.security.oauth2.client.registration.azure.client-secret}")
+    @Value("${trident.client-secret}")
     private String clientSecret;
 
-    @Value("${spring.security.oauth2.client.registration.azure.redirect-uri}")
+    @Value("${trident.azure.redirect-uri}")
     private String redirectUri;
 
-    @Value("${spring.security.oauth2.client.provider.azure.token-uri}")
+    @Value("${trident.provider.azure.token-uri}")
     private String tokenUri;
 
     private final Logger logger = LoggerFactory.getLogger(CallBackAfterLoginController.class);
@@ -48,11 +50,10 @@ public class CallBackAfterLoginController {
     }
 
     @GetMapping("/oauth2/callback")
-    public String handleOAuth2Callback(@RequestParam(name = "code") String code, @RequestParam(name = "state") String state , @RequestParam(name = "session_state",required = false) String sessionState)throws IOException {
+    public ResponseEntity<String> handleOAuth2Callback(AuthorizationCodeDto codeDto)throws IOException {
+        String code = codeDto.getCode();
         logger.info(code);
         logger.info("Authorization Code {}",code);
-        logger.info("State : {}",state);
-        logger.info("Session State : {}",sessionState);
         try {
             // Prepare the request body
             String requestBody = "grant_type=authorization_code"
@@ -86,10 +87,10 @@ public class CallBackAfterLoginController {
             System.out.println("Access Token: " + accessToken);
 
             // Redirect or return as needed
-            return "redirect:https://www.google.com";
+            return ResponseEntity.ok(accessToken);
         }catch (Exception e){
             logger.error("Error : {}",e.getMessage());
-            return "redirect:https://www.github.com";
+            return ResponseEntity.ok("Error");
         }
     }
     @GetMapping("/test/myapi")

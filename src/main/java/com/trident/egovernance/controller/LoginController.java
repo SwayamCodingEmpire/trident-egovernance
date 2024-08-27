@@ -3,6 +3,7 @@ package com.trident.egovernance.controller;
 import com.trident.egovernance.service.UserDataFetcherFromMS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,9 +19,9 @@ public class LoginController {
     }
 
     @GetMapping("/login")
-    public String welcome(){
+    public ResponseEntity<String> welcome(){
         logger.info("Welcome to the OAuth Testing Controller");
-        return "Welcome to the OAuth Testing Controller";
+        return ResponseEntity.ok("Welcome to the OAuth Testing Controller");
     }
 
 

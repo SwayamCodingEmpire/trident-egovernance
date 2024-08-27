@@ -53,7 +53,7 @@ public class SecurityConfig {
 //        httpSecurity.oauth2Login(oauth -> {
 //            oauth.successHandler(handler);
 //        });
-        httpSecurity.oauth2Login(Customizer.withDefaults());
+//        httpSecurity.oauth2Login(Customizer.withDefaults());
         httpSecurity.oauth2ResourceServer((oauth2ResourceServer) ->
                 oauth2ResourceServer
                         .jwt(jwt -> jwt.decoder(jwtDecoder())
@@ -69,6 +69,7 @@ public class SecurityConfig {
 //        configuration.setAllowedOrigins(List.of("http://127.0.0.1:49865","http://127.0.0.1:50296"));
         configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedOrigins(List.of("http://192.168.34.86:3000"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**",configuration);
