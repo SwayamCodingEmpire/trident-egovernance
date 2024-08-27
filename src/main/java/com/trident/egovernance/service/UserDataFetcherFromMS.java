@@ -1,7 +1,6 @@
 package com.trident.egovernance.service;
 
 import com.trident.egovernance.dto.AppBearerTokenDto;
-import com.trident.egovernance.dto.UserJobInformationDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,7 +10,11 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class UserDataFetcherFromMS {
@@ -39,9 +42,9 @@ public class UserDataFetcherFromMS {
         AppBearerTokenDto appBearerTokenDto = webClient.post()
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .bodyValue("grant_type=client_credentials" +
-                        "&client_id="+clientId +
-                        "&client_secret="+clientSecret +
-                        "&scope="+scope_uri)
+                        "&client_id=" + clientId +
+                        "&client_secret=" + clientSecret +
+                        "&scope=" + scope_uri)
                 .retrieve()
                 .bodyToMono(AppBearerTokenDto.class)
                 .block();
@@ -52,14 +55,4 @@ public class UserDataFetcherFromMS {
         }
         return "N/A";
     }
-
-//    private UserJobInformationDto getUserWorkDetails(String bearerToken) {
-//        return webClient.get()
-//                .uri(uriBuilder -> uriBuilder.path()
-//                        .queryParam("access_token", bearerToken)
-//                        .build())
-//                .retrieve()
-//                .bodyToMono(UserJobInformationDto.class)
-//                .block();
-//    }
 }

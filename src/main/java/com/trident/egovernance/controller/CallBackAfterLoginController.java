@@ -3,21 +3,23 @@ package com.trident.egovernance.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.trident.egovernance.service.MenuBladeFetcherService;
 import com.trident.egovernance.service.UserDataFetcherFromMS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
-@RestController
-public class OathTest {
+@Controller
+public class CallBackAfterLoginController {
 
     @Value("${spring.security.oauth2.client.registration.azure.client-id}")
     private String clientId;
@@ -31,11 +33,13 @@ public class OathTest {
     @Value("${spring.security.oauth2.client.provider.azure.token-uri}")
     private String tokenUri;
 
-    private final Logger logger = LoggerFactory.getLogger(OathTest.class);
+    private final Logger logger = LoggerFactory.getLogger(CallBackAfterLoginController.class);
     private final UserDataFetcherFromMS userDataFetcherFromMS;
+    private final MenuBladeFetcherService menuBladeFetcherService;
 
-    public OathTest(UserDataFetcherFromMS userDataFetcherFromMS) {
+    public CallBackAfterLoginController(UserDataFetcherFromMS userDataFetcherFromMS, MenuBladeFetcherService menuBladeFetcherService) {
         this.userDataFetcherFromMS = userDataFetcherFromMS;
+        this.menuBladeFetcherService = menuBladeFetcherService;
     }
 
     @GetMapping("/oauth2/authorization/azure")
@@ -91,5 +95,12 @@ public class OathTest {
     @GetMapping("/test/myapi")
     public ResponseEntity<Map<String,Object>> testmyapi(){
         return ResponseEntity.ok(userDataFetcherFromMS.getClaims());
+    }
+
+    @GetMapping("/get-Menu_Blade")
+    public ResponseEntity<List<String>> getMenuBlade(){
+//        return ResponseEntity.ok(userDataFetcherFromMS.getMenuBlade());
+
+        return ResponseEntity.ok(menuBladeFetcherService.getMenuBlade());
     }
 }

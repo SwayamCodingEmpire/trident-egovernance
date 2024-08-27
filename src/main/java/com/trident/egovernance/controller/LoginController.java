@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api")
-public class OAuthTestingController {
-    private final Logger logger = LoggerFactory.getLogger(OAuthTestingController.class);
+public class LoginController {
+    private final Logger logger = LoggerFactory.getLogger(LoginController.class);
     private final UserDataFetcherFromMS userDataFetcherFromMS;
 
-    public OAuthTestingController(UserDataFetcherFromMS userDataFetcherFromMS) {
+    public LoginController(UserDataFetcherFromMS userDataFetcherFromMS) {
         this.userDataFetcherFromMS = userDataFetcherFromMS;
     }
 

@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
@@ -45,7 +46,9 @@ public class SecurityConfig {
             authorize.requestMatchers("/user/**").permitAll();
             authorize.requestMatchers("/api/**").authenticated();
             authorize.anyRequest().permitAll();
-                });
+                }).sessionManagement(session->{
+                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        });
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
 //        httpSecurity.oauth2Login(oauth -> {
 //            oauth.successHandler(handler);
