@@ -1,5 +1,6 @@
 package com.trident.egovernance.controller;
 
+import com.trident.egovernance.dto.TestingDto;
 import com.trident.egovernance.service.UserDataFetcherFromMS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,11 @@ public class LoginController {
 
 
     @GetMapping("/app-token")
-    public String getAppBearerToken(){
-        return userDataFetcherFromMS.getAppBearerToken();
+    public ResponseEntity<TestingDto> getAppBearerToken(){
+        logger.info("Fetching the app bearer token");
+        TestingDto testingDto = new TestingDto();
+        testingDto.setAppToken(userDataFetcherFromMS.getAppBearerToken());
+        logger.info("App token : {} ",testingDto.getAppToken());
+        return ResponseEntity.ok(testingDto);
     }
 }
