@@ -1,4 +1,4 @@
-package com.trident.egovernance.dto;
+package com.trident.egovernance.dtos;
 
 import lombok.*;
 

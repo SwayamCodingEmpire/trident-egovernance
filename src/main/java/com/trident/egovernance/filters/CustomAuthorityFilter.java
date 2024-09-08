@@ -1,7 +1,7 @@
 package com.trident.egovernance.filters;
 
-import com.trident.egovernance.dto.UserJobInformationDto;
-import com.trident.egovernance.service.UserDataFetcherFromMS;
+import com.trident.egovernance.dtos.UserJobInformationDto;
+import com.trident.egovernance.services.UserDataFetcherFromMS;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,7 +15,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -40,16 +39,7 @@ public class CustomAuthorityFilter extends OncePerRequestFilter {
             String apptoken = userDataFetcherFromMS.getAppBearerToken();
             Jwt jwts = (Jwt)(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
             Map<String,Object> claims = jwts.getClaims();
-            String username = (String) claims.get("preferred_username");
-            String uri = UriComponentsBuilder.fromPath("/"+username)
-                    .queryParam("$select","displayName,jobTitle,department")
-                    .toUriString();
-            UserJobInformationDto userJobInformationDto = webClient.get()
-                    .uri(uri)
-                    .header("Authorization","Bearer "+apptoken)
-                    .retrieve()
-                    .bodyToMono(UserJobInformationDto.class)
-                    .block();
+            UserJobInformationDto userJobInformationDto = userDataFetcherFromMS.fetchUserJobInformation(apptoken,claims.get("preferred_username").toString());
             Collection<GrantedAuthority> newAuthorities = List.of(
                     new SimpleGrantedAuthority(userJobInformationDto.getJobTitle()),
                     new SimpleGrantedAuthority(userJobInformationDto.getDepartment())

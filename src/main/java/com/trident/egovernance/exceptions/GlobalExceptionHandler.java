@@ -5,12 +5,14 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.security.SignatureException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    @ExceptionHandler(Exception.class)
     public ProblemDetail handleException(Exception exception){
         ProblemDetail problemDetail = null;
         exception.printStackTrace();
@@ -32,6 +34,21 @@ public class GlobalExceptionHandler {
         if(exception instanceof SignatureException){
             problemDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(403),exception.getMessage());
             problemDetail.setProperty("description","The JWT Token has expired");
+            return problemDetail;
+        }
+        if(exception instanceof RecordAlreadyExistsException){
+            problemDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(409),exception.getMessage());
+            problemDetail.setProperty("description","The record already exists");
+            return problemDetail;
+        }
+        if(exception instanceof RecordNotFoundException){
+            problemDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(404),exception.getMessage());
+            problemDetail.setProperty("description","The record not found");
+            return problemDetail;
+        }
+        if(exception instanceof InvalidInputsException){
+            problemDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(400),exception.getMessage());
+            problemDetail.setProperty("description","Invalid Inputs");
             return problemDetail;
         }
         else {
