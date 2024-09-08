@@ -10,6 +10,5 @@ import java.util.Set;
 
 @Repository
 public interface NSRRepository extends CrudRepository<NSR,String> {
-    Set<NSR> findAllByStudentName(String studentName);
-    NSR findByApplicationNoAndRank(String applicationNo, Long rank);
+//    Set<NSR> findAllByStudentName(String studentName);
 }

@@ -35,10 +35,10 @@ public class NSRController {
     public ResponseEntity<List<NSRDto>> getAllNSRData(){
         return ResponseEntity.ok(nsrService.getAllNSRData());
     }
-    @GetMapping("/getByStudentName/{studentName}")
-    public ResponseEntity<Set<NSRDto>> getNSRDataByStudentName(@PathVariable("studentName") String studentName){
-        return ResponseEntity.ok(nsrService.getNSRDataByStudentName(studentName));
-    }
+//    @GetMapping("/getByStudentName/{studentName}")
+//    public ResponseEntity<Set<NSRDto>> getNSRDataByStudentName(@PathVariable("studentName") String studentName){
+//        return ResponseEntity.ok(nsrService.getNSRDataByStudentName(studentName));
+//    }
 
     @PostMapping("/test-post")
     public ResponseEntity<NSRDto> testPost(@Valid @RequestBody NSRDto nsrDto, BindingResult rbindingResult){

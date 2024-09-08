@@ -40,14 +40,14 @@ public class NSRServiceImpl implements NSRService {
         return mapperService.convertToNSRDto(nsrRepository.findById(rollNo).orElseThrow(() -> new RecordNotFoundException("Record not found")));
     }
 
-    public Set<NSRDto> getNSRDataByStudentName(String studentName) {
-        Set<NSR> nsr = nsrRepository.findAllByStudentName(studentName);
-        logger.info("NSR data fetched for student name "+studentName);
-        logger.info("NSR data fetched : "+nsr);
-        Set<NSRDto> nsrDtos = new HashSet<>();
-        nsr.forEach(nsr1 -> nsrDtos.add(mapperService.convertToNSRDto(nsr1)));
-        return nsrDtos;
-    }
+//    public Set<NSRDto> getNSRDataByStudentName(String studentName) {
+//        Set<NSR> nsr = nsrRepository.findAllByStudentName(studentName);
+//        logger.info("NSR data fetched for student name "+studentName);
+//        logger.info("NSR data fetched : "+nsr);
+//        Set<NSRDto> nsrDtos = new HashSet<>();
+//        nsr.forEach(nsr1 -> nsrDtos.add(mapperService.convertToNSRDto(nsr1)));
+//        return nsrDtos;
+//    }
 
     @Override
     public List<NSRDto> getAllNSRData() {
