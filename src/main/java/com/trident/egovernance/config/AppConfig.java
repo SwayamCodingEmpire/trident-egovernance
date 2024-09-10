@@ -1,5 +1,6 @@
 package com.trident.egovernance.config;
 
+import com.trident.egovernance.helpers.DateConverters;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
@@ -18,7 +19,10 @@ public class AppConfig {
 
     @Bean
     public ModelMapper modelMapper(){
-        return new ModelMapper();
+        ModelMapper modelMapper = new ModelMapper();
+        modelMapper.addConverter(DateConverters.utilToSqlConverter());
+        modelMapper.addConverter(DateConverters.sqlToUtilConverter());
+        return modelMapper;
     }
 
 //    @Bean

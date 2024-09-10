@@ -2,18 +2,24 @@ package com.trident.egovernance.services;
 
 import com.trident.egovernance.dtos.NSRDto;
 import com.trident.egovernance.entities.redisEntities.NSR;
+import com.trident.egovernance.entities.reportingStudent.PersonalDetails;
+import com.trident.egovernance.entities.reportingStudent.Student;
+import com.trident.egovernance.entities.reportingStudent.StudentAdmissionDetails;
+import com.trident.egovernance.entities.reportingStudent.StudentCareer;
 import com.trident.egovernance.exceptions.RecordAlreadyExistsException;
 import com.trident.egovernance.exceptions.RecordNotFoundException;
-import com.trident.egovernance.repositories.redisRepositories.NSRRepository;
+import com.trident.egovernance.repositories.nsrRepositories.NSRRepository;
+import com.trident.egovernance.repositories.reportingStudent.PersonalDetailsRepository;
+import com.trident.egovernance.repositories.reportingStudent.StudentAdmissionDetailsRepository;
+import com.trident.egovernance.repositories.reportingStudent.StudentCareerRepository;
+import com.trident.egovernance.repositories.reportingStudent.StudentRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -22,9 +28,17 @@ public class NSRServiceImpl implements NSRService {
     private final MapperServiceImpl mapperService;
     private final Logger logger = LoggerFactory.getLogger(NSRServiceImpl.class);
     private final NSRRepository nsrRepository;
-    public NSRServiceImpl(MapperServiceImpl mapperService, NSRRepository nsrRepository) {
+    private final PersonalDetailsRepository personalDetailsRepository;
+    private final StudentAdmissionDetailsRepository studentAdmissionDetailsRepository;
+    private final StudentCareerRepository studentCareerRepository;
+    private final StudentRepository studentRepository;
+    public NSRServiceImpl(MapperServiceImpl mapperService, NSRRepository nsrRepository, PersonalDetailsRepository personalDetailsRepository, StudentAdmissionDetailsRepository studentAdmissionDetailsRepository, StudentCareerRepository studentCareerRepository, StudentRepository studentRepository) {
         this.mapperService = mapperService;
         this.nsrRepository = nsrRepository;
+        this.personalDetailsRepository = personalDetailsRepository;
+        this.studentAdmissionDetailsRepository = studentAdmissionDetailsRepository;
+        this.studentCareerRepository = studentCareerRepository;
+        this.studentRepository = studentRepository;
     }
 
     @Override
@@ -58,5 +72,21 @@ public class NSRServiceImpl implements NSRService {
         List<NSRDto> nsrDtos = new ArrayList<>();
         nsr.forEach(nsr1 -> nsrDtos.add(mapperService.convertToNSRDto(nsr1)));
         return nsrDtos;
+    }
+
+    public Boolean transferFromTempToPermanentSQLDatabase(String jeeApplicationNo){
+        if(nsrRepository.existsById(jeeApplicationNo)){
+            NSR nsr = nsrRepository.findById(jeeApplicationNo).orElseThrow(() -> new RecordNotFoundException("Record not found"));
+            PersonalDetails personalDetails = mapperService.convertToPersonalDetails(nsr);
+            Student student = mapperService.convertToStudent(nsr);
+            StudentAdmissionDetails studentAdmissionDetails = mapperService.convertToStudentAdmissionDetails(nsr);
+            StudentCareer studentCareer = mapperService.convertToStudentCareer(nsr);
+            logger.info("Student : {}",student.toString());
+            logger.info("Student Admission Details : {}", studentAdmissionDetails.toString());
+            logger.info("Student Career : {}", studentCareer.toString());
+            return true;
+        }else {
+            throw new RecordNotFoundException("Record not found");
+        }
     }
 }

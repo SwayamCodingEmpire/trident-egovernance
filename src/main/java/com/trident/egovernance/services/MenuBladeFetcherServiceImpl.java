@@ -2,20 +2,19 @@ package com.trident.egovernance.services;
 
 import com.trident.egovernance.dtos.MenuBladeDto;
 import com.trident.egovernance.exceptions.InvalidInputsException;
-import com.trident.egovernance.repositories.redisRepositories.MenuBladeRepository;
+import com.trident.egovernance.repositories.nsrRepositories.MenuBladeRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
 @Service
 public class MenuBladeFetcherServiceImpl implements MenuBladeFetcherService {
     private final MenuBladeRepository menuBladeRepository;

@@ -68,4 +68,14 @@ public class NSRController {
     public ResponseEntity<NSRDto> getTest(@PathVariable("rollNo") String rollNo){
         return ResponseEntity.ok(nsrService.getNSRDataByRollNo(rollNo));
     }
+
+    @PostMapping("/postByStudent/{jeeApplicationNo}")
+    public ResponseEntity<Boolean> finalSubmit(@PathVariable("jeeApplicationNo") String jeeApplicationNo){
+//        CustomUserDetails customUserDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        NSRDto nsrDto1 = mapperService.convertToNSRDto(customUserDetails.getNsr());
+//        if(nsrDto1.getJeeApplicationNo().compareTo(jeeApplicationNo)!=0){
+//            throw new AccessDeniedException("You are not allowed to post data for this application number");
+//        }
+        return ResponseEntity.ok(nsrService.transferFromTempToPermanentSQLDatabase(jeeApplicationNo));
+    }
 }
