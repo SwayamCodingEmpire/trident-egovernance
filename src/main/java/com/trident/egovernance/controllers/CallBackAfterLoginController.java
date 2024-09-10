@@ -1,18 +1,20 @@
 package com.trident.egovernance.controllers;
 
 
+import com.trident.egovernance.dtos.MenuBladeDto;
 import com.trident.egovernance.services.MenuBladeFetcherServiceImpl;
 import com.trident.egovernance.services.UserDataFetcherFromMS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 
-@RestController
+@RestController("/menu")
 public class CallBackAfterLoginController {
 
     @Value("${spring.security.oauth2.client.registration.azure.client-id}")
@@ -90,9 +92,7 @@ public class CallBackAfterLoginController {
     }
 
     @GetMapping("/get-Menu_Blade")
-    public ResponseEntity<List<String>> getMenuBlade(){
-//        return ResponseEntity.ok(userDataFetcherFromMS.getMenuBlade());
-
-        return ResponseEntity.ok(menuBladeFetcherServiceImpl.getMenuBlade());
+    public ResponseEntity<MenuBladeDto> getMenuBlade(){
+        return ResponseEntity.ok(menuBladeFetcherServiceImpl.getMenuBlade(SecurityContextHolder.getContext().getAuthentication()));
     }
 }

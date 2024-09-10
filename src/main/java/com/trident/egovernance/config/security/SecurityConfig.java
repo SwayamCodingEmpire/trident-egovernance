@@ -1,13 +1,12 @@
 package com.trident.egovernance.config.security;
 
-import com.trident.egovernance.filters.CustomAuthorityFilter;
+import com.trident.egovernance.filters.CustomAuthorityAssignerFilter;
 import com.trident.egovernance.filters.NSRJwtFilter;
 import io.netty.channel.ChannelOption;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -35,12 +34,12 @@ public class SecurityConfig {
     private String jwkSetUri;
     private URL jwkSetUrl;
 
-    private final CustomAuthorityFilter customAuthorityFilter;
+    private final CustomAuthorityAssignerFilter customAuthorityAssignerFilter;
     private final CustomAuthenticationProvider customAuthenticationProvider;
     private final NSRJwtFilter nsrJwtFilter;
 
-    public SecurityConfig(CustomAuthorityFilter customAuthorityFilter, CustomAuthenticationProvider customAuthenticationProvider, NSRJwtFilter nsrJwtFilter) {
-        this.customAuthorityFilter = customAuthorityFilter;
+    public SecurityConfig(CustomAuthorityAssignerFilter customAuthorityAssignerFilter, CustomAuthenticationProvider customAuthenticationProvider, NSRJwtFilter nsrJwtFilter) {
+        this.customAuthorityAssignerFilter = customAuthorityAssignerFilter;
         this.customAuthenticationProvider = customAuthenticationProvider;
         this.nsrJwtFilter = nsrJwtFilter;
     }
@@ -51,6 +50,7 @@ public class SecurityConfig {
 //    }
 
     private static final String[] PUBLIC_URLS = {
+            "/menu/**",
             "/NSR/**",
             "/public/**",
             "/server1/**",
@@ -83,8 +83,8 @@ public class SecurityConfig {
                         .jwt(jwt -> jwt.decoder(jwtDecoder())
                         )
         );
-        httpSecurity.addFilterAfter(customAuthorityFilter, BearerTokenAuthenticationFilter.class);
-        httpSecurity.addFilterAfter(nsrJwtFilter, CustomAuthorityFilter.class);
+        httpSecurity.addFilterAfter(customAuthorityAssignerFilter, BearerTokenAuthenticationFilter.class);
+        httpSecurity.addFilterAfter(nsrJwtFilter, CustomAuthorityAssignerFilter.class);
         return httpSecurity.build();
     }
 

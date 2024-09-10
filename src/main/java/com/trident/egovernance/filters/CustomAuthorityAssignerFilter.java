@@ -22,11 +22,11 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class CustomAuthorityFilter extends OncePerRequestFilter {
+public class CustomAuthorityAssignerFilter extends OncePerRequestFilter {
     private final UserDataFetcherFromMS userDataFetcherFromMS;
     private final WebClient webClient;
 
-    public CustomAuthorityFilter(UserDataFetcherFromMS userDataFetcherFromMS) {
+    public CustomAuthorityAssignerFilter(UserDataFetcherFromMS userDataFetcherFromMS) {
         this.userDataFetcherFromMS = userDataFetcherFromMS;
         this.webClient = WebClient.builder().baseUrl("https://graph.microsoft.com/v1.0/users").build();
     }

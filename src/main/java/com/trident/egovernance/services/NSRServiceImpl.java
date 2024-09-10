@@ -7,6 +7,7 @@ import com.trident.egovernance.exceptions.RecordNotFoundException;
 import com.trident.egovernance.repositories.redisRepositories.NSRRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -36,7 +37,9 @@ public class NSRServiceImpl implements NSRService {
     }
 
     @Override
+    @Cacheable(value = "nsr", key = "#rollNo")
     public NSRDto getNSRDataByRollNo(String rollNo) {
+        logger.info("Fetching NSR data for roll no. "+rollNo);
         return mapperService.convertToNSRDto(nsrRepository.findById(rollNo).orElseThrow(() -> new RecordNotFoundException("Record not found")));
     }
 

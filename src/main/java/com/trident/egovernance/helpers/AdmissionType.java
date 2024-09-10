@@ -1,6 +1,6 @@
 package com.trident.egovernance.helpers;
 
-public enum AdmittedThrough {
+public enum AdmissionType {
     MQ,
     COLLEGE,
     JEEMAIN,

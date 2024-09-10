@@ -1,9 +1,11 @@
 package com.trident.egovernance.services;
 
+import com.trident.egovernance.dtos.MenuBladeDto;
 import com.trident.egovernance.exceptions.InvalidInputsException;
 import com.trident.egovernance.repositories.redisRepositories.MenuBladeRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -24,8 +26,8 @@ public class MenuBladeFetcherServiceImpl implements MenuBladeFetcherService {
     }
 
     @Override
-    public List<String> getMenuBlade() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    @Cacheable(value = "menuBlade", key = "#authentication.getPrincipal()")
+    public MenuBladeDto getMenuBlade(Authentication authentication) {
         logger.info("Inside getMenuBlade");
         if (authentication.isAuthenticated()) {
             Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
@@ -33,7 +35,7 @@ public class MenuBladeFetcherServiceImpl implements MenuBladeFetcherService {
                     .map(GrantedAuthority::getAuthority)
                     .findFirst();
             if(job_title.isPresent()){
-                return fetchMenuBlade(job_title.get());
+                return new MenuBladeDto(fetchMenuBlade(job_title.get()));
             }
             else {
                 throw new InvalidInputsException("Invalid job_title");
