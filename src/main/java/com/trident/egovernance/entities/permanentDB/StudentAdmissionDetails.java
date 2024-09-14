@@ -1,5 +1,6 @@
-package com.trident.egovernance.entities.reportingStudent;
+package com.trident.egovernance.entities.permanentDB;
 
+import com.trident.egovernance.helpers.TFWType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,7 +15,7 @@ import java.sql.Date;
 @Table(name = "STUDENT_ADMISSION_DETAILS")
 public class StudentAdmissionDetails {
     @Id
-    @Column(name = "REGDNO", length = 15)
+    @Column(name = "REGDNO", length = 12)
     private String regdNo;  // VARCHAR2(12)
 
     @Column(name = "ADMISSIONDATE")
@@ -23,8 +24,9 @@ public class StudentAdmissionDetails {
     @Column(name = "OJEECOUNSELLINGFEEPAID", length = 5)
     private String ojeeCounsellingFeePaid;  // VARCHAR2(5)
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "TFW", length = 5)
-    private String tfw;  // VARCHAR2(5)
+    private TFWType tfw;  // VARCHAR2(5)
 
     @Column(name = "ADMISSIONTYPE", length = 20)
     private String admissionType;  // VARCHAR2(20)

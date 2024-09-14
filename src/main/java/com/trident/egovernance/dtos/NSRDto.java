@@ -16,7 +16,7 @@ import java.util.Date;
 @ToString
 @Builder
 public class NSRDto implements Serializable {
-    @NotBlank
+
     private String jeeApplicationNo;
     private String regdNo;
     private Date admissionDate;
@@ -24,6 +24,7 @@ public class NSRDto implements Serializable {
     private String studentName;
     private Gender gender;
     private String branchCode;
+    private String branch;
     private String admissionYear;
     private Integer degree_yop;
     private String phNo;
@@ -42,7 +43,7 @@ public class NSRDto implements Serializable {
     private Long rank;
     private RankType rankType;
     private Courses course;
-    private BooleanString TFW;
+    private TFWType tfw;
     private AdmissionType admissionType;
     private StudentType studentType;
 
@@ -71,7 +72,6 @@ public class NSRDto implements Serializable {
 
     //StudentAdmissionDetails
     private String ojeeCounsellingFeePaid;  // VARCHAR2(5)
-    private String tfw;  // VARCHAR2(5)
     private String ojeeRollNo;  // VARCHAR2(20)
     private String ojeeRank;  // VARCHAR2(20)
     private String aieeeRank;  // VARCHAR2(20)
@@ -81,6 +81,5 @@ public class NSRDto implements Serializable {
     private Long categoryRank;  // NUMBER(10,0)
     private String allotmentId;
 
-    @NotNull
     private Integer step;
 }

@@ -19,29 +19,29 @@ import java.util.Map;
 
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(entityManagerFactoryRef = "reportingStudentEntityManagerFactory",
-        transactionManagerRef = "reportingStudentTransactionManager",
-        basePackages = {"com.trident.egovernance.repositories.reportingStudent"})
-public class ReportingStudentDBConfig {
-    @Bean(name = "reportingStudentDataSource")
-    @ConfigurationProperties(prefix = "spring.reportingstudent.datasource")
+@EnableJpaRepositories(entityManagerFactoryRef = "permanentEntityManagerFactory",
+        transactionManagerRef = "permanentTransactionManager",
+        basePackages = {"com.trident.egovernance.repositories.permanentDB"})
+public class permanentDBConfig {
+    @Bean(name = "permanentDBDataSource")
+    @ConfigurationProperties(prefix = "spring.permanentdb.datasource")
     public DataSource dataSource(){
         return DataSourceBuilder.create().build();
     }
 
-    @Bean(name = "reportingStudentEntityManagerFactory")
-    public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(EntityManagerFactoryBuilder builder, @Qualifier("reportingStudentDataSource") DataSource dataSource){
+    @Bean(name = "permanentEntityManagerFactory")
+    public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(EntityManagerFactoryBuilder builder, @Qualifier("permanentDBDataSource") DataSource dataSource){
         Map<String, Object> properties = new HashMap<>();
         properties.put("hibernate.hbm2ddl.auto", "validate");
         return builder.dataSource(dataSource)
                 .properties(properties)
-                .packages("com.trident.egovernance.entities.reportingStudent")
-                .persistenceUnit("ReportingStudent")
+                .packages("com.trident.egovernance.entities.permanentDB")
+                .persistenceUnit("permanentDB")
                 .build();
     }
 
-    @Bean
-    public PlatformTransactionManager transactionManager(@Qualifier("reportingStudentEntityManagerFactory") EntityManagerFactory entityManagerFactory){
+    @Bean(name = "permanentTransactionManager")
+    public PlatformTransactionManager transactionManager(@Qualifier("permanentEntityManagerFactory") EntityManagerFactory entityManagerFactory){
         return new JpaTransactionManager(entityManagerFactory);
     }
 }

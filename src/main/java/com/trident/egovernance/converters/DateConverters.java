@@ -1,4 +1,4 @@
-package com.trident.egovernance.helpers;
+package com.trident.egovernance.converters;
 
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;

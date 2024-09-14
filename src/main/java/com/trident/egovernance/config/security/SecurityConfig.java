@@ -50,6 +50,7 @@ public class SecurityConfig {
 //    }
 
     private static final String[] PUBLIC_URLS = {
+            "/test/**",
             "/menu/**",
             "/NSR/**",
             "/public/**",

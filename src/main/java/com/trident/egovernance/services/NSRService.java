@@ -8,4 +8,6 @@ public interface NSRService {
     NSRDto postNSRData(NSRDto nsrDto);
     NSRDto getNSRDataByRollNo(String rollNo);
     List<NSRDto> getAllNSRData();
+    NSRDto getNSRDataByJeeApplicationNo(String jeeApplicationNo);
+    Boolean saveToPermanentDatabase(String jeeApplicationNo);
 }

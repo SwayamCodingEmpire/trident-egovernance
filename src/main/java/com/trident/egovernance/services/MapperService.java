@@ -2,10 +2,10 @@ package com.trident.egovernance.services;
 
 import com.trident.egovernance.dtos.NSRDto;
 import com.trident.egovernance.entities.redisEntities.NSR;
-import com.trident.egovernance.entities.reportingStudent.PersonalDetails;
-import com.trident.egovernance.entities.reportingStudent.Student;
-import com.trident.egovernance.entities.reportingStudent.StudentAdmissionDetails;
-import com.trident.egovernance.entities.reportingStudent.StudentCareer;
+import com.trident.egovernance.entities.permanentDB.PersonalDetails;
+import com.trident.egovernance.entities.permanentDB.Student;
+import com.trident.egovernance.entities.permanentDB.StudentAdmissionDetails;
+import com.trident.egovernance.entities.permanentDB.StudentCareer;
 
 public interface MapperService {
     NSRDto convertToNSRDto(NSR nsr);

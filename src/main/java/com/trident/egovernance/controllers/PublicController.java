@@ -27,6 +27,7 @@ public class PublicController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody Login login){
+        logger.info(login.toString());
         CustomUserDetails customUserDetails = (CustomUserDetails) authenticationService.authenticate(login);
         logger.info(customUserDetails.toString());
         return ResponseEntity.ok(new LoginResponse(customJwtService.generateToken(customUserDetails), customJwtService.getExpirationTime()));

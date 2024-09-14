@@ -1,4 +1,4 @@
-package com.trident.egovernance.entities.reportingStudent;
+package com.trident.egovernance.entities.permanentDB;
 
 import jakarta.persistence.*;
 import lombok.*;
