@@ -41,9 +41,9 @@ public class NSRJwtFilter extends OncePerRequestFilter {
             final String jwtToken = authHeader.substring(7);
             final String username = customJwtService.extractUsername(jwtToken);
             if(username!=null && SecurityContextHolder.getContext().getAuthentication()==null){
-                UserDetails userDetails = this.customUserDetailsService.loadUserByUsername(username);
+                CustomUserDetails userDetails = (CustomUserDetails) this.customUserDetailsService.loadUserByUsername(username);
                 logger.info(userDetails.getUsername());
-                if(customJwtService.isTokenValid(jwtToken,(CustomUserDetails) userDetails)){
+                if(customJwtService.isTokenValid(jwtToken,userDetails)){
                     logger.info("Username is not null and authentication is null and its valid");
                     CustomAuthenticationToken authenticationToken = new CustomAuthenticationToken(userDetails.getAuthorities(),userDetails,null);
                     logger.info(authenticationToken.toString());

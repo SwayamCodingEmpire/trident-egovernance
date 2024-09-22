@@ -1,6 +1,6 @@
 package com.trident.egovernance.entities.permanentDB;
 
-import com.trident.egovernance.helpers.Courses;
+import com.trident.egovernance.helpers.CoursesEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,8 +13,18 @@ import lombok.*;
 @Table(name = "COURSE")
 public class Course {
     @Id
-    @Enumerated(EnumType.STRING)
-    private Courses course;
+    @Column(name = "COURSE")
+    private String course;
+    @Column(name = "STARTYEAR")
     private Integer startYear;
+    @Column(name = "DURATION")
     private Integer duration;
+
+    public CoursesEnum getCourse() {
+        return CoursesEnum.fromDisplayName(course);
+    }
+
+    public void setCourse(CoursesEnum course) {
+        this.course = course.getDisplayName();
+    }
 }

@@ -1,9 +1,6 @@
 package com.trident.egovernance.entities.redisEntities;
 
 import com.trident.egovernance.helpers.*;
-import jakarta.persistence.Column;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
@@ -34,6 +31,8 @@ public class NSR implements Serializable {
     private String email;
     private String rollNo;
     private BooleanString hostelier;
+    private BooleanString hostelOption;
+    private HostelChoice hostelChoice;
     private BooleanString transportAvailed;
     private String status;
     private String batchId;
@@ -45,7 +44,7 @@ public class NSR implements Serializable {
     private Religion religion;
     private Long rank;
     private RankType rankType;
-    private Courses course;
+    private CoursesEnum course;
     private TFWType tfw;
     private AdmissionType admissionType;
     private StudentType studentType;
@@ -61,8 +60,8 @@ public class NSR implements Serializable {
     private Integer graduationYOP;
 
     //PersonalDetails
-    private String fName;  // VARCHAR2(100)
-    private String mName;  // VARCHAR2(100)
+    private String fname;  // VARCHAR2(100)
+    private String mname;  // VARCHAR2(100)
     private String lgName;  // VARCHAR2(100) - Assuming lgName refers to legal guardian name
     private String permanentAddress;  // VARCHAR2(500)
     private String permanentCity;  // VARCHAR2(50)
@@ -74,7 +73,7 @@ public class NSR implements Serializable {
     private String district;
 
     //StudentAdmissionDetails
-    private String ojeeCounsellingFeePaid;  // VARCHAR2(5)
+    private BooleanString ojeeCounsellingFeePaid;  // VARCHAR2(5)
     private String ojeeRollNo;  // VARCHAR2(20)
     private String ojeeRank;  // VARCHAR2(20)
     private String aieeeRank;  // VARCHAR2(20)
@@ -84,5 +83,7 @@ public class NSR implements Serializable {
     private Long categoryRank;  // NUMBER(10,0)
     private String allotmentId;
 
+    private BooleanString transportOpted;
+    private String pickUpPoint;
     private Integer step;
 }

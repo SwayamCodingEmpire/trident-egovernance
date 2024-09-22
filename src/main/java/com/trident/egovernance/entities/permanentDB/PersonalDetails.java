@@ -16,10 +16,10 @@ public class PersonalDetails {
     private String regdNo;  // VARCHAR2(15)
 
     @Column(name = "FNAME", length = 100)
-    private String firstName;  // VARCHAR2(100)
+    private String fname;  // VARCHAR2(100)
 
     @Column(name = "MNAME", length = 100)
-    private String middleName;  // VARCHAR2(100)
+    private String mname;  // VARCHAR2(100)
 
     @Column(name = "LGNAME", length = 100)
     private String lgName;  // VARCHAR2(100) - Assuming lgName refers to legal guardian name

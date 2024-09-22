@@ -5,6 +5,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -12,7 +14,7 @@ import lombok.*;
 @ToString
 @Entity(name = "STANDARDDEDUCTIONFORMAT")
 @Table(name = "STANDARDDEDUCTIONFORMAT")
-public class StandardDeductionFormat {
+public class StandardDeductionFormat implements Serializable {
     private Integer deductionOrder;
     @Id
     private String description;

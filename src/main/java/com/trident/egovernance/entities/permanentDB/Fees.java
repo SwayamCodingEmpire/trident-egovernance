@@ -5,6 +5,7 @@ import com.trident.egovernance.helpers.TFWType;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Getter
@@ -14,7 +15,7 @@ import java.math.BigDecimal;
 @ToString
 @Entity(name = "FEES")
 @Table(name = "FEES")
-public class Fees {
+public class Fees implements Serializable {
     @Id
     private Long feeId;
     private String batchId;
@@ -28,4 +29,8 @@ public class Fees {
     private BigDecimal tactFfees;
     @Enumerated(EnumType.STRING)
     private CfPaymentMode payType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "DESCRIPTION")
+    private FeeTypes feeType;
 }

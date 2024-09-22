@@ -13,7 +13,7 @@ import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-@EnableRedisRepositories
+@EnableRedisRepositories(basePackages = "com.trident.egovernance.repositories.redisRepositories")
 public class RedisConfig {
     private final Logger logger = LoggerFactory.getLogger(RedisConfig.class);
     @Value("${spring.data.redis.host}")
@@ -36,6 +36,7 @@ public class RedisConfig {
         template.setHashKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new JdkSerializationRedisSerializer());
         template.setValueSerializer(new JdkSerializationRedisSerializer());
+        template.setStringSerializer(new StringRedisSerializer());
         template.setEnableTransactionSupport(true);
         template.afterPropertiesSet();
         return template;

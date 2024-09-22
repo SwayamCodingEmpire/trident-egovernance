@@ -2,7 +2,7 @@ package com.trident.egovernance.services;
 
 import com.trident.egovernance.config.security.CustomUserDetails;
 import com.trident.egovernance.entities.redisEntities.NSR;
-import com.trident.egovernance.repositories.nsrRepositories.NSRRepository;
+import com.trident.egovernance.repositories.redisRepositories.NSRRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

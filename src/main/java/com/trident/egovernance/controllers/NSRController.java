@@ -30,27 +30,38 @@ public class NSRController {
     }
 
     @PostMapping("/post")
-    public ResponseEntity<NSRDto> postNSRData(@Valid @RequestBody NSRDto nsrDto,BindingResult rBindingResult){
-        logger.info(nsrDto.toString());
+    public ResponseEntity<NSRDto> postNSRData(@RequestBody NSR nsr,BindingResult rBindingResult){
+        logger.info(nsr.toString());
         if(rBindingResult.hasErrors()){
             throw new InvalidInputsException(rBindingResult.getFieldError().getDefaultMessage());
         }
-        return ResponseEntity.ok(nsrService.postNSRData(nsrDto));
+        return ResponseEntity.ok(nsrService.postNSRData(nsr));
     }
+    @PostMapping("/postByStudent")
+    public ResponseEntity<NSRDto> postNSRDataByStudentName(@RequestBody NSR nsr){
+        try
+        {
+            CustomUserDetails customUserDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            NSRDto nsrDto1 = mapperService.convertToNSRDto(customUserDetails.getNsr());
+            logger.info("After mapperservie success");
+            logger.info(nsrDto1.toString());
+            logger.info(nsr.toString());
+            if (nsrDto1.getJeeApplicationNo().compareTo(nsr.getJeeApplicationNo()) != 0) {
+                throw new AccessDeniedException("You are not allowed to post data for this application number");
+            }
+            logger.info("Before service method call");
+            return ResponseEntity.ok(nsrService.postNSRDataByStudent(nsr));
+        }
+        catch (ClassCastException e){
+            throw new AccessDeniedException("Access denied Exception");
+        }
+    }
+
     @GetMapping("/getByRollNo/{rollNo}")
     public ResponseEntity<NSRDto> getNSRDataByRollNo(@PathVariable("rollNo") String rollNo){
         return ResponseEntity.ok(nsrService.getNSRDataByRollNo(rollNo));
     }
 
-    @PostMapping("/postByStudent")
-    public ResponseEntity<NSRDto> postNSRDataByStudentName(@RequestBody NSRDto nsrDto){
-        CustomUserDetails customUserDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        NSRDto nsrDto1 = mapperService.convertToNSRDto(customUserDetails.getNsr());
-        if(nsrDto1.getJeeApplicationNo().compareTo(nsrDto.getJeeApplicationNo())!=0){
-            throw new AccessDeniedException("You are not allowed to post data for this application number");
-        }
-        return ResponseEntity.ok(nsrService.postNSRData(nsrDto));
-    }
     @GetMapping("/get-all-nsr")
     public ResponseEntity<List<NSRDto>> getAllNSRData(){
         return ResponseEntity.ok(nsrService.getAllNSRData());

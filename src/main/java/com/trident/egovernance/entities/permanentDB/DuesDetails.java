@@ -4,6 +4,7 @@ import com.trident.egovernance.helpers.DuesDetailsId;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Date;
 
@@ -15,7 +16,7 @@ import java.sql.Date;
 @IdClass(DuesDetailsId.class)
 @Entity(name = "DUESDETAIL")
 @Table(name = "DUESDETAIL")
-public class DuesDetails {
+public class DuesDetails implements Serializable {
     @Column(name = "ID")
     private Long id;
     @Id

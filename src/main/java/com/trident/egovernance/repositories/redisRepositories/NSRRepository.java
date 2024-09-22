@@ -1,4 +1,4 @@
-package com.trident.egovernance.repositories.nsrRepositories;
+package com.trident.egovernance.repositories.redisRepositories;
 
 import com.trident.egovernance.entities.redisEntities.NSR;
 import org.springframework.data.repository.CrudRepository;

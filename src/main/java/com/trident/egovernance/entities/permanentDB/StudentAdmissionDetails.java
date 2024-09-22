@@ -1,5 +1,6 @@
 package com.trident.egovernance.entities.permanentDB;
 
+import com.trident.egovernance.helpers.BooleanString;
 import com.trident.egovernance.helpers.TFWType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,7 +23,8 @@ public class StudentAdmissionDetails {
     private Date admissionDate;  // DATE
 
     @Column(name = "OJEECOUNSELLINGFEEPAID", length = 5)
-    private String ojeeCounsellingFeePaid;  // VARCHAR2(5)
+    @Enumerated(EnumType.STRING)
+    private BooleanString ojeeCounsellingFeePaid;  // VARCHAR2(5)
 
     @Enumerated(EnumType.STRING)
     @Column(name = "TFW", length = 5)

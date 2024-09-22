@@ -1,9 +1,6 @@
 package com.trident.egovernance.dtos;
 
-import com.trident.egovernance.annotations.ValidSize;
 import com.trident.egovernance.helpers.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.io.Serializable;
@@ -24,13 +21,14 @@ public class NSRDto implements Serializable {
     private String studentName;
     private Gender gender;
     private String branchCode;
-    private String branch;
     private String admissionYear;
     private Integer degree_yop;
     private String phNo;
     private String email;
     private String rollNo;
     private BooleanString hostelier;
+    private BooleanString hostelOption;
+    private HostelChoice hostelChoice;
     private BooleanString transportAvailed;
     private String status;
     private String batchId;
@@ -42,7 +40,7 @@ public class NSRDto implements Serializable {
     private Religion religion;
     private Long rank;
     private RankType rankType;
-    private Courses course;
+    private CoursesEnum course;
     private TFWType tfw;
     private AdmissionType admissionType;
     private StudentType studentType;
@@ -71,7 +69,7 @@ public class NSRDto implements Serializable {
     private String district;
 
     //StudentAdmissionDetails
-    private String ojeeCounsellingFeePaid;  // VARCHAR2(5)
+    private BooleanString ojeeCounsellingFeePaid;  // VARCHAR2(5)
     private String ojeeRollNo;  // VARCHAR2(20)
     private String ojeeRank;  // VARCHAR2(20)
     private String aieeeRank;  // VARCHAR2(20)
@@ -81,5 +79,7 @@ public class NSRDto implements Serializable {
     private Long categoryRank;  // NUMBER(10,0)
     private String allotmentId;
 
+    private BooleanString transportOpted;
+    private String pickUpPoint;
     private Integer step;
 }

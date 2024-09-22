@@ -1,11 +1,8 @@
 package com.trident.egovernance.services;
 
 import com.trident.egovernance.dtos.NSRDto;
+import com.trident.egovernance.entities.permanentDB.*;
 import com.trident.egovernance.entities.redisEntities.NSR;
-import com.trident.egovernance.entities.permanentDB.PersonalDetails;
-import com.trident.egovernance.entities.permanentDB.Student;
-import com.trident.egovernance.entities.permanentDB.StudentAdmissionDetails;
-import com.trident.egovernance.entities.permanentDB.StudentCareer;
 import com.trident.egovernance.helpers.TFWType;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
@@ -54,6 +51,14 @@ public class MapperServiceImpl implements MapperService {
     @Override
     public StudentCareer convertToStudentCareer(NSR nsr) {
         return modelMapper.map(nsr,StudentCareer.class);
+    }
+
+    public Hostel convertToHostel(NSR nsr) {
+        return modelMapper.map(nsr,Hostel.class);
+    }
+
+    public Transport convertToTransport(NSR nsr) {
+        return modelMapper.map(nsr,Transport.class);
     }
 
 }
