@@ -17,7 +17,10 @@ import java.sql.Date;
 @Entity(name = "DUESDETAIL")
 @Table(name = "DUESDETAIL")
 public class DuesDetails implements Serializable {
+    @Id
     @Column(name = "ID")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "dues_detail_seq_gen")
+    @SequenceGenerator(name = "dues_detail_seq_gen", sequenceName = "dues_detail_seq", allocationSize = 1)
     private Long id;
     @Id
     @Column(name = "REGDNO")

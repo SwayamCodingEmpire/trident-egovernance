@@ -1,6 +1,6 @@
 package com.trident.egovernance.config.security;
 
-import com.trident.egovernance.dtos.Login;
+import com.trident.egovernance.dto.Login;
 import com.trident.egovernance.entities.redisEntities.NSR;
 import com.trident.egovernance.repositories.redisRepositories.NSRRepository;
 import org.slf4j.Logger;

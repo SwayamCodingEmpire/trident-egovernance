@@ -1,6 +1,8 @@
 package com.trident.egovernance.helpers;
 
-public enum Religion {
+import java.io.Serializable;
+
+public enum Religion implements Serializable {
     HINDU,
     MUSLIM,
     CHRISTIAN,

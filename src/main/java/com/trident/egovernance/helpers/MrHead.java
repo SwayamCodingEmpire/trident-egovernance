@@ -1,6 +1,8 @@
 package com.trident.egovernance.helpers;
 
-public enum MrHead {
+import java.io.Serializable;
+
+public enum MrHead implements Serializable {
     TAT,
     TACTF
 }

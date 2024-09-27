@@ -1,26 +1,23 @@
 package com.trident.egovernance.services;
 
+import com.trident.egovernance.dto.FeeTypesMrHead;
 import com.trident.egovernance.entities.permanentDB.Fees;
 import com.trident.egovernance.entities.permanentDB.Sessions;
 import com.trident.egovernance.entities.permanentDB.StandardDeductionFormat;
-import com.trident.egovernance.entities.redisEntities.NSR;
 import com.trident.egovernance.exceptions.RecordNotFoundException;
-import com.trident.egovernance.helpers.CoursesEnum;
+import com.trident.egovernance.helpers.MrHead;
 import com.trident.egovernance.helpers.SessionIdId;
-import com.trident.egovernance.helpers.StudentType;
 import com.trident.egovernance.repositories.permanentDB.FeeTypesRepository;
 import com.trident.egovernance.repositories.permanentDB.FeesRepository;
 import com.trident.egovernance.repositories.permanentDB.SessionsRepository;
 import com.trident.egovernance.repositories.permanentDB.StandardDeductionFormatRepository;
+import org.hibernate.annotations.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.time.Year;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class MasterTableServices {
@@ -69,4 +66,21 @@ public class MasterTableServices {
         return sessions.getSessionId();
     }
 
+    @Cacheable(value = "singularStandardDeductionFormat", key = "#description")
+    public Optional<StandardDeductionFormat> getStandardDeductionFormat(String description) {
+        return standardDeductionFormatRepository.findById(description);
+    }
+
+    public List<FeeTypesMrHead> getFeeTypesMrHeadByDescriptions(List<String> descriptions){
+        return feeTypesRepository.findByDescriptionIn(descriptions);
+    }
+
+    public HashMap<String, MrHead> convertFeeTypesMrHeadToHashMap(List<String> descriptions){
+        List<FeeTypesMrHead> feeTypesMrHeads = feeTypesRepository.findByDescriptionIn(descriptions);
+        HashMap<String, MrHead> feeTypesMrHeadHashMap = new HashMap<>();
+        for (FeeTypesMrHead feeTypesMrHead : feeTypesMrHeads) {
+            feeTypesMrHeadHashMap.put(feeTypesMrHead.description(), feeTypesMrHead.mrHead());
+        }
+        return feeTypesMrHeadHashMap;
+    }
 }

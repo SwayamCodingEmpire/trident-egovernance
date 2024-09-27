@@ -2,10 +2,9 @@ package com.trident.egovernance.services;
 
 import com.trident.egovernance.config.security.CustomAuthenticationProvider;
 import com.trident.egovernance.config.security.CustomAuthenticationToken;
-import com.trident.egovernance.dtos.Login;
+import com.trident.egovernance.dto.Login;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

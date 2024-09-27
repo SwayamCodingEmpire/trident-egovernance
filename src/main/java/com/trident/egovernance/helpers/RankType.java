@@ -1,6 +1,8 @@
 package com.trident.egovernance.helpers;
 
-public enum RankType {
+import java.io.Serializable;
+
+public enum RankType implements Serializable {
     JEE,
     OJEE
 }

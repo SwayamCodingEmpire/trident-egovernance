@@ -13,4 +13,5 @@ import java.util.Set;
 public interface StandardDeductionFormatRepository extends JpaRepository<StandardDeductionFormat,String> {
     @Query("SELECT s FROM STANDARDDEDUCTIONFORMAT s WHERE s.description IN :descriptions")
     List<StandardDeductionFormat> findByDescriptions(@Param("descriptions") Set<String> descriptions);
+
 }

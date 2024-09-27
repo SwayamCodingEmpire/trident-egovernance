@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 
 @Component
@@ -55,6 +56,14 @@ public class NSRJwtFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 }
             }
+//            StringBuilder json = new StringBuilder();
+//            BufferedReader reader = request.getReader();
+//            String line;
+//            while ((line = reader.readLine()) != null) {
+//                json.append(line);
+//            }
+//            String rawJson = json.toString();
+//            logger.info("The Json is " + rawJson);
             filterChain.doFilter(request,response);
         }catch (Exception e){
             logger.info("NSR filter exception");

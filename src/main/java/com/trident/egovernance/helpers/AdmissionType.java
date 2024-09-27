@@ -1,6 +1,8 @@
 package com.trident.egovernance.helpers;
 
-public enum AdmissionType {
+import java.io.Serializable;
+
+public enum AdmissionType implements Serializable {
     MQ,
     COLLEGE,
     JEEMAIN,

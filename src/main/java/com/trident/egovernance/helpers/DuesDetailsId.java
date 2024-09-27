@@ -13,6 +13,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DuesDetailsId implements Serializable {
+    private Long id;
     private String regdNo;
     private String description;
     @Override
@@ -24,11 +25,11 @@ public class DuesDetailsId implements Serializable {
             return false;
         }
         DuesDetailsId duesDetailsId = (DuesDetailsId)o;
-        return Objects.equals(regdNo,duesDetailsId.regdNo) && Objects.equals(description,duesDetailsId.description);
+        return Objects.equals(regdNo,duesDetailsId.regdNo) && Objects.equals(description,duesDetailsId.description) && Objects.equals(id,duesDetailsId.id);
     }
 
     @Override
     public int hashCode(){
-        return Objects.hash(regdNo,description);
+        return Objects.hash(regdNo,description,id);
     }
 }

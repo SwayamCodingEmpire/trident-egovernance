@@ -1,9 +1,9 @@
 package com.trident.egovernance.controllers;
 
 import com.trident.egovernance.config.security.CustomUserDetails;
-import com.trident.egovernance.dtos.CurrentSessionDto;
-import com.trident.egovernance.dtos.Login;
-import com.trident.egovernance.dtos.LoginResponse;
+import com.trident.egovernance.dto.CurrentSessionDto;
+import com.trident.egovernance.dto.Login;
+import com.trident.egovernance.dto.LoginResponse;
 import com.trident.egovernance.repositories.permanentDB.FeesRepository;
 import com.trident.egovernance.repositories.permanentDB.StudentRepository;
 import com.trident.egovernance.services.AuthenticationServiceImpl;

@@ -3,9 +3,11 @@ package com.trident.egovernance.helpers;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.io.Serializable;
+
 @ToString
 @Getter
-public enum FeeTypesType {
+public enum FeeTypesType implements Serializable {
     COMPULSORY_FEES("COMPULSORY FEES"),
     OPTIONAL_FEES("OPTIONAL FEES");
     private final String displayName;

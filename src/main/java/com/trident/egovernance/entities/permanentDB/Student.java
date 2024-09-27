@@ -77,14 +77,17 @@ public class Student {
     @OneToOne(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @ToString.Exclude
     private PersonalDetails personalDetails;
-    @OneToOne(mappedBy = "student", cascade = {CascadeType.MERGE, CascadeType.REFRESH})
+    @OneToOne(mappedBy = "student", cascade = CascadeType.ALL)
     @ToString.Exclude
     private Hostel hostel;
-    @OneToOne(mappedBy = "student", cascade = {CascadeType.MERGE, CascadeType.REFRESH})
+    @OneToOne(mappedBy = "student", cascade = CascadeType.ALL)
     @ToString.Exclude
     private Transport transport;
-    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @ToString.Exclude
     private List<FeeCollection> feeCollection;
+    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @ToString.Exclude
+    private List<StudentDocs> studentDocs;
 
 }

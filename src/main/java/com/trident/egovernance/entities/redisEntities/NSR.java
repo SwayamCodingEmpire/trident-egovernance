@@ -7,6 +7,7 @@ import org.springframework.data.redis.core.RedisHash;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -82,6 +83,8 @@ public class NSR implements Serializable {
     private String categoryCode;  // VARCHAR2(10)
     private Long categoryRank;  // NUMBER(10,0)
     private String allotmentId;
+
+    private List<StudentDocData> studentDocsData;
 
     private BooleanString transportOpted;
     private String pickUpPoint;

@@ -5,9 +5,10 @@ import com.trident.egovernance.helpers.DuesDetailsId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Repository
 public interface DuesDetailsRepository extends JpaRepository<DuesDetails, DuesDetailsId> {
-    List<DuesDetails> findAllByRegdNoOrderByDeductionOrder(String regdNo);
+    List<DuesDetails> findAllByRegdNoAndBalanceAmountNotOrderByDeductionOrder(String regdNoA, BigDecimal balanceAmount);
 }

@@ -1,12 +1,12 @@
 package com.trident.egovernance.services;
 
-import com.trident.egovernance.dtos.NSRDto;
+import com.trident.egovernance.dto.NSRDto;
 import com.trident.egovernance.entities.permanentDB.*;
 import com.trident.egovernance.entities.redisEntities.NSR;
-import com.trident.egovernance.exceptions.RecordAlreadyExistsException;
 import com.trident.egovernance.exceptions.RecordNotFoundException;
 import com.trident.egovernance.helpers.BooleanString;
 import com.trident.egovernance.helpers.RankType;
+import com.trident.egovernance.helpers.SharedStateAmongDueInitiationAndNSRService;
 import com.trident.egovernance.helpers.StudentType;
 import com.trident.egovernance.repositories.redisRepositories.NSRRepository;
 import com.trident.egovernance.repositories.permanentDB.*;
@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Year;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -82,11 +83,12 @@ public class NSRServiceImpl implements NSRService {
     @Transactional
     @Override
     public Boolean saveToPermanentDatabase(String jeeApplicationNo){
+        SharedStateAmongDueInitiationAndNSRService sharedState = new SharedStateAmongDueInitiationAndNSRService();
         NSR nsr = nsrRepository.findById(jeeApplicationNo).orElseThrow(() -> new RecordNotFoundException("Record not found"));
         nsr.setBatchId(nsr.getCourse().getEnumName() + nsr.getAdmissionYear() + nsr.getBranchCode() + nsr.getStudentType());
         logger.info("Batch ID : {}",nsr.getBatchId());
         logger.info("Fetched from Redis");
-        CompletableFuture<Boolean> processDues = duesProcessingService.initiateDuesDetails(nsr,nsr.getTfw());
+        CompletableFuture<Boolean> processDues = duesProcessingService.initiateDuesDetails(nsr,sharedState);
         try{
             logger.info("Fetching from Redis");
             Student student = mapperService.convertToStudent(nsr);
@@ -94,12 +96,27 @@ public class NSRServiceImpl implements NSRService {
             StudentAdmissionDetails studentAdmissionDetails = mapperService.convertToStudentAdmissionDetails(nsr);
             StudentCareer studentCareer = mapperService.convertToStudentCareer(nsr);
             PersonalDetails personalDetails = mapperService.convertToPersonalDetails(nsr);
+            List<StudentDocs> studentDocs1;
+            if(nsr.getStudentDocsData()!=null){
+                logger.info("Student Docs : {}",nsr.getStudentDocsData());
+                 studentDocs1 = (mapperService.convertToStudentDocs(nsr.getStudentDocsData())).stream()
+                         .map(studentDocs2 ->
+                         {
+                             studentDocs2.setStudent(student);
+                             return studentDocs2;
+                         }).collect(Collectors.toList());
+            }
+            else{
+                studentDocs1 = null;
+            }
+            logger.info("Student Docs in databse entoty format" , studentDocs1.toString());
             student.setStudentAdmissionDetails(studentAdmissionDetails);
             studentAdmissionDetails.setStudent(student);
             student.setStudentCareer(studentCareer);
             studentCareer.setStudent(student);
             personalDetails.setStudent(student);
             student.setPersonalDetails(personalDetails);
+            student.setStudentDocs(studentDocs1);
             Transport transport = mapperService.convertToTransport(nsr);
             transport.setRegdyear(Year.now().getValue());
             Hostel hostel = mapperService.convertToHostel(nsr);
@@ -120,8 +137,6 @@ public class NSRServiceImpl implements NSRService {
             hostel.setHostelier(nsr.getHostelier());
             student.setHostel(hostel);
             hostel.setStudent(student);
-//            student.setHostel(null);
-//            student.setTransport(null);
             logger.info("Student object : {}",student);
             logger.info("Started saving to databse");
             studentRepository.save(student);
@@ -134,7 +149,7 @@ public class NSRServiceImpl implements NSRService {
                 throw new RuntimeException("Error occurred while processing dues details");
             }
         }catch (Exception e){
-            processDues.cancel(true);
+            sharedState.setProceed(false);
             throw new RuntimeException("Error occurred while saving to permanent database : "+e.getMessage());
         }
     }

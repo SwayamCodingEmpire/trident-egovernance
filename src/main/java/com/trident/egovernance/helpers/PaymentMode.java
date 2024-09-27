@@ -1,6 +1,8 @@
 package com.trident.egovernance.helpers;
 
-public enum PaymentMode {
+import java.io.Serializable;
+
+public enum PaymentMode implements Serializable {
     CASH,
     CHEQUE,
     DD,

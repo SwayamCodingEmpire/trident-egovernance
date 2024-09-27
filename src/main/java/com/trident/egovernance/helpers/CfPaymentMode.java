@@ -1,6 +1,8 @@
 package com.trident.egovernance.helpers;
 
-public enum CfPaymentMode {
+import java.io.Serializable;
+
+public enum CfPaymentMode implements Serializable {
     SEMESTER,
     YEARLY
 }

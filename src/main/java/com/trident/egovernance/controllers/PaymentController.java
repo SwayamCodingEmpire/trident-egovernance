@@ -1,5 +1,7 @@
 package com.trident.egovernance.controllers;
 
+import com.trident.egovernance.dto.MrDetailsSorted;
+import com.trident.egovernance.entities.permanentDB.Discount;
 import com.trident.egovernance.entities.permanentDB.FeeCollection;
 import com.trident.egovernance.services.PaymentProcessingServiceImpl;
 import org.springframework.http.ResponseEntity;
@@ -14,8 +16,11 @@ public class PaymentController {
         this.paymentProcessingService = paymentProcessingService;
     }
     @PostMapping("/testPayment/{no}")
-    public ResponseEntity<String> testPayment(@RequestBody FeeCollection feeCollection, @PathVariable String no){
-//        paymentProcessingService.processPayment(feeCollection,no);
-        return ResponseEntity.ok("Processed");
+    public ResponseEntity<MrDetailsSorted> testPayment(@RequestBody FeeCollection feeCollection, @PathVariable String no){
+        return ResponseEntity.ok(paymentProcessingService.processPayment(feeCollection,no));              // Process the payment
+    }
+
+    public ResponseEntity<Boolean> insertDiscountData(@RequestBody Discount discount){
+        return ResponseEntity.ok(paymentProcessingService.insertDiscountData(discount));
     }
 }

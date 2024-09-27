@@ -1,6 +1,6 @@
 package com.trident.egovernance.services;
 
-import com.trident.egovernance.dtos.MenuBladeDto;
+import com.trident.egovernance.dto.MenuBladeDto;
 import com.trident.egovernance.exceptions.InvalidInputsException;
 import com.trident.egovernance.repositories.redisRepositories.MenuBladeRepository;
 import org.slf4j.Logger;

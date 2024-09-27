@@ -38,10 +38,11 @@ public class DuesProcessingService {
 
     @Async("taskExecutor")
     @Transactional
-    public CompletableFuture<Boolean> initiateDuesDetails(NSR student, TFWType tfwType){
+    public CompletableFuture<Boolean> initiateDuesDetails(NSR student, SharedStateAmongDueInitiationAndNSRService sharedState){
         try{
             logger.info("Fetching fees from database");
             List<Fees> fees = masterTableServices.getFeesByBatchId(student.getBatchId());
+            isInterrupted(sharedState.isProceed());
             logger.info("Fetched fees from database");
             logger.info(fees.toString());
             Set<String> descriptions = fees
@@ -57,7 +58,7 @@ public class DuesProcessingService {
             for (Fees fee : fees) {
                 logger.info(fee.getTfwType().toString());
 //                logger.info(fee.getFeeType().getType().toString());
-                if (fee.getTfwType().equals(tfwType) || fee.getTfwType().equals(TFWType.ALL)) {
+                if (fee.getTfwType().equals(student.getTfw()) || fee.getTfwType().equals(TFWType.ALL)) {
                     if((FeeTypesType.fromDisplayName(fee.getFeeType().getType().getDisplayName()).equals(FeeTypesType.COMPULSORY_FEES))
                             || (student.getTransportOpted().equals(BooleanString.YES) && (fee.getFeeType().getFeeGroup().compareTo("TRANSPORTFEE") == 0))
                             || (student.getHostelOption().equals(BooleanString.YES) && (fee.getFeeType().getFeeGroup().compareTo("HOSTELFEE") == 0))){
@@ -80,12 +81,20 @@ public class DuesProcessingService {
                 }
             }
             logger.info("Saving dues details to database");
+            isInterrupted(sharedState.isProceed());
             duesDetailsRepository.saveAllAndFlush(duesDetailsList);
+            isInterrupted(sharedState.isProceed());
             logger.info("Saved dues details to database");
             return CompletableFuture.completedFuture(true);
         }catch (Exception e){
             logger.error("Error occurred while processing dues details : "+e.getMessage());
             throw new RuntimeException("Error occurred while processing dues details : "+e.getMessage());
+        }
+    }
+
+    private void isInterrupted(boolean proceed) throws InterruptedException {
+        if(!proceed){
+            throw new InterruptedException();
         }
     }
 }

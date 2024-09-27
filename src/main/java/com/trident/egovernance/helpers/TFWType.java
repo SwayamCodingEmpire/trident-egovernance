@@ -1,6 +1,8 @@
 package com.trident.egovernance.helpers;
 
-public enum TFWType {
+import java.io.Serializable;
+
+public enum TFWType implements Serializable {
     ALL,
     NTFW,
     TFW

@@ -1,6 +1,8 @@
 package com.trident.egovernance.helpers;
 
-public enum StudentType {
+import java.io.Serializable;
+
+public enum StudentType implements Serializable {
     REGULAR,
     LE;
     public String getEnumName(){

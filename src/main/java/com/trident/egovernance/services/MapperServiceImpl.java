@@ -1,13 +1,14 @@
 package com.trident.egovernance.services;
 
-import com.trident.egovernance.dtos.NSRDto;
+import com.trident.egovernance.dto.NSRDto;
 import com.trident.egovernance.entities.permanentDB.*;
 import com.trident.egovernance.entities.redisEntities.NSR;
-import com.trident.egovernance.helpers.TFWType;
-import org.modelmapper.Converter;
+import com.trident.egovernance.entities.redisEntities.StudentDocData;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.spi.MappingContext;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class MapperServiceImpl implements MapperService {
@@ -61,4 +62,15 @@ public class MapperServiceImpl implements MapperService {
         return modelMapper.map(nsr,Transport.class);
     }
 
+    public List<StudentDocs> convertToStudentDocs(List<StudentDocData> studentDocData) {
+        return studentDocData.stream()
+                .map(studentDocData1 -> modelMapper.map(studentDocData1,StudentDocs.class))
+                .collect(Collectors.toList());
+    }
+
+    public List<StudentDocData> convertToStudentDocData(List<StudentDocs> studentDocs) {
+        return studentDocs.stream()
+                .map(studentDocs1 -> modelMapper.map(studentDocs1,StudentDocData.class))
+                .collect(Collectors.toList());
+    }
 }

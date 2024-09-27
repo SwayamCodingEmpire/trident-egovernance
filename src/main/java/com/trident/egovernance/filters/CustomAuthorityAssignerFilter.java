@@ -1,6 +1,6 @@
 package com.trident.egovernance.filters;
 
-import com.trident.egovernance.dtos.UserJobInformationDto;
+import com.trident.egovernance.dto.UserJobInformationDto;
 import com.trident.egovernance.services.UserDataFetcherFromMS;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

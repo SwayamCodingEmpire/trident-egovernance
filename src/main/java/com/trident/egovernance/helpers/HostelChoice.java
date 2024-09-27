@@ -1,6 +1,8 @@
 package com.trident.egovernance.helpers;
 
-public enum HostelChoice {
+import java.io.Serializable;
+
+public enum HostelChoice implements Serializable {
     ONCAMPUS,
     OFFCAMPUS,
     NONE

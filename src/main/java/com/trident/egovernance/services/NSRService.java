@@ -1,6 +1,6 @@
 package com.trident.egovernance.services;
 
-import com.trident.egovernance.dtos.NSRDto;
+import com.trident.egovernance.dto.NSRDto;
 import com.trident.egovernance.entities.redisEntities.NSR;
 
 import java.util.List;

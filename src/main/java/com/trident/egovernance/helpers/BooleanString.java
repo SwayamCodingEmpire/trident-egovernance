@@ -1,6 +1,8 @@
 package com.trident.egovernance.helpers;
 
-public enum BooleanString {
+import java.io.Serializable;
+
+public enum BooleanString implements Serializable {
     YES,
     NO
 }

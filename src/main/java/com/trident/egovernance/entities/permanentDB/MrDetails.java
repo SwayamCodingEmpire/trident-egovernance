@@ -16,8 +16,8 @@ import java.util.List;
 public class MrDetails {
     @Id
     @Column(name = "ID")
-//    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "mr_details_sequence")
-//    @SequenceGenerator(name = "mr_details_sequence",sequenceName = "MRDETAILS_SEQ",allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "mr_details_sequence")
+    @SequenceGenerator(name = "mr_details_sequence",sequenceName = "MRDETAILS_SEQ",allocationSize = 1)
     private Long id;
 //    @Column(name = "MRNO",insertable = false,updatable = false)
 //    private Long mrNo;

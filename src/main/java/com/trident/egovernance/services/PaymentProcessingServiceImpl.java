@@ -1,14 +1,13 @@
 package com.trident.egovernance.services;
 
-import com.trident.egovernance.entities.permanentDB.DuesDetails;
-import com.trident.egovernance.entities.permanentDB.FeeCollection;
-import com.trident.egovernance.entities.permanentDB.MrDetails;
-import com.trident.egovernance.entities.permanentDB.Student;
+import com.trident.egovernance.dto.FeeTypesMrHead;
+import com.trident.egovernance.dto.MrDetailsDto;
+import com.trident.egovernance.dto.MrDetailsSorted;
+import com.trident.egovernance.entities.permanentDB.*;
 import com.trident.egovernance.exceptions.InvalidStudentException;
-import com.trident.egovernance.repositories.permanentDB.DuesDetailsRepository;
-import com.trident.egovernance.repositories.permanentDB.FeeCollectionRepository;
-import com.trident.egovernance.repositories.permanentDB.MrDetailsRepository;
-import com.trident.egovernance.repositories.permanentDB.StudentRepository;
+import com.trident.egovernance.exceptions.RecordNotFoundException;
+import com.trident.egovernance.helpers.MrHead;
+import com.trident.egovernance.repositories.permanentDB.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import org.slf4j.Logger;
@@ -19,10 +18,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Year;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PaymentProcessingServiceImpl {
+    private final DiscountRepository discountRepository;
     private final StudentRepository studentRepository;
     private final MasterTableServices masterTableServices;
     private final MrDetailsRepository mrDetailsRepository;
@@ -31,8 +33,9 @@ public class PaymentProcessingServiceImpl {
     private final Logger logger = LoggerFactory.getLogger(PaymentProcessingServiceImpl.class);
     private final FeeCollectionRepository feeCollectionRepository;
 
-    public PaymentProcessingServiceImpl(StudentRepository studentRepository, MasterTableServices masterTableServices, MrDetailsRepository mrDetailsRepository, DuesDetailsRepository duesDetailsRepository, EntityManager entityManager,
+    public PaymentProcessingServiceImpl(DiscountRepository discountRepository, StudentRepository studentRepository, MasterTableServices masterTableServices, MrDetailsRepository mrDetailsRepository, DuesDetailsRepository duesDetailsRepository, EntityManager entityManager,
                                         FeeCollectionRepository feeCollectionRepository) {
+        this.discountRepository = discountRepository;
         this.studentRepository = studentRepository;
         this.masterTableServices = masterTableServices;
         this.mrDetailsRepository = mrDetailsRepository;
@@ -140,7 +143,8 @@ public class PaymentProcessingServiceImpl {
 //    public String getCurrentSessionForStudent(String regdNo){
 //
 //    }
-    public void processPayment(FeeCollection feeCollection,String regdNo){
+    @Transactional
+    public MrDetailsSorted processPayment(FeeCollection feeCollection,String regdNo){
         if(!studentRepository.existsById(regdNo)){
             throw new InvalidStudentException("Invalid Registration Number");
         }
@@ -148,67 +152,107 @@ public class PaymentProcessingServiceImpl {
         Student student = entityManager.getReference(Student.class,regdNo);
         feeCollection.setPaymentDate(String.valueOf(Year.now().getValue()));
         feeCollection.setStudent(student);
-        long mrNo = feeCollectionRepository.getMaxMrNo()+1;
         List<MrDetails> mrDetailsList = new ArrayList<>();
-        List<DuesDetails> duesDetails = duesDetailsRepository.findAllByRegdNoOrderByDeductionOrder(regdNo);
-        long id = mrDetailsRepository.getMaxId();
+        List<DuesDetails> duesDetails = duesDetailsRepository.findAllByRegdNoAndBalanceAmountNotOrderByDeductionOrder(regdNo,BigDecimal.ZERO);
+        logger.info("Dues details: ");
+        logger.info(duesDetails.toString());
         long slNo = 1;
         for (DuesDetails duesDetail : duesDetails) {
             feeCollection.setDueYear(duesDetail.getDueYear());
-            MrDetails mrDetails1 = new MrDetails();
             if(collectedFees.compareTo(BigDecimal.ZERO)>0) {
-                mrDetails1.setParticulars(duesDetail.getDescription());
-                mrDetails1.setFeeCollection(feeCollection);
-                mrDetails1.setSlNo(slNo);
-                mrDetails1.setId(id + 1);
-                MrDetails mrDetails = createMrDetails(duesDetail,collectedFees,id,slNo);
+                MrDetails mrDetails = createMrDetails(duesDetail,collectedFees,slNo);
                 collectedFees = updateDuesAndCollectedFees(duesDetail,collectedFees);
+                mrDetails.setFeeCollection(feeCollection);
                 mrDetailsList.add(mrDetails);
             }
             else if(collectedFees.compareTo(BigDecimal.ZERO)==0){
-                logger.info("Collected fees is 0");
-                mrDetailsRepository.saveAllAndFlush(mrDetailsList);
+                logger.info("Collected fees reached 0");
                 break;
             }
-            id++;
             slNo++;
         }
         if(collectedFees.compareTo(BigDecimal.ZERO)>0){
-            logger.info(collectedFees.toString());
-            throw new InvalidStudentException("Amount paid is greater than dues");
+            DuesDetails duesDetail = new DuesDetails();
+            duesDetail.setRegdNo(regdNo);
+            duesDetail.setAmountDue(BigDecimal.ZERO);
+            duesDetail.setAmountPaid(collectedFees);
+            duesDetail.setBalanceAmount(duesDetail.getAmountDue().subtract(duesDetail.getAmountPaid()));
+            duesDetail.setDescription("EXCESS FEE");
+            duesDetail.setDueDate(java.sql.Date.valueOf(java.time.LocalDate.now()));
+            duesDetail.setDueYear(feeCollection.getDueYear());
+            duesDetail.setSessionId(feeCollection.getSessionId());
+            duesDetail.setDeductionOrder(masterTableServices.getStandardDeductionFormat("EXCESS FEE").orElseThrow(()-> new RecordNotFoundException("Invalid Input")).getDeductionOrder());
+            duesDetails.add(duesDetail);
         }
+        logger.info(duesDetails.toString());
         duesDetailsRepository.saveAllAndFlush(duesDetails);
         String session = fetchCurrentSessionForStudent(regdNo);
-        feeCollection.setMrNo(mrNo);
         feeCollection.setSessionId(session);
         feeCollection.setMrDetails(mrDetailsList);
-        feeCollectionRepository.save(feeCollection);
-        logger.info(feeCollectionRepository.getMaxMrNo().toString());
+        FeeCollection savedFeeCollection = feeCollectionRepository.save(feeCollection);
+        return sortMrDetailsByMrHead(feeCollection.getMrDetails().stream()
+                .map(mrDetail -> new MrDetailsDto(savedFeeCollection.getMrNo(),mrDetail.getId(),mrDetail.getSlNo(),mrDetail.getParticulars(),mrDetail.getAmount()))
+                .collect(Collectors.toList()));
     }
 
-    private MrDetails createMrDetails(DuesDetails duesDetails, BigDecimal collectedFees,Long id, long slNo){
+    private MrDetailsSorted sortMrDetailsByMrHead(List<MrDetailsDto> mrDetailsDtos){
+        List<String> descriptionsOfMrHead = mrDetailsDtos.stream()
+                        .map(MrDetailsDto::getParticulars)
+                                .collect(Collectors.toList());
+        HashMap<String, MrHead> feeTypesMrHeadHashMap = masterTableServices.convertFeeTypesMrHeadToHashMap(descriptionsOfMrHead);
+        MrDetailsSorted mrDetailsSorted = new MrDetailsSorted();
+
+        List<MrDetailsDto> tat = new ArrayList<>();
+        List<MrDetailsDto> tactF = new ArrayList<>();
+        for(MrDetailsDto mrDetailsDto: mrDetailsDtos){
+            if(feeTypesMrHeadHashMap.get(mrDetailsDto.getParticulars()).equals(MrHead.TAT)){
+                tat.add(mrDetailsDto);
+            }
+            else if(feeTypesMrHeadHashMap.get(mrDetailsDto.getParticulars()).equals(MrHead.TACTF)){
+                tactF.add(mrDetailsDto);
+            }
+        }
+        mrDetailsSorted.setTat(tat);
+        mrDetailsSorted.setTactF(tactF);
+        return mrDetailsSorted;
+    }
+
+    private MrDetails createMrDetails(DuesDetails duesDetails, BigDecimal collectedFees, long slNo){
         MrDetails mrDetails = new MrDetails();
         mrDetails.setSlNo(slNo);
-        mrDetails.setId(id);
-        if(collectedFees.compareTo(duesDetails.getAmountDue())<0){
+        if(duesDetails.getDescription().compareTo("EXCESS FEE")==0){
+            mrDetails.setAmount((duesDetails.getBalanceAmount().subtract(collectedFees)).multiply(BigDecimal.valueOf(-1)));
+        }
+        else if(collectedFees.compareTo(duesDetails.getBalanceAmount())<0){
             mrDetails.setAmount(collectedFees);
         }
         else {
-            mrDetails.setAmount(duesDetails.getAmountDue());
+            mrDetails.setAmount(duesDetails.getBalanceAmount());
         }
+        mrDetails.setParticulars(duesDetails.getDescription());
         return mrDetails;
     }
 
     private BigDecimal updateDuesAndCollectedFees(DuesDetails duesDetail, BigDecimal collectedFees){
-        if(collectedFees.compareTo(duesDetail.getAmountDue())<0){
-            duesDetail.setAmountDue(duesDetail.getAmountDue().subtract(collectedFees));
+        if(duesDetail.getDescription().compareTo("EXCESS FEE")==0){
+            duesDetail.setAmountPaid(duesDetail.getAmountPaid().add(collectedFees));
+            duesDetail.setBalanceAmount(duesDetail.getAmountDue().subtract(duesDetail.getAmountPaid()));
+            return BigDecimal.ZERO;
+        }
+        else if(collectedFees.compareTo(duesDetail.getBalanceAmount())<0){
+            logger.info("Collected fees: "+collectedFees);
+            logger.info("Dues detail balance amount: "+duesDetail.getBalanceAmount());
+            duesDetail.setBalanceAmount(duesDetail.getBalanceAmount().subtract(collectedFees));
             duesDetail.setAmountPaid(collectedFees);
             return BigDecimal.ZERO;
         }
         else {
-            BigDecimal remaining = collectedFees.subtract(duesDetail.getAmountDue());
-            duesDetail.setAmountDue(BigDecimal.ZERO);
-            duesDetail.setAmountPaid(duesDetail.getAmountDue());
+            logger.info("Collected fees: "+collectedFees);
+            logger.info("Dues detail balance amount: "+duesDetail.getBalanceAmount());
+            BigDecimal remaining = collectedFees.subtract(duesDetail.getBalanceAmount());
+            logger.info("Remaining amount: "+remaining);
+            duesDetail.setAmountPaid(duesDetail.getBalanceAmount());
+            duesDetail.setBalanceAmount(BigDecimal.ZERO);
             return remaining;
         }
     }
@@ -231,4 +275,35 @@ public class PaymentProcessingServiceImpl {
         return session;
     }
 
+    @Transactional
+    public Boolean insertDiscountData(Discount discount) {
+        if(discount.getRegdNo().compareTo("ALL")==0){
+            String sql = "SELECT REGDNO " +
+                    "FROM FEECDEMO.CURRENT_SESSION WHERE CURRENTYEAR = :currentYear";
+            Query query = entityManager.createNativeQuery(sql);
+            query.setParameter("currentYear", discount.getCurrentYear());
+            List<String> regdNos = query.getResultList();
+            if (regdNos.isEmpty()) {
+                logger.info("No students found for the current year");
+                return false;
+            } else {
+                List<Discount> discounts = new ArrayList<>();
+                for (String regdNo : regdNos) {
+                    Discount discountTemp = new Discount();
+                    discountTemp.setCurrentYear(discount.getCurrentYear());
+                    discountTemp.setStaffId(discount.getStaffId());
+                    discountTemp.setDiscount(discount.getDiscount());
+                    discountTemp.setParticulars(discount.getParticulars());
+                    discountTemp.setRegdNo(regdNo);
+                    discounts.add(discountTemp);
+                }
+                discountRepository.saveAllAndFlush(discounts);
+                return true;
+            }
+        }
+        else {
+            discountRepository.save(discount);
+            return true;
+        }
+    }
 }

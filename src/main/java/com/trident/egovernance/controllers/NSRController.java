@@ -1,7 +1,7 @@
 package com.trident.egovernance.controllers;
 
 import com.trident.egovernance.config.security.CustomUserDetails;
-import com.trident.egovernance.dtos.NSRDto;
+import com.trident.egovernance.dto.NSRDto;
 import com.trident.egovernance.entities.redisEntities.NSR;
 import com.trident.egovernance.exceptions.InvalidInputsException;
 import com.trident.egovernance.services.MapperServiceImpl;

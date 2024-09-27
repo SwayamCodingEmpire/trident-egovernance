@@ -17,7 +17,8 @@ import java.util.List;
 public class FeeCollection {
     @Id
     @Column(name = "MRNO")
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "mrno_seq_gen")
+    @SequenceGenerator(name = "mrno_seq_gen", sequenceName = "MRNO_SEQ", allocationSize = 1)
     private Long mrNo;
 //    @Column(name = "REGDNO",insertable = false,updatable = false)
 //    private String regdNo;

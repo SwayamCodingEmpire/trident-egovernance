@@ -1,7 +1,7 @@
 package com.trident.egovernance.controllers;
 
 
-import com.trident.egovernance.dtos.MenuBladeDto;
+import com.trident.egovernance.dto.MenuBladeDto;
 import com.trident.egovernance.services.MenuBladeFetcherServiceImpl;
 import com.trident.egovernance.services.UserDataFetcherFromMS;
 import org.slf4j.Logger;
@@ -11,7 +11,6 @@ import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController("/menu")

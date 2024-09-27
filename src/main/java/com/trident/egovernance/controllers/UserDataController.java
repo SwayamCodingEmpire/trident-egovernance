@@ -1,7 +1,7 @@
 package com.trident.egovernance.controllers;
 
-import com.trident.egovernance.dtos.TestingDto;
-import com.trident.egovernance.dtos.UserJobInformationDto;
+import com.trident.egovernance.dto.TestingDto;
+import com.trident.egovernance.dto.UserJobInformationDto;
 import com.trident.egovernance.services.UserDataFetcherFromMS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

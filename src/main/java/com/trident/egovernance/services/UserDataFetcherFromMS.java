@@ -1,7 +1,7 @@
 package com.trident.egovernance.services;
 
-import com.trident.egovernance.dtos.AppBearerTokenDto;
-import com.trident.egovernance.dtos.UserJobInformationDto;
+import com.trident.egovernance.dto.AppBearerTokenDto;
+import com.trident.egovernance.dto.UserJobInformationDto;
 import com.trident.egovernance.exceptions.UserNotLoggedInException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
