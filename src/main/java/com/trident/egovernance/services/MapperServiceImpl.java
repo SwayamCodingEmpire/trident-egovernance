@@ -62,12 +62,14 @@ public class MapperServiceImpl implements MapperService {
         return modelMapper.map(nsr,Transport.class);
     }
 
+    @Override
     public List<StudentDocs> convertToStudentDocs(List<StudentDocData> studentDocData) {
         return studentDocData.stream()
                 .map(studentDocData1 -> modelMapper.map(studentDocData1,StudentDocs.class))
                 .collect(Collectors.toList());
     }
 
+    @Override
     public List<StudentDocData> convertToStudentDocData(List<StudentDocs> studentDocs) {
         return studentDocs.stream()
                 .map(studentDocs1 -> modelMapper.map(studentDocs1,StudentDocData.class))

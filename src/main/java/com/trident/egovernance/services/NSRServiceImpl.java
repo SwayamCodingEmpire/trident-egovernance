@@ -24,16 +24,16 @@ import java.util.stream.StreamSupport;
 
 @Service
 public class NSRServiceImpl implements NSRService {
-    private final DuesProcessingService duesProcessingService;
-    private final MapperServiceImpl mapperService;
+    private final DuesProcessingService duesProcessingServiceImpl;
+    private final MapperService mapperService;
 
     private final Logger logger = LoggerFactory.getLogger(NSRServiceImpl.class);
     private final NSRRepository nsrRepository;
     private final StudentRepository studentRepository;
 
 
-    public NSRServiceImpl(DuesProcessingService duesProcessingService, MapperServiceImpl mapperService, NSRRepository nsrRepository, StudentRepository studentRepository) {
-        this.duesProcessingService = duesProcessingService;
+    public NSRServiceImpl(DuesProcessingService duesProcessingServiceImpl, MapperServiceImpl mapperService, NSRRepository nsrRepository, StudentRepository studentRepository) {
+        this.duesProcessingServiceImpl = duesProcessingServiceImpl;
         this.mapperService = mapperService;
         this.nsrRepository = nsrRepository;
         this.studentRepository = studentRepository;
@@ -88,7 +88,7 @@ public class NSRServiceImpl implements NSRService {
         nsr.setBatchId(nsr.getCourse().getEnumName() + nsr.getAdmissionYear() + nsr.getBranchCode() + nsr.getStudentType());
         logger.info("Batch ID : {}",nsr.getBatchId());
         logger.info("Fetched from Redis");
-        CompletableFuture<Boolean> processDues = duesProcessingService.initiateDuesDetails(nsr,sharedState);
+        CompletableFuture<Boolean> processDues = duesProcessingServiceImpl.initiateDuesDetails(nsr,sharedState);
         try{
             logger.info("Fetching from Redis");
             Student student = mapperService.convertToStudent(nsr);

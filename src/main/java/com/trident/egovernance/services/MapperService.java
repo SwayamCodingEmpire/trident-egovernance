@@ -3,6 +3,9 @@ package com.trident.egovernance.services;
 import com.trident.egovernance.dto.NSRDto;
 import com.trident.egovernance.entities.permanentDB.*;
 import com.trident.egovernance.entities.redisEntities.NSR;
+import com.trident.egovernance.entities.redisEntities.StudentDocData;
+
+import java.util.List;
 
 public interface MapperService {
     NSRDto convertToNSRDto(NSR nsr);
@@ -14,4 +17,6 @@ public interface MapperService {
     StudentCareer convertToStudentCareer(NSR nsr);
     Transport convertToTransport(NSR nsr);
     Hostel convertToHostel(NSR nsr);
+    List<StudentDocData> convertToStudentDocData(List<StudentDocs> studentDocs);
+    List<StudentDocs> convertToStudentDocs(List<StudentDocData> studentDocData);
 }

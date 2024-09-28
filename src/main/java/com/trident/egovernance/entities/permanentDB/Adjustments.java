@@ -1,8 +1,6 @@
 package com.trident.egovernance.entities.permanentDB;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -16,6 +14,8 @@ import java.math.BigDecimal;
 @Table(name = "ADJUSTMENTS")
 public class Adjustments {
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "adjustment_seq_gen")
+    @SequenceGenerator(name = "adjustment_seq_gen", sequenceName = "adj_seq", allocationSize = 1)
     private Long id;
     private String regdNo;
     private String description;

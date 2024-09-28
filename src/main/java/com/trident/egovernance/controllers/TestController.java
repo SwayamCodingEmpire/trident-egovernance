@@ -4,7 +4,7 @@ import com.trident.egovernance.config.security.CustomUserDetails;
 import com.trident.egovernance.dto.FeeTypesMrHead;
 import com.trident.egovernance.entities.permanentDB.Student;
 import com.trident.egovernance.repositories.permanentDB.StudentRepository;
-import com.trident.egovernance.services.MasterTableServices;
+import com.trident.egovernance.services.MasterTableServicesImpl;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,11 +14,11 @@ import java.util.List;
 @RequestMapping("/test")
 public class TestController {
     private final StudentRepository studentRepository;
-    private final MasterTableServices masterTableServices;
+    private final MasterTableServicesImpl masterTableServicesImpl;
 
-    public TestController(StudentRepository studentRepository, MasterTableServices masterTableServices) {
+    public TestController(StudentRepository studentRepository, MasterTableServicesImpl masterTableServicesImpl) {
         this.studentRepository = studentRepository;
-        this.masterTableServices = masterTableServices;
+        this.masterTableServicesImpl = masterTableServicesImpl;
     }
 
     @GetMapping("/hello")
@@ -36,7 +36,7 @@ public class TestController {
 
     @PostMapping("/feeTypesMrHead")
     public List<FeeTypesMrHead> getFeeTypesMrHead(@RequestBody List<String> descriptions){
-        return masterTableServices.getFeeTypesMrHeadByDescriptions(descriptions);
+        return masterTableServicesImpl.getFeeTypesMrHeadByDescriptions(descriptions);
     }
 }
 
