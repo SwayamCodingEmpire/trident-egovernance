@@ -1,7 +1,9 @@
 package com.trident.egovernance.filters;
 
+import com.trident.egovernance.dto.BasicMSUserDto;
 import com.trident.egovernance.dto.UserJobInformationDto;
-import com.trident.egovernance.services.UserDataFetcherFromMS;
+import com.trident.egovernance.global.services.AppBearerTokenService;
+import com.trident.egovernance.global.services.UserDataFetcherFromMS;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,7 +16,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -23,12 +24,12 @@ import java.util.Map;
 
 @Component
 public class CustomAuthorityAssignerFilter extends OncePerRequestFilter {
+    private final AppBearerTokenService appBearerTokenService;
     private final UserDataFetcherFromMS userDataFetcherFromMS;
-    private final WebClient webClient;
 
-    public CustomAuthorityAssignerFilter(UserDataFetcherFromMS userDataFetcherFromMS) {
+    public CustomAuthorityAssignerFilter(AppBearerTokenService appBearerTokenService, UserDataFetcherFromMS userDataFetcherFromMS) {
+        this.appBearerTokenService = appBearerTokenService;
         this.userDataFetcherFromMS = userDataFetcherFromMS;
-        this.webClient = WebClient.builder().baseUrl("https://graph.microsoft.com/v1.0/users").build();
     }
 
     @Override
@@ -36,10 +37,11 @@ public class CustomAuthorityAssignerFilter extends OncePerRequestFilter {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(authentication instanceof JwtAuthenticationToken jwtAuth && authentication.isAuthenticated()){
             Jwt jwt = jwtAuth.getToken();
-            String apptoken = userDataFetcherFromMS.getAppBearerToken();
+            String apptoken = appBearerTokenService.getAppBearerToken("defaultKey");
             Jwt jwts = (Jwt)(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
             Map<String,Object> claims = jwts.getClaims();
-            UserJobInformationDto userJobInformationDto = userDataFetcherFromMS.fetchUserJobInformation(apptoken,claims.get("preferred_username").toString());
+            BasicMSUserDto basicMSUserDto = new BasicMSUserDto(apptoken,claims.get("preferred_username").toString());
+            UserJobInformationDto userJobInformationDto = userDataFetcherFromMS.fetchUserJobInformation(basicMSUserDto);
             Collection<GrantedAuthority> newAuthorities = List.of(
                     new SimpleGrantedAuthority(userJobInformationDto.getJobTitle()),
                     new SimpleGrantedAuthority(userJobInformationDto.getDepartment())

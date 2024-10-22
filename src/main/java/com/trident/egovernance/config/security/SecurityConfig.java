@@ -62,7 +62,11 @@ public class SecurityConfig {
             "/swagger-ui/**",
             "/webjars/**",
             "/swagger-ui.html",
-            "/payment/**"
+            "/payment/**",
+            "/public/**",
+            "/accounts-section/**",
+            "/initiate-session/**",
+            "/office/**"
     };
 
     @Bean

@@ -2,20 +2,18 @@ package com.trident.egovernance.filters;
 
 import com.trident.egovernance.config.security.CustomAuthenticationToken;
 import com.trident.egovernance.config.security.CustomUserDetails;
-import com.trident.egovernance.services.CustomJwtServiceImpl;
-import com.trident.egovernance.services.CustomUserDetailsService;
+import com.trident.egovernance.global.services.CustomJwtServiceImpl;
+import com.trident.egovernance.global.services.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 
 @Component

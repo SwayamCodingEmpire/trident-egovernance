@@ -21,7 +21,7 @@ import java.util.Map;
 @EnableTransactionManagement
 @EnableJpaRepositories(entityManagerFactoryRef = "permanentEntityManagerFactory",
         transactionManagerRef = "permanentTransactionManager",
-        basePackages = {"com.trident.egovernance.repositories.permanentDB"})
+        basePackages = {"com.trident.egovernance.global.repositories.permanentDB"})
 public class permanentDBConfig {
     @Bean(name = "permanentDBDataSource")
     @ConfigurationProperties(prefix = "spring.permanentdb.datasource")
@@ -35,7 +35,7 @@ public class permanentDBConfig {
         properties.put("hibernate.hbm2ddl.auto", "validate");
         return builder.dataSource(dataSource)
                 .properties(properties)
-                .packages("com.trident.egovernance.entities.permanentDB")
+                .packages("com.trident.egovernance.global.entities.permanentDB")
                 .persistenceUnit("permanentDB")
                 .build();
     }

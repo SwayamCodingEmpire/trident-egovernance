@@ -1,7 +1,7 @@
 package com.trident.egovernance.dto;
 
-import com.trident.egovernance.entities.redisEntities.StudentDocData;
-import com.trident.egovernance.helpers.*;
+import com.trident.egovernance.global.entities.redisEntities.StudentDocData;
+import com.trident.egovernance.global.helpers.*;
 import lombok.*;
 
 import java.io.Serializable;
@@ -24,7 +24,7 @@ public class NSRDto implements Serializable {
     private Gender gender;
     private String branchCode;
     private String admissionYear;
-    private Integer degree_yop;
+    private Integer degreeYop;
     private String phNo;
     private String email;
     private String rollNo;
@@ -42,7 +42,7 @@ public class NSRDto implements Serializable {
     private Religion religion;
     private Long rank;
     private RankType rankType;
-    private CoursesEnum course;
+    private Courses course;
     private TFWType tfw;
     private AdmissionType admissionType;
     private StudentType studentType;

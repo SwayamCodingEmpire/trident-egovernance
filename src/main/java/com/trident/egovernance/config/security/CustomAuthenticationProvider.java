@@ -1,8 +1,8 @@
 package com.trident.egovernance.config.security;
 
 import com.trident.egovernance.dto.Login;
-import com.trident.egovernance.entities.redisEntities.NSR;
-import com.trident.egovernance.repositories.redisRepositories.NSRRepository;
+import com.trident.egovernance.global.entities.redisEntities.NSR;
+import com.trident.egovernance.global.repositories.redisRepositories.NSRRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;

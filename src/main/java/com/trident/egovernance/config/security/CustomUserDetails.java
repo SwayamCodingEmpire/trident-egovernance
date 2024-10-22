@@ -1,6 +1,6 @@
 package com.trident.egovernance.config.security;
 
-import com.trident.egovernance.entities.redisEntities.NSR;
+import com.trident.egovernance.global.entities.redisEntities.NSR;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

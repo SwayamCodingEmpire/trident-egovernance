@@ -1,6 +1,6 @@
 package com.trident.egovernance.converters;
 
-import com.trident.egovernance.helpers.TFWType;
+import com.trident.egovernance.global.helpers.TFWType;
 import org.modelmapper.Converter;
 
 public class TFWConverters {
