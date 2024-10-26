@@ -1,13 +1,15 @@
 package com.trident.egovernance.domains.officeHandler.services;
 
-import com.trident.egovernance.dto.BranchCountDTO;
-import com.trident.egovernance.dto.CourseStudentCountDTO;
-import com.trident.egovernance.dto.StudentOfficeDTO;
+import com.trident.egovernance.dto.*;
+import com.trident.egovernance.exceptions.RecordNotFoundException;
 import com.trident.egovernance.global.entities.permanentDB.Branch;
+import com.trident.egovernance.global.entities.permanentDB.Student;
+import com.trident.egovernance.global.entities.permanentDB.StudentDocs;
 import com.trident.egovernance.global.helpers.Courses;
 import com.trident.egovernance.global.helpers.StudentStatus;
 import com.trident.egovernance.global.helpers.StudentType;
 import com.trident.egovernance.global.repositories.permanentDB.StudentRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -24,11 +26,11 @@ public class OfficeServicesImpl {
     }
 
     public List<StudentOfficeDTO> getAllContinuingStudents(){
-        return studentRepository.findAllByStatus(StudentStatus.CONTINUING);
+        return studentRepository.findAllByStatusAlongWithParentContact(StudentStatus.CONTINUING);
     }
 
     public List<StudentOfficeDTO> getAllAlumniStudents(){
-        return studentRepository.findAllByStatus(StudentStatus.ALUMNI);
+        return studentRepository.findAllByStatusAlongWithParentContact(StudentStatus.ALUMNI);
     }
 
     public Long countAllContinuingStudents(){
@@ -69,5 +71,32 @@ public class OfficeServicesImpl {
         }
 
         return result;
+    }
+
+    public StudentIndividualRecordFetchDTO getStudentByRegdNo(String regdNo) {
+        try
+        {
+            Student student = studentRepository.findByRegdNoComplete(regdNo).orElseThrow(() -> new RecordNotFoundException("Student Not Found"));
+            List<StudentDocsOnlyDTO> studentOnlyDTOS = new ArrayList<>();
+            for (StudentDocs studentDocs1 : student.getStudentDocs()) {
+                StudentDocsOnlyDTO studentOnlyDTO = new StudentDocsOnlyDTO(studentDocs1);
+                studentOnlyDTOS.add(studentOnlyDTO);
+            }
+            return new StudentIndividualRecordFetchDTO(
+                    new StudentOnlyDTO(student),
+                    new PersonalDetailsOnlyDTO(student.getPersonalDetails()),
+                    new StudentAdmissionDetailsOnlyDTO(student.getStudentAdmissionDetails()),
+                    new StudentCareerOnlyDTO(student.getStudentCareer()),
+                    new HostelOnlyDTO(student.getHostel()),
+                    new TransportOnlyDTO(student.getTransport()),
+                    studentOnlyDTOS
+            );
+        }
+        catch (NullPointerException e){
+            throw new RecordNotFoundException("All Details not properly initiated");
+        }
+        catch (RecordNotFoundException e){
+            throw new RecordNotFoundException("Student Not Found");
+        }
     }
 }

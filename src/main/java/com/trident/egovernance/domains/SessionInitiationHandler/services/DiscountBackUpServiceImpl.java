@@ -1,17 +1,12 @@
 package com.trident.egovernance.domains.SessionInitiationHandler.services;
 
-import com.trident.egovernance.global.entities.permanentDB.Discount;
 import com.trident.egovernance.global.repositories.permanentDB.DiscountRepository;
-import com.trident.egovernance.global.repositories.permanentDB.OldAdjustmentRepository;
 import com.trident.egovernance.global.repositories.permanentDB.OldDiscountRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.List;
 
 @Service
@@ -27,8 +22,9 @@ public class DiscountBackUpServiceImpl {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public Boolean saveToOldDiscount(List<String> regdNos) {
+    public Boolean transferToOldDiscount(List<String> regdNos) {
         oldDiscountRepository.saveToOldDiscount(regdNos);
+        discountRepository.deleteByRegdNoIn(regdNos);
         return true;
     }
 

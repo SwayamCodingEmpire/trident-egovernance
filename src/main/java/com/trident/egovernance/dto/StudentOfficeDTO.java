@@ -10,7 +10,8 @@ public record StudentOfficeDTO(
         String phNo,
         String email,
         StudentType studentType,
-        Integer currentYear
+        Integer currentYear,
+        String parentContact
 ) {}
 
 

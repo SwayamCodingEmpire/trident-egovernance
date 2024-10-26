@@ -15,8 +15,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,7 +28,7 @@ public class DuesDetailBackupServiceImpl {
         this.oldDuesDetailsRepository = oldDuesDetailsRepository;
     }
 
-    public List<DuesDetails> saveToOldDuesDetails(List<String> regdNos) {
+    public List<DuesDetails> transferToOldDuesDetails(List<String> regdNos) {
         List<DuesDetails> duesDetails = duesDetailsRepository.findAllByRegdNoIn(regdNos);
         logger.info(duesDetails.toString());
         List<OldDueDetails> oldDueDetails =  duesDetails.stream()
@@ -46,6 +44,7 @@ public class DuesDetailBackupServiceImpl {
         List<OldDueDetails> oldDueDetails1 = oldDuesDetailsRepository.saveAll(oldDueDetails);
         logger.info(oldDueDetails1.toString());
         logger.info(duesDetails1.toString());
+        duesDetailsRepository.deleteAllByRegdNoIn(regdNos);
         return duesDetails1;
     }
 

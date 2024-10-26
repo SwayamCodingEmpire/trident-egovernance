@@ -1,16 +1,12 @@
 package com.trident.egovernance.domains.SessionInitiationHandler.services;
 
-import com.trident.egovernance.global.entities.permanentDB.Adjustments;
 import com.trident.egovernance.global.repositories.permanentDB.AdjustmentsRepository;
 import com.trident.egovernance.global.repositories.permanentDB.OldAdjustmentRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.List;
 @Service
 public class AdjustmentBackupServiceImpl {
@@ -25,8 +21,9 @@ public class AdjustmentBackupServiceImpl {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public Boolean saveToOldAdjustment(List<String> regdNos) {
+    public Boolean transferToOldAdjustment(List<String> regdNos) {
         oldAdjustmentRepository.saveAdjustmentsToOld(regdNos);
+        adjustmentsRepository.deleteAllByRegdNoIn(regdNos);
         return true;
     }
 

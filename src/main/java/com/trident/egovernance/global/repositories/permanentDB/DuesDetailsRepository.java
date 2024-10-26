@@ -4,6 +4,7 @@ import com.trident.egovernance.dto.DuesDetailsDto;
 import com.trident.egovernance.global.entities.permanentDB.DuesDetails;
 import com.trident.egovernance.global.helpers.DuesDetailsId;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -14,5 +15,6 @@ public interface DuesDetailsRepository extends JpaRepository<DuesDetails, DuesDe
     List<DuesDetails> findAllByRegdNoAndBalanceAmountNotOrderByDeductionOrder(String regdNo, BigDecimal balanceAmount);
     List<DuesDetailsDto> findAllByRegdNoOrderByDeductionOrder(String regdNo);
     List<DuesDetails> findAllByRegdNoIn(List<String> regdNos);
+    @Modifying
     long deleteAllByRegdNoIn(List<String> regdNos);
 }

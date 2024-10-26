@@ -85,7 +85,7 @@ class NSRController {
         nsrService.bulkSaveNSRData(nsrs);
         return ResponseEntity.ok(true);
     }
-    @PostMapping("/postByStudent")
+    @PutMapping("/postByStudent")
     public ResponseEntity<NSRDto> postNSRDataByStudentName(@RequestBody NSR nsr){
         try
         {
@@ -155,4 +155,14 @@ class NSRController {
     public ResponseEntity<Set<NSRDto>> getAllNSRbyAdmissionYear(@PathVariable("admYear") String admissionyear){
         return ResponseEntity.ok(nsrService.getAllNSRDataByAdmissionYear(admissionyear));
     }
+
+//    @GetMapping("/try")
+//    public void trying(){
+//        String trying = """
+//                My Name is SPM.
+//                I am a programmer
+//                """;
+//        System.out.println(trying);
+//        return;
+//    }
 }
