@@ -11,7 +11,7 @@ public record HostelOnlyDTO(
         HostelChoice hostelChoice,
         String lgName,
         Integer regdyear
-) {
+) implements StudentUpdateDTO {
     public HostelOnlyDTO(Hostel hostel){
         this(
                 hostel.getRegdNo(),

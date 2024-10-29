@@ -1,5 +1,6 @@
 package com.trident.egovernance.global.entities.permanentDB;
 
+import com.trident.egovernance.dto.StudentCareerOnlyDTO;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -40,6 +41,19 @@ public class StudentCareer {
 
     @Column(name = "GRADUATIONYOP", precision = 20)
     private Long graduationYOP;  // NUMBER(20,0)
+
+    // Constructor to initialize Education from EducationDTO
+    public StudentCareer(StudentCareerOnlyDTO studentCareerOnlyDTO) {
+        this.regdNo = studentCareerOnlyDTO.regdNo();
+        this.tenthPercentage = studentCareerOnlyDTO.tenthPercentage();
+        this.tenthYOP = studentCareerOnlyDTO.tenthYOP();
+        this.twelvthPercentage = studentCareerOnlyDTO.twelvthPercentage();
+        this.twelvthYOP = studentCareerOnlyDTO.twelvthYOP();
+        this.diplomaPercentage = studentCareerOnlyDTO.diplomaPercentage();
+        this.diplomaYOP = studentCareerOnlyDTO.diplomaYOP();
+        this.graduationPercentage = studentCareerOnlyDTO.graduationPercentage();
+        this.graduationYOP = studentCareerOnlyDTO.graduationYOP();
+    }
 
     @OneToOne
     @JoinColumn(name = "REGDNO")

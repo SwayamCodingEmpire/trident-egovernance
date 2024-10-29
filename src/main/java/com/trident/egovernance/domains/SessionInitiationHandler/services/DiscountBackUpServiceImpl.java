@@ -6,8 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class DiscountBackUpServiceImpl {
@@ -22,10 +24,15 @@ public class DiscountBackUpServiceImpl {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public Boolean transferToOldDiscount(List<String> regdNos) {
-        oldDiscountRepository.saveToOldDiscount(regdNos);
-        discountRepository.deleteByRegdNoIn(regdNos);
-        return true;
+    public CompletableFuture<Boolean> transferToOldDiscount(List<String> regdNos, TransactionStatus status) {
+        try{
+            oldDiscountRepository.saveToOldDiscount(regdNos);
+            discountRepository.deleteByRegdNoIn(regdNos);
+            return CompletableFuture.completedFuture(true);
+        }catch (Exception e){
+            status.setRollbackOnly();
+            return CompletableFuture.completedFuture(false);
+        }
     }
 
     public Boolean deleteFromDiscounts(List<String> regdNo) {

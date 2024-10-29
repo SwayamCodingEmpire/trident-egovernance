@@ -9,7 +9,7 @@ public record StudentDocsOnlyDTO(
         String docLink,
         String docType,
         Date uploadDate
-) {
+)implements StudentUpdateDTO {
     public StudentDocsOnlyDTO(StudentDocs studentDocs) {
         this(
                 studentDocs.getDocId(),

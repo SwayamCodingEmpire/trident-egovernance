@@ -1,5 +1,6 @@
 package com.trident.egovernance.global.entities.permanentDB;
 
+import com.trident.egovernance.dto.StudentAdmissionDetailsOnlyDTO;
 import com.trident.egovernance.global.helpers.BooleanString;
 import com.trident.egovernance.global.helpers.TFWType;
 import jakarta.persistence.*;
@@ -60,6 +61,23 @@ public class StudentAdmissionDetails {
 
     @Column(name = "ALLOTMENTID", length = 20)
     private String allotmentId;
+
+    public StudentAdmissionDetails(StudentAdmissionDetailsOnlyDTO dto) {
+        this.regdNo = dto.regdNo();
+        this.admissionDate = dto.admissionDate();
+        this.ojeeCounsellingFeePaid = dto.ojeeCounsellingFeePaid();
+        this.tfw = dto.tfw();
+        this.admissionType = dto.admissionType();
+        this.ojeeRollNo = dto.ojeeRollNo();
+        this.ojeeRank = dto.ojeeRank();
+        this.aieeeRank = dto.aieeeRank();
+        this.caste = dto.caste();
+        this.reportingDate = dto.reportingDate();
+        this.categoryCode = dto.categoryCode();
+        this.categoryRank = dto.categoryRank();
+        this.jeeApplicationNo = dto.jeeApplicationNo();
+        this.allotmentId = dto.allotmentId();
+    }
 
     @OneToOne
     @JoinColumn(name = "REGDNO")

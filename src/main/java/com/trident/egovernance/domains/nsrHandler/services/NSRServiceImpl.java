@@ -18,6 +18,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
+import java.time.LocalDate;
 import java.time.Year;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -122,6 +124,7 @@ class NSRServiceImpl implements NSRService {
             else{
                 studentDocs1 = null;
             }
+            studentAdmissionDetails.setAdmissionDate(Date.valueOf(LocalDate.now()));
             logger.info("Student Docs in databse entity format {}" , studentDocs1);
             student.setStudentAdmissionDetails(studentAdmissionDetails);
             studentAdmissionDetails.setStudent(student);

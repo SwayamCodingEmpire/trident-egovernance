@@ -6,8 +6,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 @Service
 public class AdjustmentBackupServiceImpl {
     private final AdjustmentsRepository adjustmentsRepository;
@@ -21,10 +24,15 @@ public class AdjustmentBackupServiceImpl {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public Boolean transferToOldAdjustment(List<String> regdNos) {
-        oldAdjustmentRepository.saveAdjustmentsToOld(regdNos);
-        adjustmentsRepository.deleteAllByRegdNoIn(regdNos);
-        return true;
+    public CompletableFuture<Boolean> transferToOldAdjustment(List<String> regdNos, TransactionStatus status) {
+        try{
+            oldAdjustmentRepository.saveAdjustmentsToOld(regdNos);
+            adjustmentsRepository.deleteAllByRegdNoIn(regdNos);
+            return CompletableFuture.completedFuture(true);
+        }catch (Exception e){
+            status.setRollbackOnly();
+            return CompletableFuture.completedFuture(false);
+        }
     }
 
     public Boolean deleteFromAdjustments(List<String> regdNos) {

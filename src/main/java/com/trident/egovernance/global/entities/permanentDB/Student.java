@@ -1,5 +1,6 @@
 package com.trident.egovernance.global.entities.permanentDB;
 
+import com.trident.egovernance.dto.StudentOnlyDTO;
 import com.trident.egovernance.global.helpers.*;
 import jakarta.persistence.*;
 import lombok.*;
@@ -68,6 +69,33 @@ public class Student {
     @Column(name = "RELIGION")
     @Enumerated(EnumType.STRING)
     private Religion religion;
+    @Column(name = "SECTION")
+    private String section;
+    // Constructor to initialize Student from StudentOnlyDTO
+    public Student(StudentOnlyDTO studentOnlyDTO) {
+        this.regdNo = studentOnlyDTO.regdNo();
+        this.studentName = studentOnlyDTO.studentName();
+        this.gender = studentOnlyDTO.gender();
+        this.dob = studentOnlyDTO.dob();
+        this.course = studentOnlyDTO.course();
+        this.branchCode = studentOnlyDTO.branchCode();
+        this.admissionYear = studentOnlyDTO.admissionYear();
+        this.degreeYop = studentOnlyDTO.degreeYop();
+        this.phNo = studentOnlyDTO.phNo();
+        this.email = studentOnlyDTO.email();
+        this.studentType = studentOnlyDTO.studentType();
+        this.hostelier = studentOnlyDTO.hostelier();
+        this.transportAvailed = studentOnlyDTO.transportAvailed();
+        this.status = studentOnlyDTO.status();
+        this.batchId = studentOnlyDTO.batchId();
+        this.currentYear = studentOnlyDTO.currentYear();
+        this.aadhaarNo = studentOnlyDTO.aadhaarNo();
+        this.indortrng = studentOnlyDTO.indortrng();
+        this.plpoolm = studentOnlyDTO.plpoolm();
+        this.cfPayMode = studentOnlyDTO.cfPayMode();
+        this.religion = studentOnlyDTO.religion();
+    }
+
 
     @OneToOne(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @ToString.Exclude

@@ -21,7 +21,7 @@ public record StudentAdmissionDetailsOnlyDTO(
         Long categoryRank,
         String jeeApplicationNo,
         String allotmentId
-) {
+) implements StudentUpdateDTO {
     public StudentAdmissionDetailsOnlyDTO(StudentAdmissionDetails admissionDetails){
         this(
                 admissionDetails.getRegdNo(),

@@ -2,15 +2,18 @@ package com.trident.egovernance.domains.officeHandler.services;
 
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.exceptions.RecordNotFoundException;
-import com.trident.egovernance.global.entities.permanentDB.Branch;
-import com.trident.egovernance.global.entities.permanentDB.Student;
-import com.trident.egovernance.global.entities.permanentDB.StudentDocs;
+import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.global.helpers.Courses;
 import com.trident.egovernance.global.helpers.StudentStatus;
 import com.trident.egovernance.global.helpers.StudentType;
 import com.trident.egovernance.global.repositories.permanentDB.StudentRepository;
-import org.springframework.http.ResponseEntity;
+import com.trident.egovernance.global.services.MapperService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,10 +22,20 @@ import java.util.Map;
 
 @Service
 public class OfficeServicesImpl {
+    private final Logger logger = LoggerFactory.getLogger(OfficeServicesImpl.class);
     private final StudentRepository studentRepository;
+    private final MapperService mapperService;
+    private EntityManager entityManager;
 
-    public OfficeServicesImpl(StudentRepository studentRepository) {
+    public OfficeServicesImpl(StudentRepository studentRepository, MapperService mapperService) {
         this.studentRepository = studentRepository;
+        this.mapperService = mapperService;
+
+    }
+
+    @PersistenceContext
+    public void setEntityManager(EntityManager entityManager) { // Use setter for injection
+        this.entityManager = entityManager;
     }
 
     public List<StudentOfficeDTO> getAllContinuingStudents(){
@@ -98,5 +111,62 @@ public class OfficeServicesImpl {
         catch (RecordNotFoundException e){
             throw new RecordNotFoundException("Student Not Found");
         }
+    }
+
+    @Transactional
+    public StudentOnlyDTO updateStudentTableOnly(StudentOnlyDTO studentOnlyDTO) {
+//        Student updatedStudent = mapperService.convertToStudentFromStudentOnlyDTO(studentOnlyDTO);
+//        updatedStudent.setStudentCareer(entityManager.getReference(StudentCareer.class,studentOnlyDTO.regdNo()));
+//        updatedStudent.setStudentAdmissionDetails(entityManager.getReference(StudentAdmissionDetails.class,studentOnlyDTO.regdNo()));
+//        updatedStudent.setPersonalDetails(entityManager.getReference(PersonalDetails.class,studentOnlyDTO.regdNo()));
+//        updatedStudent.setHostel(entityManager.getReference(Hostel.class,studentOnlyDTO.regdNo()));
+//        updatedStudent.setTransport(entityManager.getReference(Transport.class,studentOnlyDTO.regdNo()));
+        return new StudentOnlyDTO(entityManager.merge(new Student(studentOnlyDTO)));
+    }
+
+    @Transactional
+    public StudentCareerOnlyDTO updateStudentCareerTable(StudentCareerOnlyDTO studentCareerOnlyDTO) {
+        return new StudentCareerOnlyDTO(entityManager.merge(new StudentCareer(studentCareerOnlyDTO)));
+    }
+
+    @Transactional
+    public PersonalDetailsOnlyDTO updatePersonalDetailsTable(PersonalDetailsOnlyDTO personalDetailsOnlyDTO) {
+        return new PersonalDetailsOnlyDTO(entityManager.merge(new PersonalDetails(personalDetailsOnlyDTO)));
+    }
+
+    @Transactional
+    public StudentAdmissionDetailsOnlyDTO updateStudentAdmissionDetailsTable(StudentAdmissionDetailsOnlyDTO studentAdmissionDetailsOnlyDTO) {
+        return new StudentAdmissionDetailsOnlyDTO(entityManager.merge(new StudentAdmissionDetails(studentAdmissionDetailsOnlyDTO)));
+    }
+
+    @Transactional
+    public HostelOnlyDTO updateHostelTable(HostelOnlyDTO hostelOnlyDTO) {
+        logger.info(hostelOnlyDTO.toString());
+        Hostel hostel = new Hostel(hostelOnlyDTO);
+        logger.info(hostel.toString());
+        return new HostelOnlyDTO(entityManager.merge(new Hostel(hostelOnlyDTO)));
+    }
+    @Transactional
+    public TransportOnlyDTO updateTransportTable(TransportOnlyDTO transportOnlyDTO) {
+        return new TransportOnlyDTO(entityManager.merge(new Transport(transportOnlyDTO)));
+    }
+
+    @Transactional
+    public List<StudentDocsOnlyDTO> updateStudentDocsTable(List<StudentDocsOnlyDTO> studentDocsOnlyDTO) {
+        List<StudentDocs> studentDocs = new ArrayList<>();
+        for (StudentDocsOnlyDTO dto : studentDocsOnlyDTO) {
+            StudentDocs entity = new StudentDocs(dto);
+            studentDocs.add(entity);
+        }
+
+        // Merge entities and collect the merged results
+        List<StudentDocs> mergedDocs = new ArrayList<>();
+        for (StudentDocs doc : studentDocs) {
+            mergedDocs.add(entityManager.merge(doc));
+        }
+        // Convert merged entities back to DTOs and return
+        return mergedDocs.stream()
+                .map(StudentDocsOnlyDTO::new)
+                .toList();
     }
 }

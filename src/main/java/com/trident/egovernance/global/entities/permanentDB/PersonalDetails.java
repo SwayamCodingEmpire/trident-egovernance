@@ -1,5 +1,6 @@
 package com.trident.egovernance.global.entities.permanentDB;
 
+import com.trident.egovernance.dto.PersonalDetailsOnlyDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -47,6 +48,21 @@ public class PersonalDetails {
 
     @Column(name = "DISTRICT", length = 100)
     private String district;
+
+    public PersonalDetails(PersonalDetailsOnlyDTO dto) {
+        this.regdNo = dto.regdNo();
+        this.fname = dto.fname();
+        this.mname = dto.mname();
+        this.lgName = dto.lgName();
+        this.permanentAddress = dto.permanentAddress();
+        this.permanentCity = dto.permanentCity();
+        this.permanentState = dto.permanentState();
+        this.permanentPincode = dto.permanentPincode();
+        this.parentContact = dto.parentContact();
+        this.parentEmailId = dto.parentEmailId();
+        this.presentAddress = dto.presentAddress();
+        this.district = dto.district();
+    }
 
     @OneToOne
     @JoinColumn(name = "REGDNO")

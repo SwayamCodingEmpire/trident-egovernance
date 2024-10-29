@@ -11,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 @MappedSuperclass
-public abstract class BaseHostel {
+public abstract sealed class BaseHostel permits Hostel,OldHostel {
     @Id
     @Column(name = "REGDNO")
     private String regdNo;

@@ -10,7 +10,7 @@ public record TransportOnlyDTO(
         String route,
         String pickUpPoint,
         Integer regdYear
-) {
+) implements StudentUpdateDTO {
     public TransportOnlyDTO(Transport transport) {
         this(
                 transport.getRegdNo(),

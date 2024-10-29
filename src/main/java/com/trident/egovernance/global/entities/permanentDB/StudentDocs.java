@@ -1,5 +1,6 @@
 package com.trident.egovernance.global.entities.permanentDB;
 
+import com.trident.egovernance.dto.StudentDocsOnlyDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,6 +27,14 @@ public class StudentDocs implements Serializable {
     private String docType;
     @Column(name = "UPLOADDATE")
     private Date uploadDate;
+
+    public StudentDocs(StudentDocsOnlyDTO dto) {
+        this.docId = dto.docId();
+        this.docLink = dto.docLink();
+        this.docType = dto.docType();
+        this.uploadDate = dto.uploadDate();
+    }
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REGDNO")
     @ToString.Exclude

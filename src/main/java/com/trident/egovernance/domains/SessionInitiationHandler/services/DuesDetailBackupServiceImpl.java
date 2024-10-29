@@ -7,7 +7,9 @@ import com.trident.egovernance.global.repositories.permanentDB.OldDuesDetailsRep
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -15,6 +17,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,24 +31,30 @@ public class DuesDetailBackupServiceImpl {
         this.oldDuesDetailsRepository = oldDuesDetailsRepository;
     }
 
-    public List<DuesDetails> transferToOldDuesDetails(List<String> regdNos) {
-        List<DuesDetails> duesDetails = duesDetailsRepository.findAllByRegdNoIn(regdNos);
-        logger.info(duesDetails.toString());
-        List<OldDueDetails> oldDueDetails =  duesDetails.stream()
-                .map(OldDueDetails::new)
-                .toList();
-        Pair<List<String>,HashMap<String,BigDecimal>> regdAndoldDues = createHashMapForRegdNoAndBalanceAmount(oldDueDetails);
-        List<String> regdNosInMap = regdAndoldDues.getLeft();
-        HashMap<String,BigDecimal> oldDuesCalculate = regdAndoldDues.getRight();
-        removeFromHashMapWhichHasZeroBalaMT(regdNosInMap,oldDuesCalculate);
+    @Async
+    public CompletableFuture<Boolean> transferToOldDuesDetails(List<String> regdNos, TransactionStatus status) {
+        try{
+            List<DuesDetails> duesDetails = duesDetailsRepository.findAllByRegdNoIn(regdNos);
+            logger.info(duesDetails.toString());
+            List<OldDueDetails> oldDueDetails = duesDetails.stream()
+                    .map(OldDueDetails::new)
+                    .toList();
+            Pair<List<String>, HashMap<String, BigDecimal>> regdAndoldDues = createHashMapForRegdNoAndBalanceAmount(oldDueDetails);
+            List<String> regdNosInMap = regdAndoldDues.getLeft();
+            HashMap<String, BigDecimal> oldDuesCalculate = regdAndoldDues.getRight();
+            removeFromHashMapWhichHasZeroBalaMT(regdNosInMap, oldDuesCalculate);
 
-        List<DuesDetails> duesDetails1 = createThePreviousDueRecordInDuesDetailsEntities(oldDuesCalculate,oldDueDetails);
+            List<DuesDetails> duesDetails1 = createThePreviousDueRecordInDuesDetailsEntities(oldDuesCalculate, oldDueDetails);
 
-        List<OldDueDetails> oldDueDetails1 = oldDuesDetailsRepository.saveAll(oldDueDetails);
-        logger.info(oldDueDetails1.toString());
-        logger.info(duesDetails1.toString());
-        duesDetailsRepository.deleteAllByRegdNoIn(regdNos);
-        return duesDetails1;
+            List<OldDueDetails> oldDueDetails1 = oldDuesDetailsRepository.saveAll(oldDueDetails);
+            logger.info(oldDueDetails1.toString());
+            logger.info(duesDetails1.toString());
+            duesDetailsRepository.deleteAllByRegdNoIn(regdNos);
+            return CompletableFuture.completedFuture(true);
+        }catch (Exception e){
+            status.setRollbackOnly();
+            return CompletableFuture.completedFuture(false);
+        }
     }
 
     private String getNextSession(String currentSession) {

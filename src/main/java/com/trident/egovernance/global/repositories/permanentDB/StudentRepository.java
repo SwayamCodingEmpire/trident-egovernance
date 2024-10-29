@@ -27,7 +27,7 @@ public interface StudentRepository extends JpaRepository<Student, String> {
     BasicStudentDto findByRegdNo(String regdNo);
 
     Long countAllByStatus(StudentStatus status);
-    List<Student> findAllByAdmissionYearAndCourseAndCurrentYearAndStudentType(String admissionYear, Courses course, Integer currentYear, StudentType studentType);
+    List<StudentOnlyDTO> findAllByAdmissionYearAndCourseAndCurrentYearAndStudentType(String admissionYear, Courses course, Integer currentYear, StudentType studentType);
     List<Student> findAllByCourseAndCurrentYear(Courses course, Integer currentYear);
     @Query("SELECT DISTINCT s FROM STUDENT s " +
     "LEFT JOIN FETCH STUDENT_ADMISSION_DETAILS " +

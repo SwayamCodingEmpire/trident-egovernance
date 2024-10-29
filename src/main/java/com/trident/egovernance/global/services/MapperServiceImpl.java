@@ -1,7 +1,6 @@
 package com.trident.egovernance.global.services;
 
-import com.trident.egovernance.dto.DuesDetailsDto;
-import com.trident.egovernance.dto.NSRDto;
+import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.global.entities.redisEntities.NSR;
 import com.trident.egovernance.global.entities.redisEntities.StudentDocData;
@@ -21,7 +20,6 @@ public class MapperServiceImpl implements MapperService {
         modelMapper.typeMap(NSR.class, StudentAdmissionDetails.class)
                 .addMappings(mapper -> mapper.map(NSR::getTfw,StudentAdmissionDetails::setTfw));
     }
-
     @Override
     public NSRDto convertToNSRDtoList(NSR nsr) {
         return modelMapper.map(nsr,NSRDto.class);
@@ -104,4 +102,31 @@ public class MapperServiceImpl implements MapperService {
                 .collect(Collectors.toList());
     }
 
+    public Student convertToStudentFromStudentOnlyDTO(StudentOnlyDTO studentOnlyDTO) {
+        return modelMapper.map(studentOnlyDTO,Student.class);
+    }
+
+    public StudentCareer covertToStudentCareerFromStudentCareerOnlyDTO(StudentCareerOnlyDTO studentCareerOnlyDTO) {
+        return modelMapper.map(studentCareerOnlyDTO,StudentCareer.class);
+    }
+
+    public PersonalDetails convertToPersonalDetailsFromPersonalDetailsOnlyDTO(PersonalDetailsOnlyDTO personalDetailsOnlyDTO) {
+        return modelMapper.map(personalDetailsOnlyDTO,PersonalDetails.class);
+    }
+
+    public StudentAdmissionDetails convertToStudentAdmissionDetailsFromStudentAdmissionDetailsOnlyDTO(StudentAdmissionDetailsOnlyDTO studentAdmissionDetailsOnlyDTO) {
+        return modelMapper.map(studentAdmissionDetailsOnlyDTO,StudentAdmissionDetails.class);
+    }
+
+    public Hostel convertToHostelFromHostelOnlyDTO(HostelOnlyDTO hostelOnlyDTO) {
+        return modelMapper.map(hostelOnlyDTO,Hostel.class);
+    }
+
+    public Transport convertToTransportFromTransportOnlyDTO(TransportOnlyDTO transportOnlyDTO) {
+        return modelMapper.map(transportOnlyDTO,Transport.class);
+    }
+
+    public StudentDocs convertToStudentDocsFromStudentDocsOnlyDTO(StudentDocsOnlyDTO studentDocsOnlyDTO) {
+        return modelMapper.map(studentDocsOnlyDTO,StudentDocs.class);
+    }
 }

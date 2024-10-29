@@ -4,6 +4,7 @@ import com.trident.egovernance.domains.SessionInitiationHandler.services.Session
 import com.trident.egovernance.domains.officeHandler.services.OfficeServicesImpl;
 import com.trident.egovernance.dto.SessionInitiationDTO;
 import com.trident.egovernance.dto.SessionInitiationData;
+import com.trident.egovernance.dto.StudentOnlyDTO;
 import com.trident.egovernance.global.entities.permanentDB.Student;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,10 @@ public class SessionInitiationController {
         this.officeServicesImpl = officeServicesImpl;
     }
 
+    @PostMapping("/get-student-for-promotion")
+    public ResponseEntity<List<StudentOnlyDTO>> getStudentForPromotion(@RequestBody SessionInitiationDTO sessionInitiationDTO) {
+        return ResponseEntity.ok(sessionInitiationService.getStudentsForPromotion(sessionInitiationDTO));
+    }
     @PostMapping("/initiate")
     public ResponseEntity<Boolean> testNewSession(@RequestBody SessionInitiationData sessionInitiationData){
         return ResponseEntity.ok(sessionInitiationService.initiateNewSession(sessionInitiationData));

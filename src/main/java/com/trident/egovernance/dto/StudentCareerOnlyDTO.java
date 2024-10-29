@@ -14,7 +14,7 @@ public record StudentCareerOnlyDTO(
         Long diplomaYOP,
         BigDecimal graduationPercentage,
         Long graduationYOP
-) {
+) implements StudentUpdateDTO{
     public StudentCareerOnlyDTO(StudentCareer studentCareer) {
         this(
                 studentCareer.getRegdNo(),

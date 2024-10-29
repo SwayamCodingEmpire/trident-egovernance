@@ -6,8 +6,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 @Service
 public class HostelBackupServiceImpl {
     private final HostelRepository hostelRepository;
@@ -21,10 +24,15 @@ public class HostelBackupServiceImpl {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public Boolean transferToOldHostel(List<String> regdNos) {
-        oldHostelRepository.saveHostelToOld(regdNos);
-        hostelRepository.deleteByRegdNoIn(regdNos);
-        return true;
+    public CompletableFuture<Boolean> transferToOldHostel(List<String> regdNos, TransactionStatus status) {
+        try {
+            oldHostelRepository.saveHostelToOld(regdNos);
+            hostelRepository.deleteByRegdNoIn(regdNos);
+            return CompletableFuture.completedFuture(true);
+        }catch (Exception e){
+            status.setRollbackOnly();
+            return CompletableFuture.completedFuture(false);
+        }
     }
 
     public Boolean deleteFromHostel(List<String> regdNos) {

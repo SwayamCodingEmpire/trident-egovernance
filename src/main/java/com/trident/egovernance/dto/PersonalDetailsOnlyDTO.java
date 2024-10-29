@@ -13,8 +13,9 @@ public record PersonalDetailsOnlyDTO(
         Long permanentPincode,
         String parentContact,
         String parentEmailId,
-        String presentAddress
-) {
+        String presentAddress,
+        String district
+) implements StudentUpdateDTO {
     public PersonalDetailsOnlyDTO(PersonalDetails personalDetails){
         this(
                 personalDetails.getRegdNo(),
@@ -27,7 +28,8 @@ public record PersonalDetailsOnlyDTO(
                 personalDetails.getPermanentPincode(),
                 personalDetails.getParentContact(),
                 personalDetails.getParentEmailId(),
-                personalDetails.getPresentAddress()
+                personalDetails.getPresentAddress(),
+                personalDetails.getDistrict()
         );
     }
 }

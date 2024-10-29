@@ -1,7 +1,6 @@
 package com.trident.egovernance.global.services;
 
-import com.trident.egovernance.dto.DuesDetailsDto;
-import com.trident.egovernance.dto.NSRDto;
+import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.global.entities.redisEntities.NSR;
 import com.trident.egovernance.global.entities.redisEntities.StudentDocData;
@@ -25,4 +24,18 @@ public interface MapperService {
     List<NSRDto> convertToNSRDtoList(List<NSR> nsrS);
 
     Set<NSRDto> convertToNSRDtoSet(Set<NSR> nsrS);
+    Student convertToStudentFromStudentOnlyDTO(StudentOnlyDTO studentOnlyDTO);
+
+    StudentCareer covertToStudentCareerFromStudentCareerOnlyDTO(StudentCareerOnlyDTO studentCareerOnlyDTO);
+
+    PersonalDetails convertToPersonalDetailsFromPersonalDetailsOnlyDTO(PersonalDetailsOnlyDTO personalDetailsOnlyDTO);
+
+    StudentAdmissionDetails convertToStudentAdmissionDetailsFromStudentAdmissionDetailsOnlyDTO(StudentAdmissionDetailsOnlyDTO studentAdmissionDetailsOnlyDTO);
+
+    Hostel convertToHostelFromHostelOnlyDTO(HostelOnlyDTO hostelOnlyDTO);
+
+
+    Transport convertToTransportFromTransportOnlyDTO(TransportOnlyDTO transportOnlyDTO);
+
+    StudentDocs convertToStudentDocsFromStudentDocsOnlyDTO(StudentDocsOnlyDTO studentDocsOnlyDTO);
 }

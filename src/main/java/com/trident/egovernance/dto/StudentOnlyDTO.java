@@ -25,7 +25,7 @@ public record StudentOnlyDTO(
         BooleanString plpoolm,
         CfPaymentMode cfPayMode,
         Religion religion
-) {
+) implements StudentUpdateDTO {
     public StudentOnlyDTO(Student student) {
         this(
                 student.getRegdNo(),
