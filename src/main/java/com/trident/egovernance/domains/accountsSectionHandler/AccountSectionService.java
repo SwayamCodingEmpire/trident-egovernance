@@ -1,11 +1,14 @@
 package com.trident.egovernance.domains.accountsSectionHandler;
 
-import com.trident.egovernance.dto.BasicStudentDto;
-import com.trident.egovernance.dto.DuesDetailsSortedDto;
-import com.trident.egovernance.dto.FeeCollectionHistoryDto;
+import com.trident.egovernance.dto.*;
+
+import java.util.List;
+import java.util.Map;
 
 public interface AccountSectionService {
-    DuesDetailsSortedDto getDuesDetails(String regdNo);
+    Map<Integer, Map<Integer, List<DuesDetailsDto>>> getDuesDetails(String regdNo);
     BasicStudentDto getBasicStudentDetails(String regdNo);
     FeeCollectionHistoryDto getFeeCollectionByRegdNo(String regdNo);
+    FeeDashboardSummary getDashBoardNumbers(String paymentDate);
+    List<FeeCollectionOnlyDTO> getFeeCollectionBySessionId(String sessionId);
 }

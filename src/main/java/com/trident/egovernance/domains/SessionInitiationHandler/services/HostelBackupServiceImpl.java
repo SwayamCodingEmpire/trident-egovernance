@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -24,10 +25,10 @@ public class HostelBackupServiceImpl {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public CompletableFuture<Boolean> transferToOldHostel(List<String> regdNos, TransactionStatus status) {
+    public CompletableFuture<Boolean> transferToOldHostel(Set<String> regdNos, TransactionStatus status) {
         try {
             oldHostelRepository.saveHostelToOld(regdNos);
-            hostelRepository.deleteByRegdNoIn(regdNos);
+//            hostelRepository.deleteByRegdNoIn(regdNos);
             return CompletableFuture.completedFuture(true);
         }catch (Exception e){
             status.setRollbackOnly();
@@ -35,7 +36,7 @@ public class HostelBackupServiceImpl {
         }
     }
 
-    public Boolean deleteFromHostel(List<String> regdNos) {
+    public Boolean deleteFromHostel(Set<String> regdNos) {
         hostelRepository.deleteByRegdNoIn(regdNos);
         return true;
     }

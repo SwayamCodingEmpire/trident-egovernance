@@ -2,17 +2,20 @@ package com.trident.egovernance.global.repositories.permanentDB;
 
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.permanentDB.Student;
-import com.trident.egovernance.global.helpers.Courses;
-import com.trident.egovernance.global.helpers.StudentStatus;
-import com.trident.egovernance.global.helpers.StudentType;
+import com.trident.egovernance.global.helpers.*;
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface StudentRepository extends JpaRepository<Student, String> {
@@ -56,7 +59,10 @@ SELECT DISTINCT
     LEFT JOIN
         STUDENT s
     ON s.COURSE = b.COURSE AND s.BRANCH_CODE = b.BRANCHCODE AND s.STATUS=:status
-    WHERE b.STUDENTTYPE=:studentType
+    LEFT JOIN 
+            COURSE c
+    ON b.COURSE = c.COURSE
+    WHERE c.STUDENTTYPE=:studentType
     GROUP BY b.COURSE, b.BRANCHCODE
     ORDER BY b.COURSE, b.BRANCHCODE
 """, nativeQuery = true)
@@ -67,4 +73,38 @@ SELECT DISTINCT
 //
     List<Student> findAllByBatchIdLikeAndStatus(String batchId, StudentStatus status);
 
+    @Modifying
+    @Query("UPDATE STUDENT s SET s.studentName = :studentName, s.gender = :gender, s.dob = :dob, s.course = :course, " +
+            "s.branchCode = :branchCode, s.admissionYear = :admissionYear, s.degreeYop = :degreeYop, s.phNo = :phNo, " +
+            "s.email = :email, s.studentType = :studentType, s.hostelier = :hostelier, s.transportAvailed = :transportAvailed, " +
+            "s.status = :status, s.batchId = :batchId, s.currentYear = :currentYear, s.aadhaarNo = :aadhaarNo, " +
+            "s.indortrng = :indortrng, s.plpoolm = :plpoolm, s.cfPayMode = :cfPayMode, s.religion = :religion, " +
+            "s.section = :section WHERE s.regdNo = :oldRegdNo")
+    int updateStudent(
+            String studentName,
+            Gender gender,
+            String dob,
+            Courses course,
+            String branchCode,
+            String admissionYear,
+            Integer degreeYop,
+            String phNo,
+            String email,
+            StudentType studentType,
+            BooleanString hostelier,
+            BooleanString transportAvailed,
+            StudentStatus status,
+            String batchId,
+            Integer currentYear,
+            Long aadhaarNo,
+            BooleanString indortrng,
+            BooleanString plpoolm,
+            CfPaymentMode cfPayMode,
+            Religion religion,
+            String section,
+            String oldRegdNo
+    ) throws DataIntegrityViolationException, ConstraintViolationException, SQLException;
+
+    @Query("UPDATE STUDENT s SET s.currentYear = s.currentYear+1 WHERE s.regdNo IN :regdNos")
+    int updateStudentCurrentYearByRegdNo(Set<String> regdNo);
 }

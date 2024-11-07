@@ -4,6 +4,7 @@ import com.trident.egovernance.global.helpers.FeeTypeTypeConverter;
 import com.trident.egovernance.global.helpers.FeeTypesType;
 import com.trident.egovernance.global.helpers.MrHead;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 
 import java.io.Serializable;
@@ -28,8 +29,14 @@ public class FeeTypes implements Serializable {
     @Column(name = "MRHEAD")
     @Enumerated(EnumType.STRING)
     private MrHead mrHead;
-
+    @Column(name = "PARTOF")
+    private String partOf;
+    @Column(name = "SEM")
+    @Min(0)
+    private Integer semester;
     @OneToMany(mappedBy = "feeType",cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @ToString.Exclude
     private Set<Fees> fees;
+    @OneToMany(mappedBy = "feeType", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<DuesDetails> duesDetails;
 }

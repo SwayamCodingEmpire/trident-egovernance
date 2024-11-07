@@ -52,6 +52,7 @@ class NSRServiceImpl implements NSRService {
         else {
             nsr.setOjeeRank(nsr.getRank().toString());
         }
+        nsr.setAdmissionDate(Date.valueOf(LocalDate.now()));
             return mapperService.convertToNSRDtoList(nsrRepository.save(nsr));
 //        }else {
 //            throw new RecordAlreadyExistsException("Record already exists");
@@ -124,7 +125,7 @@ class NSRServiceImpl implements NSRService {
             else{
                 studentDocs1 = null;
             }
-            studentAdmissionDetails.setAdmissionDate(Date.valueOf(LocalDate.now()));
+            studentAdmissionDetails.setReportingDate(Date.valueOf(LocalDate.now()));
             logger.info("Student Docs in databse entity format {}" , studentDocs1);
             student.setStudentAdmissionDetails(studentAdmissionDetails);
             studentAdmissionDetails.setStudent(student);

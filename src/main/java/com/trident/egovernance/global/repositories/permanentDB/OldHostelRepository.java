@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface OldHostelRepository extends JpaRepository<OldHostel,String> {
@@ -18,5 +19,5 @@ public interface OldHostelRepository extends JpaRepository<OldHostel,String> {
 INSERT INTO OLDHOSTEL (REGDNO, HOSTELIER, HOSTELOPTION, HOSTELCHOICE, LGNAME, REGDYEAR) 
 SELECT REGDNO, HOSTELIER, HOSTELOPTION, HOSTELCHOICE, LGNAME, REGDYEAR FROM HOSTEL WHERE REGDNO IN (:regdNos)
 """,nativeQuery = true)
-    void saveHostelToOld(@Param("regdNos")List<String> regdNos);
+    void saveHostelToOld(@Param("regdNos") Set<String> regdNos);
 }

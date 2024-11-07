@@ -10,8 +10,8 @@ import java.util.List;
 
 @Repository
 public interface FeesRepository extends JpaRepository<Fees,Long> {
-    @Query("SELECT f FROM FEES f JOIN FETCH f.feeType WHERE f.batchId = :batchId")
-    List<Fees> findAllByBatchId(@Param("batchId") String batchId);
+    @Query("SELECT f FROM FEES f JOIN FETCH f.feeType WHERE f.batchId = :batchId AND f.regdYear = :regdYear")
+    List<Fees> findAllByBatchIdAndRegdYear(String batchId, Integer regdYear);
     @Query("SELECT f FROM FEES f JOIN FETCH f.feeType WHERE f.description IN :descriptions")
     List<Fees> findByDescriptionIn(@Param("descriptions") List<String> descriptions);
 

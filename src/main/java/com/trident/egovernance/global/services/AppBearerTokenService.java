@@ -47,21 +47,25 @@ public class AppBearerTokenService {
 
     @CachePut(key = "#defaultKey", value = "appBearerTokenCache")
     public String getAppBearerTokenForScheduler(String defaultKey) {
-        logger.info("Running getAppBearerToken");
-        AppBearerTokenDto appBearerTokenDto = webClient.post()
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .bodyValue("grant_type=client_credentials" +
-                        "&client_id=" + clientId +
-                        "&client_secret=" + clientSecret +
-                        "&scope=" + scope_uri)
-                .retrieve()
-                .bodyToMono(AppBearerTokenDto.class)
-                .block();
-        logger.info("Bearer token fetched successfully");
-        if (appBearerTokenDto != null) {
-            logger.info("access_token: " + appBearerTokenDto.getAccess_token());
-            return appBearerTokenDto.getAccess_token();
+        try{
+            logger.info("Running getAppBearerToken");
+            AppBearerTokenDto appBearerTokenDto = webClient.post()
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .bodyValue("grant_type=client_credentials" +
+                            "&client_id=" + clientId +
+                            "&client_secret=" + clientSecret +
+                            "&scope=" + scope_uri)
+                    .retrieve()
+                    .bodyToMono(AppBearerTokenDto.class)
+                    .block();
+            logger.info("Bearer token fetched successfully");
+            if (appBearerTokenDto != null) {
+                logger.info("access_token: " + appBearerTokenDto.getAccess_token());
+                return appBearerTokenDto.getAccess_token();
+            }
+            return "N/A";
+        } catch (Exception e) {
+            return getAppBearerTokenForScheduler(defaultKey);
         }
-        return "N/A";
     }
 }

@@ -89,16 +89,16 @@ public class MapperServiceImpl implements MapperService {
                 .collect(Collectors.toSet());
     }
 
-    public List<DuesDetailsDto> convertToDuesDetailsDto(List<BaseDuesDetails> baseDuesDetailsList) {
-        return baseDuesDetailsList.stream()
-                .map(duesDetails1 -> new DuesDetailsDto(
-                        duesDetails1.getDescription(),
-                        duesDetails1.getAmountDue(),
-                        duesDetails1.getAmountPaid(),
-                        duesDetails1.getAmountPaidToJee(),
-                        duesDetails1.getBalanceAmount(),
-                        duesDetails1.getDueYear()
-                ))
+    public List<DuesDetailsDto> convertToDuesDetailsDto(List<DuesDetails> duesDetails) {
+        return duesDetails.stream()
+                .map(duesDetails1 -> new DuesDetailsDto(duesDetails1))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<DuesDetailsDto> convertToDuesDetailsDtoFromOldDuesDetails(List<OldDueDetails> duesDetailsList) {
+        return duesDetailsList.stream()
+                .map(duesDetails1 -> new DuesDetailsDto(duesDetails1))
                 .collect(Collectors.toList());
     }
 

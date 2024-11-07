@@ -1,5 +1,6 @@
 package com.trident.egovernance.domains.nsrHandler.services;
 
+import com.trident.egovernance.dto.StudentRequiredFieldsDTO;
 import com.trident.egovernance.global.entities.permanentDB.DuesDetails;
 import com.trident.egovernance.global.entities.permanentDB.Fees;
 import com.trident.egovernance.global.entities.permanentDB.StandardDeductionFormat;
@@ -45,7 +46,7 @@ class DuesInitiationServiceImpl implements DuesInitiationService {
     public CompletableFuture<Boolean> initiateDuesDetails(NSR student, SharedStateAmongDueInitiationAndNSRService sharedState) {
         try {
             logger.info("Fetching fees from database");
-            List<Fees> fees = masterTableServicesImpl.getFeesByBatchId(student.getBatchId());
+            List<Fees> fees = masterTableServicesImpl.getFeesByBatchIdAndRegdYear(student.getBatchId(),((student.getStudentType().compareTo(StudentType.REGULAR)==0) ? 1 : 2));
             isInterrupted(sharedState.isProceed());
 
             Set<String> descriptions = fees.stream()
@@ -61,7 +62,14 @@ class DuesInitiationServiceImpl implements DuesInitiationService {
 
 
                 List<DuesDetails> duesDetailsList = fees.stream()
-                        .filter(fee -> isRelevantFee(fee, student, plPool, indusTraining))
+                        .filter(fee -> masterTableServicesImpl.isRelevantFee(
+                                fee,
+                                new StudentRequiredFieldsDTO(
+                                        student.getTfw(),
+                                        student.getTransportOpted(),
+                                        student.getHostelOption()),
+                                plPool,
+                                indusTraining))
                         .map(fee ->  createDuesDetails(fee, student, deductionFormatMap))
                         .filter(Objects::nonNull)
                         .toList();
@@ -81,20 +89,8 @@ class DuesInitiationServiceImpl implements DuesInitiationService {
     }
 
     // Helper method to check if the fee is relevant
-    private boolean isRelevantFee(Fees fee, NSR student, Boolean plPool, Boolean indusTraining) {
-        return (fee.getTfwType().equals(student.getTfw()) || fee.getTfwType().equals(TFWType.ALL)) &&
-                (isCompulsoryFee(fee, plPool, indusTraining) ||
-                        (BooleanString.YES.equals(student.getTransportOpted()) && "TRANSPORTFEE".equals(fee.getFeeType().getFeeGroup())) ||
-                        (BooleanString.YES.equals(student.getHostelOption()) && "HOSTELFEE".equals(fee.getFeeType().getFeeGroup())));
-    }
 
-    // Helper method to check if the fee is compulsory
-    private boolean isCompulsoryFee(Fees fee, Boolean plPool, Boolean indusTraining) {
-        return FeeTypesType.COMPULSORY_FEES.equals(FeeTypesType.fromDisplayName(fee.getFeeType().getType().getDisplayName())) &&
-                ((fee.getDescription().equals("INDUSTRY-READY TRAINING FEE") && indusTraining) ||
-                        (fee.getDescription().equals("PRE PLACEMENT TRAINING FEE") && plPool) ||
-                        (!fee.getDescription().equals("INDUSTRY-READY TRAINING FEE") && !fee.getDescription().equals("PRE PLACEMENT TRAINING FEE")));
-    }
+
 
     // Helper method to create DuesDetails for each fee
     private DuesDetails createDuesDetails(Fees fee, NSR student, Map<String, StandardDeductionFormat> deductionFormatMap) {

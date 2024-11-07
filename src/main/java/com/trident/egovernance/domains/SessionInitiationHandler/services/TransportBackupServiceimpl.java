@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -26,10 +27,11 @@ public class TransportBackupServiceimpl {
     }
 
     @Async
-    public CompletableFuture<Boolean> transferToOldTransport(List<String> regdNos, TransactionStatus status) {
+    public CompletableFuture<Boolean> transferToOldTransport(Set<String> regdNos, TransactionStatus status) {
         try{
             oldTransportRepository.saveTransportToOld(regdNos);
-            transportRepository.deleteAllByRegdNoIn(regdNos);
+//            transportRepository.deleteAllByRegdNoIn(regdNos);
+            transportRepository.updateRegdYear(regdNos);
             return CompletableFuture.completedFuture(true);
         }catch (Exception e){
             status.setRollbackOnly();
@@ -37,7 +39,7 @@ public class TransportBackupServiceimpl {
         }
     }
 
-    public Boolean deleteFromTransport(List<String> regdNos){
+    public Boolean deleteFromTransport(Set<String> regdNos){
         transportRepository.deleteAllByRegdNoIn(regdNos);
         return true;
     }

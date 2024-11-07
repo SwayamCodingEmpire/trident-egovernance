@@ -1,12 +1,13 @@
 package com.trident.egovernance.global.services;
 
 import com.trident.egovernance.dto.FeeTypesMrHead;
+import com.trident.egovernance.dto.StudentRequiredFieldsDTO;
+import com.trident.egovernance.global.entities.permanentDB.FeeTypes;
 import com.trident.egovernance.global.entities.permanentDB.Fees;
 import com.trident.egovernance.global.entities.permanentDB.Sessions;
 import com.trident.egovernance.global.entities.permanentDB.StandardDeductionFormat;
 import com.trident.egovernance.exceptions.RecordNotFoundException;
-import com.trident.egovernance.global.helpers.MrHead;
-import com.trident.egovernance.global.helpers.SessionIdId;
+import com.trident.egovernance.global.helpers.*;
 import com.trident.egovernance.global.repositories.permanentDB.FeeTypesRepository;
 import com.trident.egovernance.global.repositories.permanentDB.FeesRepository;
 import com.trident.egovernance.global.repositories.permanentDB.SessionsRepository;
@@ -34,10 +35,10 @@ public class MasterTableServicesImpl implements MasterTableServices {
     }
     @Cacheable(value = "fees", key = "#batchId")
     @Override
-    public List<Fees> getFeesByBatchId(String batchId){
+    public List<Fees> getFeesByBatchIdAndRegdYear(String batchId,Integer regdYear){
         logger.info("Fetching fees by batchId: {}", batchId);
         try {
-            List<Fees> fees = feesRepository.findAllByBatchId(batchId);
+            List<Fees> fees = feesRepository.findAllByBatchIdAndRegdYear(batchId,regdYear);
             logger.info("Fetched fees by batchId: {}", fees);
             return fees;
         } catch (Exception e) {
@@ -88,5 +89,27 @@ public class MasterTableServicesImpl implements MasterTableServices {
             feeTypesMrHeadHashMap.put(feeTypesMrHead.description(), feeTypesMrHead.mrHead());
         }
         return feeTypesMrHeadHashMap;
+    }
+
+    // Helper method to check if the fee is compulsory
+    @Override
+    public boolean isCompulsoryFee(Fees fee, Boolean plPool, Boolean indusTraining) {
+        return FeeTypesType.COMPULSORY_FEES.equals(FeeTypesType.fromDisplayName(fee.getFeeType().getType().getDisplayName())) &&
+                ((fee.getDescription().equals("INDUSTRY-READY TRAINING FEE") && indusTraining) ||
+                        (fee.getDescription().equals("PRE PLACEMENT TRAINING FEE") && plPool) ||
+                        (!fee.getDescription().equals("INDUSTRY-READY TRAINING FEE") && !fee.getDescription().equals("PRE PLACEMENT TRAINING FEE")));
+    }
+
+    @Override
+    public boolean isRelevantFee(Fees fee, StudentRequiredFieldsDTO student, Boolean plPool, Boolean indusTraining) {
+        return (fee.getTfwType().equals(student.tfw()) || fee.getTfwType().equals(TFWType.ALL)) &&
+                (isCompulsoryFee(fee, plPool, indusTraining) ||
+                        (BooleanString.YES.equals(student.transportOpted()) && "TRANSPORTFEE".equals(fee.getFeeType().getFeeGroup())) ||
+                        (BooleanString.YES.equals(student.hostelOption()) && "HOSTELFEE".equals(fee.getFeeType().getFeeGroup())));
+    }
+
+    @Override
+    public FeeTypes getFeeTypesByFeeGroupAndSemester(String feeGroup, Integer semester) {
+        return feeTypesRepository.findByFeeGroupAndSemester(feeGroup, semester);
     }
 }

@@ -3,6 +3,8 @@ package com.trident.egovernance.global.entities.permanentDB;
 import com.trident.egovernance.dto.StudentOnlyDTO;
 import com.trident.egovernance.global.helpers.*;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.util.List;
@@ -36,8 +38,10 @@ public class Student {
     @Column(name = "DEGREE_YOP")
     private Integer degreeYop;
     @Column(name = "PHNO")
+    @Size(max = 255)
     private String phNo;
     @Column(name = "EMAIL")
+    @Size(max = 255)
     private String email;
     @Column(name = "STUDENTTYPE")
     @Enumerated(EnumType.STRING)
@@ -52,10 +56,13 @@ public class Student {
     @Enumerated(EnumType.STRING)
     private StudentStatus status;
     @Column(name = "BATCHID")
+    @Size(max = 255)
     private String batchId;
     @Column(name = "CURRENTYEAR")
+    @Min(0)
     private Integer currentYear;
     @Column(name = "AADHAARNO")
+    @Min(0)
     private Long aadhaarNo;
     @Column(name = "INDORTRNG")
     @Enumerated(EnumType.STRING)
@@ -71,8 +78,11 @@ public class Student {
     private Religion religion;
     @Column(name = "SECTION")
     private String section;
+//    @Column(name = "SEMESTER")
+//    @Min(0)
+//    private Integer semester;
     // Constructor to initialize Student from StudentOnlyDTO
-    public Student(StudentOnlyDTO studentOnlyDTO) {
+    public  Student(StudentOnlyDTO studentOnlyDTO) {
         this.regdNo = studentOnlyDTO.regdNo();
         this.studentName = studentOnlyDTO.studentName();
         this.gender = studentOnlyDTO.gender();
@@ -97,25 +107,25 @@ public class Student {
     }
 
 
-    @OneToOne(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "student", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @ToString.Exclude
     private StudentCareer studentCareer;
-    @OneToOne(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "student", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @ToString.Exclude
     private StudentAdmissionDetails studentAdmissionDetails;
-    @OneToOne(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "student", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @ToString.Exclude
     private PersonalDetails personalDetails;
-    @OneToOne(mappedBy = "student", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "student", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @ToString.Exclude
     private Hostel hostel;
-    @OneToOne(mappedBy = "student", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "student", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @ToString.Exclude
     private Transport transport;
-    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @ToString.Exclude
     private List<FeeCollection> feeCollection;
-    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY,cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @ToString.Exclude
     private List<StudentDocs> studentDocs;
 

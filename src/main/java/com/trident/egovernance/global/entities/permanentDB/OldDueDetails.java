@@ -31,4 +31,8 @@ public final class OldDueDetails extends BaseDuesDetails {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "old_dues_detail_seq_gen")
     @SequenceGenerator(name = "old_dues_detail_seq_gen", sequenceName = "oldDueDetails_seq", allocationSize = 1)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "DESCRIPTION", referencedColumnName = "DESCRIPTION", insertable = false, updatable = false)
+    private FeeTypes feeType;
 }

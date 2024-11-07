@@ -20,7 +20,9 @@ public interface MapperService {
     Hostel convertToHostel(NSR nsr);
     List<StudentDocData> convertToStudentDocData(List<StudentDocs> studentDocs);
     List<StudentDocs> convertToStudentDocs(List<StudentDocData> studentDocData);
-    List<DuesDetailsDto> convertToDuesDetailsDto(List<BaseDuesDetails> baseDuesDetailsList);
+    List<DuesDetailsDto> convertToDuesDetailsDto(List<DuesDetails> duesDetailsList);
+
+    List<DuesDetailsDto> convertToDuesDetailsDtoFromOldDuesDetails(List<OldDueDetails> duesDetailsList);
     List<NSRDto> convertToNSRDtoList(List<NSR> nsrS);
 
     Set<NSRDto> convertToNSRDtoSet(Set<NSR> nsrS);

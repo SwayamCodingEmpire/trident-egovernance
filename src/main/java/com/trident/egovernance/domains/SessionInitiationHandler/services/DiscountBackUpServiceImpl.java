@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -24,7 +25,7 @@ public class DiscountBackUpServiceImpl {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public CompletableFuture<Boolean> transferToOldDiscount(List<String> regdNos, TransactionStatus status) {
+    public CompletableFuture<Boolean> transferToOldDiscount(Set<String> regdNos, TransactionStatus status) {
         try{
             oldDiscountRepository.saveToOldDiscount(regdNos);
             discountRepository.deleteByRegdNoIn(regdNos);
@@ -35,7 +36,7 @@ public class DiscountBackUpServiceImpl {
         }
     }
 
-    public Boolean deleteFromDiscounts(List<String> regdNo) {
+    public Boolean deleteFromDiscounts(Set<String> regdNo) {
         discountRepository.deleteByRegdNoIn(regdNo);
         return true;
     }

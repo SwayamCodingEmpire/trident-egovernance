@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface OldAdjustmentRepository extends JpaRepository<OldAdjustments,String> {
@@ -16,5 +17,5 @@ public interface OldAdjustmentRepository extends JpaRepository<OldAdjustments,St
 INSERT INTO OLDADJUSTMENTS (ID,REGDNO, DESCRIPTION, ACTUALDUEAMOUNT, CONSIDERATIONAMOUNT, APPROVEDBY, SESSIONID, REGDYEAR)
 SELECT ID,REGDNO, DESCRIPTION, ACTUALDUEAMOUNT, CONSIDERATIONAMOUNT, APPROVEDBY, SESSIONID, REGDYEAR FROM ADJUSTMENTS WHERE REGDNO IN (:regdNos)
 """,nativeQuery = true)
-    void saveAdjustmentsToOld(@Param("regdNos") List<String> regdNos);
+    void saveAdjustmentsToOld(@Param("regdNos") Set<String> regdNos);
 }

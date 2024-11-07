@@ -138,7 +138,6 @@ class NSRController {
         }catch (Exception e){
             throw new AccessDeniedException("Access denied Exception");
         }
-
     }
 
     @PostMapping("/postByStudent/{jeeApplicationNo}")

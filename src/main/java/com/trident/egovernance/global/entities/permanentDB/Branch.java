@@ -19,7 +19,5 @@ public class Branch {
     private String branchCode;
     private String branch;
     private String course;
-    private String duration;
     private Integer courseInProgress;
-    private String studentType;
 }

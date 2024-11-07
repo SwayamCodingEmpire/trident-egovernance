@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -32,7 +33,7 @@ public class DuesDetailBackupServiceImpl {
     }
 
     @Async
-    public CompletableFuture<Boolean> transferToOldDuesDetails(List<String> regdNos, TransactionStatus status) {
+    public CompletableFuture<Boolean> transferToOldDuesDetails(Set<String> regdNos, TransactionStatus status, String session) {
         try{
             List<DuesDetails> duesDetails = duesDetailsRepository.findAllByRegdNoIn(regdNos);
             logger.info(duesDetails.toString());
@@ -44,7 +45,7 @@ public class DuesDetailBackupServiceImpl {
             HashMap<String, BigDecimal> oldDuesCalculate = regdAndoldDues.getRight();
             removeFromHashMapWhichHasZeroBalaMT(regdNosInMap, oldDuesCalculate);
 
-            List<DuesDetails> duesDetails1 = createThePreviousDueRecordInDuesDetailsEntities(oldDuesCalculate, oldDueDetails);
+            List<DuesDetails> duesDetails1 = createThePreviousDueRecordInDuesDetailsEntities(oldDuesCalculate, oldDueDetails, session);
 
             List<OldDueDetails> oldDueDetails1 = oldDuesDetailsRepository.saveAll(oldDueDetails);
             logger.info(oldDueDetails1.toString());
@@ -57,15 +58,15 @@ public class DuesDetailBackupServiceImpl {
         }
     }
 
-    private String getNextSession(String currentSession) {
-        String[] years = currentSession.split("-");
-        int startYear = Integer.parseInt(years[0]);
-        int endYear = Integer.parseInt(years[1]);
-
-        int nextStartYear = startYear + 1;
-        int nextEndYear = endYear + 1;
-        return nextStartYear + "-" + nextEndYear;
-    }
+//    private String getNextSession(String currentSession) {
+//        String[] years = currentSession.split("-");
+//        int startYear = Integer.parseInt(years[0]);
+//        int endYear = Integer.parseInt(years[1]);
+//
+//        int nextStartYear = startYear + 1;
+//        int nextEndYear = endYear + 1;
+//        return nextStartYear + "-" + nextEndYear;
+//    }
 
     private Pair<List<String>,HashMap<String,BigDecimal>> createHashMapForRegdNoAndBalanceAmount(List<OldDueDetails> oldDueDetails){
         HashMap<String,BigDecimal> oldDuesCalculate = new HashMap<>();
@@ -90,7 +91,7 @@ public class DuesDetailBackupServiceImpl {
         }
     }
 
-    private List<DuesDetails> createThePreviousDueRecordInDuesDetailsEntities(HashMap<String, BigDecimal> oldDuesCalculate, List<OldDueDetails> oldDueDetails) {
+    private List<DuesDetails> createThePreviousDueRecordInDuesDetailsEntities(HashMap<String, BigDecimal> oldDuesCalculate, List<OldDueDetails> oldDueDetails, String session) {
         return oldDueDetails.parallelStream()
                 .filter(oldDueDetail -> oldDuesCalculate.containsKey(oldDueDetail.getRegdNo()))
                 .map(oldDueDetail -> {
@@ -110,7 +111,7 @@ public class DuesDetailBackupServiceImpl {
                     duesDetails.setBalanceAmount(duesDetails.getAmountDue().subtract(duesDetails.getAmountPaid()));
                     duesDetails.setDescription("PREVIOUS DUE");
                     duesDetails.setDeductionOrder(1);
-                    duesDetails.setSessionId(getNextSession(oldDueDetail.getSessionId()));
+                    duesDetails.setSessionId(session);
                     duesDetails.setAmountPaidToJee(oldDueDetail.getAmountPaidToJee());
                     duesDetails.setDueDate(Date.valueOf(LocalDate.now()));
                     duesDetails.setDueYear(oldDueDetail.getDueYear());
@@ -154,7 +155,7 @@ public class DuesDetailBackupServiceImpl {
 //        return duesDetailsList;
     }
 
-    public Boolean deleteFromDuesDetails(List<String> regdNos){
+    public Boolean deleteFromDuesDetails(Set<String> regdNos){
         duesDetailsRepository.deleteAllByRegdNoIn(regdNos);
         return true;
     }

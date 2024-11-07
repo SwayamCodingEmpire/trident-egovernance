@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface OldTransportRepository extends JpaRepository<OldTransport,String> {
@@ -26,5 +27,5 @@ SELECT
     WHERE 
         REGDNO IN (:regdNos)
 """, nativeQuery = true)
-    void saveTransportToOld(@Param("regdNos") List<String> regdNos);
+    void saveTransportToOld(@Param("regdNos") Set<String> regdNos);
 }

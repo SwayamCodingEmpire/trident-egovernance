@@ -7,6 +7,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 @Setter
 @Getter
@@ -47,5 +48,5 @@ public class FeeCollection {
     @ToString.Exclude
     @OneToMany(mappedBy = "feeCollection",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     @JsonIgnore
-    private List<MrDetails> mrDetails;
+    private Set<MrDetails> mrDetails;
 }

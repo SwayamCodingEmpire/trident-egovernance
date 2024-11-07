@@ -23,10 +23,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -57,10 +57,9 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
             throw new InvalidInputsException("Invalid Collected Fee");
         }
         BigDecimal collectedFees = feeCollection.getCollectedFee();
-        Student student = entityManager.getReference(Student.class,regdNo);
-        feeCollection.setPaymentDate(String.valueOf(Year.now().getValue()));
-        feeCollection.setStudent(student);
-        List<MrDetails> mrDetailsList = new ArrayList<>();
+        feeCollection.setPaymentDate(String.valueOf(LocalDate.now()));
+        feeCollection.setStudent(entityManager.getReference(Student.class,regdNo));
+        Set<MrDetails> mrDetailsList = new HashSet<>();
         List<DuesDetails> duesDetails = duesDetailsRepository.findAllByRegdNoAndBalanceAmountNotOrderByDeductionOrder(regdNo,BigDecimal.ZERO);
         logger.info("Dues details: ");
         logger.info(duesDetails.toString());
@@ -99,7 +98,15 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
         feeCollection.setMrDetails(mrDetailsList);
         FeeCollection savedFeeCollection = feeCollectionRepository.save(feeCollection);
         return sortMrDetailsByMrHead(feeCollection.getMrDetails().stream()
-                .map(mrDetail -> new MrDetailsDto(savedFeeCollection.getMrNo(),mrDetail.getId(),mrDetail.getSlNo(),mrDetail.getParticulars(),mrDetail.getAmount()))
+                .map(mrDetail ->
+                        new MrDetailsDto(
+                                savedFeeCollection.getMrNo(),
+                                mrDetail.getId(),
+                                mrDetail.getSlNo(),
+                                mrDetail.getParticulars(),
+                                mrDetail.getAmount()
+                        )
+                )
                 .collect(Collectors.toList()));
     }
 
