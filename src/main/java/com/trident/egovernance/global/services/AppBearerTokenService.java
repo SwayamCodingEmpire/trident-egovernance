@@ -39,8 +39,8 @@ public class AppBearerTokenService {
                 .block();
         logger.info("Bearer token fetched successfully");
         if (appBearerTokenDto != null) {
-            logger.info("access_token: " + appBearerTokenDto.getAccess_token());
-            return appBearerTokenDto.getAccess_token();
+            logger.info("access_token: " + appBearerTokenDto.access_token());
+            return appBearerTokenDto.access_token();
         }
         return "N/A";
     }
@@ -60,8 +60,8 @@ public class AppBearerTokenService {
                     .block();
             logger.info("Bearer token fetched successfully");
             if (appBearerTokenDto != null) {
-                logger.info("access_token: " + appBearerTokenDto.getAccess_token());
-                return appBearerTokenDto.getAccess_token();
+                logger.info("access_token: " + appBearerTokenDto.access_token());
+                return appBearerTokenDto.access_token();
             }
             return "N/A";
         } catch (Exception e) {

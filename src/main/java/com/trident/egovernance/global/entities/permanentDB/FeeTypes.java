@@ -39,4 +39,7 @@ public class FeeTypes implements Serializable {
     private Set<Fees> fees;
     @OneToMany(mappedBy = "feeType", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<DuesDetails> duesDetails;
+
+    @OneToMany(mappedBy = "feeType", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<MrDetails> mrDetails;
 }

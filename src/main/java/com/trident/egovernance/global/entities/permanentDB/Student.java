@@ -76,8 +76,8 @@ public class Student {
     @Column(name = "RELIGION")
     @Enumerated(EnumType.STRING)
     private Religion religion;
-    @Column(name = "SECTION")
-    private String section;
+    @Column(name = "SECTIONID")
+    private Long sectionId;
 //    @Column(name = "SEMESTER")
 //    @Min(0)
 //    private Integer semester;
@@ -128,5 +128,7 @@ public class Student {
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY,cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @ToString.Exclude
     private List<StudentDocs> studentDocs;
-
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "SECTIONID", referencedColumnName = "SECTIONID", insertable = false, updatable = false)
+    private Sections section;
 }

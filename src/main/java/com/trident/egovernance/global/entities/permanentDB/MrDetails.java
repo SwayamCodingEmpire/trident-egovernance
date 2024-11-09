@@ -20,11 +20,18 @@ public class MrDetails {
     private Long id;
 //    @Column(name = "MRNO",insertable = false,updatable = false)
 //    private Long mrNo;
+    @Column(name = "SLNO")
     private long slNo;
+    @Column(name = "PARTICULARS")
     private String particulars;
+    @Column(name = "AMOUNT")
     private BigDecimal amount;
     @ManyToOne
     @JoinColumn(name = "MRNO")
     @ToString.Exclude
     private FeeCollection feeCollection;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "PARTICULARS", referencedColumnName = "DESCRIPTION", insertable = false, updatable = false)
+    private FeeTypes feeType;
 }

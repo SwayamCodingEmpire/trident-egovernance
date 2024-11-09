@@ -3,6 +3,7 @@ package com.trident.egovernance.domains.SessionInitiationHandler.services;
 import com.trident.egovernance.domains.SessionInitiationHandler.SessionInitiationService;
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.permanentDB.FeeTypes;
+import com.trident.egovernance.global.entities.permanentDB.Sessions;
 import com.trident.egovernance.global.helpers.BooleanString;
 import com.trident.egovernance.global.helpers.HostelChoice;
 import com.trident.egovernance.global.repositories.permanentDB.*;
@@ -16,6 +17,8 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -38,8 +41,9 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
     private final MasterTableServicesImpl masterTableServicesImpl;
     private final EntityManager entityManager;
     private final TransportRepository transportRepository;
+    private final SessionsRepository sessionsRepository;
 
-    public SessionInitiationServiceImpl(PlatformTransactionManager platformTransactionManager, DuesDetailBackupServiceImpl duesDetailBackupService, AdjustmentBackupServiceImpl adjustmentBackupService, DiscountBackUpServiceImpl discountBackUpService, HostelBackupServiceImpl hostelBackupService, StudentRepository studentRepository, TransportBackupServiceimpl transportBackupServiceimpl, NotpromotedRepository notpromotedRepository, HostelRepository hostelRepository, FeeCollectionRepository feeCollectionRepository, MrDetailsRepository mrDetailsRepository, MasterTableServicesImpl masterTableServicesImpl, EntityManager entityManager, TransportRepository transportRepository) {
+    public SessionInitiationServiceImpl(PlatformTransactionManager platformTransactionManager, DuesDetailBackupServiceImpl duesDetailBackupService, AdjustmentBackupServiceImpl adjustmentBackupService, DiscountBackUpServiceImpl discountBackUpService, HostelBackupServiceImpl hostelBackupService, StudentRepository studentRepository, TransportBackupServiceimpl transportBackupServiceimpl, NotpromotedRepository notpromotedRepository, HostelRepository hostelRepository, FeeCollectionRepository feeCollectionRepository, MrDetailsRepository mrDetailsRepository, MasterTableServicesImpl masterTableServicesImpl, EntityManager entityManager, TransportRepository transportRepository, SessionsRepository sessionsRepository) {
         this.platformTransactionManager = platformTransactionManager;
         this.duesDetailBackupService = duesDetailBackupService;
         this.adjustmentBackupService = adjustmentBackupService;
@@ -54,6 +58,7 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
         this.masterTableServicesImpl = masterTableServicesImpl;
         this.entityManager = entityManager;
         this.transportRepository = transportRepository;
+        this.sessionsRepository = sessionsRepository;
     }
 
     public List<StudentOnlyDTO> getStudentsForPromotion(SessionInitiationDTO sessionInitiationDTO) {
@@ -76,6 +81,7 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
 //            duesDetailBackupService.saveToDuesDetails(previousYearDues);
             CompletableFuture<Void> allOf = CompletableFuture.allOf(transportbackUp, hostelBackUp, adjustmentbackUp, discountbackUp, duesDetailsbackUp);
             allOf.join();
+            promoteStudent(sessionInitiationData,status);
             platformTransactionManager.commit(status);
             logger.info("Transaction Commited Successfully");
             return true;
@@ -88,7 +94,7 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
 
     public boolean initiateDueDetails(SessionInitiationData sessionInitiationData){return true;}
 
-    private int promoteStudent(SessionInitiationData sessionInitiationData){
+    private int promoteStudent(SessionInitiationData sessionInitiationData,TransactionStatus transactionStatus){
 //        Set<FeeCollectionDTOWithRegdNo> feeCollectionDTOWithRegdNos = feeCollectionRepository.findAllByMrDetails_ParticularsAndSessionIdNew("HOSTEL ADVANCE", sessionInitiationData.prevSessionId(), sessionInitiationData.regdNos());
 //        Set<String> hostelNotOpted = new HashSet<>(sessionInitiationData.regdNos());
 //        Set<Long> hostelOptedMrNos = new HashSet<>();
@@ -164,28 +170,29 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
 //// Execute the update
 //        int rowsUpdated = query.executeUpdate();
 //        return rowsUpdated;
-        Set<FeeCollectionDTOWithRegdNo> feeCollectionDTOWithRegdNos = feeCollectionRepository.findAllByMrDetails_ParticularsAndSessionIdNew("HOSTEL ADVANCE", sessionInitiationData.prevSessionId(), sessionInitiationData.regdNos());
+        try {
+            Set<FeeCollectionDTOWithRegdNo> feeCollectionDTOWithRegdNos = feeCollectionRepository.findAllByMrDetails_ParticularsAndSessionIdNew("HOSTEL ADVANCE", sessionInitiationData.prevSessionId(), sessionInitiationData.regdNos());
 
-        Set<String> hostelNotOpted = new HashSet<>(sessionInitiationData.regdNos());
-        Set<Long> hostelOptedMrNos = new HashSet<>();
-        Set<String> hostelOpted = new HashSet<>();
+            Set<String> hostelNotOpted = new HashSet<>(sessionInitiationData.regdNos());
+            Set<Long> hostelOptedMrNos = new HashSet<>();
+            Set<String> hostelOpted = new HashSet<>();
 
-        // Collecting MrNos and RegdNos
-        for (FeeCollectionDTOWithRegdNo feeCollectionDTOWithRegdNo : feeCollectionDTOWithRegdNos) {
-            hostelOptedMrNos.add(feeCollectionDTOWithRegdNo.feeCollection().getMrNo());
-            hostelOpted.add(feeCollectionDTOWithRegdNo.regdNo());
-        }
+            // Collecting MrNos and RegdNos
+            for (FeeCollectionDTOWithRegdNo feeCollectionDTOWithRegdNo : feeCollectionDTOWithRegdNos) {
+                hostelOptedMrNos.add(feeCollectionDTOWithRegdNo.feeCollection().getMrNo());
+                hostelOpted.add(feeCollectionDTOWithRegdNo.regdNo());
+            }
 
-        hostelNotOpted.removeAll(hostelOpted);
+            hostelNotOpted.removeAll(hostelOpted);
 
-        // Update hostel choice statuses
-        hostelRepository.updateHostelByRegdNoInNotOpted(BooleanString.NO, hostelNotOpted, HostelChoice.NONE);
-        hostelRepository.updateHostelByRegdNoIn(BooleanString.YES, hostelOpted);
+            // Update hostel choice statuses
+            hostelRepository.updateHostelByRegdNoInNotOpted(BooleanString.NO, hostelNotOpted, HostelChoice.NONE);
+            hostelRepository.updateHostelByRegdNoIn(BooleanString.YES, hostelOpted);
 
-        // Fetching the FeeTypes for Hostel fees
-        FeeTypes hostelFees = masterTableServicesImpl.getFeeTypesByFeeGroupAndSemester("HOSTELFEES", sessionInitiationData.currentYear() * 2 + 1);
+            // Fetching the FeeTypes for Hostel fees
+            FeeTypes hostelFees = masterTableServicesImpl.getFeeTypesByFeeGroupAndSemester("HOSTELFEES", sessionInitiationData.currentYear() * 2 + 1);
 
-        // 1. First update batch: Update FeeCollection
+            // 1. First update batch: Update FeeCollection
 //        StringBuilder feeCollectionQuery = new StringBuilder("UPDATE FeeCollection fc SET ");
 //
 //        // FeeCollection update (dueYear and sessionId)
@@ -247,12 +254,27 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
 //
 //        // Execute the update for MrDetails
 //        int rowsUpdatedMrDetails = mrDetailsQueryObj.executeUpdate();
-
-
-        // Return the total number of rows updated (or you can return just one batch's update count if needed)
-        return feeCollectionRepository.updateFeeCollectionByMrForHostelRegistered(sessionInitiationData.currentYear()+1,sessionInitiationData.sessionId(),hostelOptedMrNos) + mrDetailsRepository.updateMrDetailsByMrNoForHostelRegistered(hostelFees.getDescription(),hostelOptedMrNos) + studentRepository.updateStudentCurrentYearByRegdNo(sessionInitiationData.regdNos());
-
-
+            int admissionYear = masterTableServicesImpl.getAdmissionYearFromSession(sessionInitiationData.sessionId(), sessionInitiationData.courses(), sessionInitiationData.currentYear(), sessionInitiationData.studentType());
+            sessionsRepository.save(new Sessions(
+                    sessionInitiationData.sessionId(),
+                    sessionInitiationData.startDate(),
+                    null,
+                    sessionInitiationData.courses().getDisplayName(),
+                    sessionInitiationData.currentYear() + 1,
+                    sessionInitiationData.prevSessionId(),
+                    admissionYear,
+                    sessionInitiationData.studentType().name()
+            ));
+            if (masterTableServicesImpl.endSession(Date.valueOf(LocalDate.now()), sessionInitiationData.prevSessionId(), sessionInitiationData.courses(), sessionInitiationData.currentYear(), sessionInitiationData.studentType())) {
+                return feeCollectionRepository.updateFeeCollectionByMrForHostelRegistered(sessionInitiationData.currentYear() + 1, sessionInitiationData.sessionId(), hostelOptedMrNos) + mrDetailsRepository.updateMrDetailsByMrNoForHostelRegistered(hostelFees.getDescription(), hostelOptedMrNos) + studentRepository.updateStudentCurrentYearByRegdNo(sessionInitiationData.regdNos());
+            }
+            // Return the total number of rows updated (or you can return just one batch's update count if needed
+            throw new RuntimeException("Unable to start session");
+        }catch (Exception e){
+            logger.error(e.toString());
+            transactionStatus.setRollbackOnly();
+            return 0;
+        }
     }
 
 

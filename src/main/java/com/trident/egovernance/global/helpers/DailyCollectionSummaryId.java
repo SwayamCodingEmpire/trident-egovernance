@@ -16,7 +16,7 @@ import java.util.Objects;
 public class DailyCollectionSummaryId {
 
     private String paymentDate;
-    private String paymentMode;
+    private PaymentMode paymentMode;
     private String particulars;
     @Override
     public boolean equals(Object o){

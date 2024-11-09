@@ -35,7 +35,9 @@ public class OfficeServicesImpl {
     private final StudentDocsRepository studentDocsRepository;
     private EntityManager entityManager;
 
-    public OfficeServicesImpl(StudentRepository studentRepository, MapperService mapperService, PersonalDetailsRepository personalDetailsRepository, TransportRepository transportRepository, HostelRepository hostelRepository, StudentAdmissionDetailsRepository studentAdmissionDetailsRepository, StudentCareerRepository studentCareerRepository, StudentDocsRepository studentDocsRepository) {
+
+    public OfficeServicesImpl(StudentRepository studentRepository, MapperService mapperService, PersonalDetailsRepository personalDetailsRepository, TransportRepository transportRepository, HostelRepository hostelRepository, StudentAdmissionDetailsRepository studentAdmissionDetailsRepository, StudentCareerRepository studentCareerRepository, StudentDocsRepository studentDocsRepository,
+                              SectionsRepository sectionsRepository) {
         this.studentRepository = studentRepository;
         this.mapperService = mapperService;
         this.personalDetailsRepository = personalDetailsRepository;
@@ -388,4 +390,10 @@ public class OfficeServicesImpl {
             return false;
         }
     }
+
+//    public boolean createSection(Sections sections){
+//        sectionsRepository.save(sections);
+//        Student student= new Student();
+//        student.setSec
+//    }
 }

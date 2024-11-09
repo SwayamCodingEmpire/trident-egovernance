@@ -50,7 +50,7 @@ public record StudentOnlyDTO(
                 student.getPlpoolm(),
                 student.getCfPayMode(),
                 student.getReligion(),
-                student.getSection()
+                student.getSection().getSection() == null ? null : student.getSection().getSection()
         );
     }
 }

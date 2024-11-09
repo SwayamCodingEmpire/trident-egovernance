@@ -9,7 +9,9 @@ import java.io.Serializable;
 @Getter
 public enum FeeTypesType implements Serializable {
     COMPULSORY_FEES("COMPULSORY FEES"),
-    OPTIONAL_FEES("OPTIONAL FEES");
+    OPTIONAL_FEES("OPTIONAL FEES"),
+    EXCESS_FEE("EXCESS FEE"),
+    OTHER_FEES("OTHER FEES");
     private final String displayName;
 
     public static FeeTypesType fromDisplayName(String displayName) {

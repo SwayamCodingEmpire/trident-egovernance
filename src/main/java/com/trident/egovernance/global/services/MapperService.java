@@ -4,6 +4,7 @@ import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.global.entities.redisEntities.NSR;
 import com.trident.egovernance.global.entities.redisEntities.StudentDocData;
+import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
 
 import java.util.List;
 import java.util.Set;
@@ -40,4 +41,5 @@ public interface MapperService {
     Transport convertToTransportFromTransportOnlyDTO(TransportOnlyDTO transportOnlyDTO);
 
     StudentDocs convertToStudentDocsFromStudentDocsOnlyDTO(StudentDocsOnlyDTO studentDocsOnlyDTO);
+    Set<CollectionSummary> convertToCollectionSummarySet(Set<DailyCollectionSummary> dailyCollectionSummaries);
 }

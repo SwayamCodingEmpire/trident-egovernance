@@ -4,9 +4,11 @@ import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.global.entities.redisEntities.NSR;
 import com.trident.egovernance.global.entities.redisEntities.StudentDocData;
+import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -128,5 +130,13 @@ public class MapperServiceImpl implements MapperService {
 
     public StudentDocs convertToStudentDocsFromStudentDocsOnlyDTO(StudentDocsOnlyDTO studentDocsOnlyDTO) {
         return modelMapper.map(studentDocsOnlyDTO,StudentDocs.class);
+    }
+
+    public Set<CollectionSummary> convertToCollectionSummarySet(Set<DailyCollectionSummary> dailyCollectionSummaries) {
+        Set<CollectionSummary> collectionSummaries = new HashSet<>();
+        for(DailyCollectionSummary dailyCollectionSummary : dailyCollectionSummaries) {
+            collectionSummaries.add(new CollectionSummary(dailyCollectionSummary));
+        }
+        return collectionSummaries;
     }
 }

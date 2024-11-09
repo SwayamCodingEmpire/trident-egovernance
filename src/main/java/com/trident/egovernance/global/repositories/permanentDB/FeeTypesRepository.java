@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface FeeTypesRepository extends JpaRepository<FeeTypes,String> {
@@ -19,6 +20,9 @@ public interface FeeTypesRepository extends JpaRepository<FeeTypes,String> {
     String findDescriptionByFeeGroupAndSemester(@Param("feeGroup") String feeGroup, @Param("semester") int semester);
 
     FeeTypes findByFeeGroupAndSemester(String feeGroup, int semester);
+
+    @Query("SELECT DISTINCT(f.description) FROM FEETYPES f")
+    Set<String> findAllDescriptions();
 
 
 }

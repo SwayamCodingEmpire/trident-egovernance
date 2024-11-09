@@ -2,14 +2,11 @@ package com.trident.egovernance.dto;
 
 import lombok.*;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@ToString
-public class AppBearerTokenDto {
-    private String token_type;
-    private long expires_in;
-    private String ext_expires_in;
-    private String access_token;
+
+public record AppBearerTokenDto(
+        String token_type,
+        long expires_in,
+        String ext_expires_in,
+        String access_token
+) {
 }

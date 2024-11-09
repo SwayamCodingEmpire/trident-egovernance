@@ -30,13 +30,11 @@ import java.util.stream.Collectors;
 @Service
 class DuesInitiationServiceImpl implements DuesInitiationService {
     private final DuesDetailsRepository duesDetailsRepository;
-    private final SessionsRepository sessionsRepository;
     private final MasterTableServices masterTableServicesImpl;
     private final Logger logger = LoggerFactory.getLogger(DuesInitiationServiceImpl.class);
 
-    public DuesInitiationServiceImpl(DuesDetailsRepository duesDetailsRepository, SessionsRepository sessionsRepository, MasterTableServices masterTableServicesImpl) {
+    public DuesInitiationServiceImpl(DuesDetailsRepository duesDetailsRepository, MasterTableServices masterTableServicesImpl) {
         this.duesDetailsRepository = duesDetailsRepository;
-        this.sessionsRepository = sessionsRepository;
         this.masterTableServicesImpl = masterTableServicesImpl;
     }
 
@@ -103,7 +101,7 @@ class DuesInitiationServiceImpl implements DuesInitiationService {
             duesDetails.setAmountDue(fee.getAmount());
             duesDetails.setDeductionOrder(deductionFormatMap.get(fee.getDescription()).getDeductionOrder());
             duesDetails.setDueYear(student.getStudentType().equals(StudentType.REGULAR) ? 1 : 2);
-            duesDetails.setSessionId(masterTableServicesImpl.getSessionId(student.getCourse().getDisplayName(), duesDetails.getDueYear(), Year.now().getValue(), student.getStudentType().getEnumName()));
+            duesDetails.setSessionId(masterTableServicesImpl.getSessionId(student.getCourse(), duesDetails.getDueYear(), Year.now().getValue(), student.getStudentType()));
             duesDetails.setAmountPaidToJee(BigDecimal.ZERO);
             duesDetails.setDueDate(Date.valueOf(LocalDate.now()));
             return duesDetails;

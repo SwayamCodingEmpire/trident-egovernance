@@ -46,7 +46,7 @@ public interface FeeCollectionRepository extends JpaRepository<FeeCollection,Lon
 
     Set<FeeCollection> findAllBySessionId(String sessionId);
 
-    @Query("SELECT f FROM FEECOLLECTION f LEFT JOIN FETCH f.student LEFT JOIN FETCH f.mrNo WHERE f.sessionId = :sessionId AND f.student.regdNo = :regdNo")
+    @Query("SELECT f FROM FEECOLLECTION f LEFT JOIN FETCH f.student LEFT JOIN FETCH f.mrDetails WHERE f.sessionId = :sessionId AND f.student.regdNo = :regdNo")
     Set<FeeCollection> findAllBySessionIdAndStudent_RegdNoWithAssociations(String sessionId, String regdNo);
 
     @Query("SELECT DISTINCT f FROM FEECOLLECTION f LEFT JOIN FETCH f.student LEFT JOIN FETCH f.mrNo WHERE f.student.regdNo = :regdNo")

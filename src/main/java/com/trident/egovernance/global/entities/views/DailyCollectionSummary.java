@@ -1,6 +1,7 @@
 package com.trident.egovernance.global.entities.views;
 
 import com.trident.egovernance.global.helpers.DailyCollectionSummaryId;
+import com.trident.egovernance.global.helpers.PaymentMode;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,10 +25,13 @@ public class DailyCollectionSummary {
     private String paymentDate;
     @Id
     @Column(name = "PAYMENTMODE")
-    private String paymentMode;
+    @Enumerated(EnumType.STRING)
+    private PaymentMode paymentMode;
     @Id
     @Column(name = "PARTICULARS")
     private String particulars;
     @Column(name = "TOTALAMOUNT")
     private BigDecimal totalAmount;
+    @Column(name = "SEM")
+    private int sem;
 }

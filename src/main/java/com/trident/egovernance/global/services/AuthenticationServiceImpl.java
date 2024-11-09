@@ -22,8 +22,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public UserDetails authenticate(Login login) {
         try {
-            logger.info("Authenticating user with application no. "+login.getApplicationNo()+" and rank "+login.getRank());
-            Authentication authentication = customAuthenticationProvider.authenticate(new CustomAuthenticationToken(null,login.getApplicationNo(),login.getRank()));
+            logger.info("Authenticating user with application no. "+login.applicationNo()+" and rank "+login.rank());
+            Authentication authentication = customAuthenticationProvider.authenticate(new CustomAuthenticationToken(null,login.applicationNo(),login.rank()));
             if(authentication==null){
                 logger.error("User not found");
                 throw new UsernameNotFoundException("User not found");
