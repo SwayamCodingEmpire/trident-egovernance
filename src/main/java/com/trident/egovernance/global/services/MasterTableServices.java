@@ -19,12 +19,12 @@ public interface MasterTableServices {
     String getSessionId(Courses course, int regdYear, int admissionYear, StudentType studentType);
     int getAdmissionYearFromSession(String sessionId, Courses course, int regdYear, StudentType studentType);
     boolean endSession(Date endDate, String sessionId, Courses course, int regdYear, StudentType studentType);
-    public Optional<StandardDeductionFormat> getStandardDeductionFormat(String description);
+    Optional<StandardDeductionFormat> getStandardDeductionFormat(String description);
     List<FeeTypesMrHead> getFeeTypesMrHeadByDescriptions(List<String> descriptions);
     HashMap<String, MrHead> convertFeeTypesMrHeadToHashMap(List<String> descriptions);
     boolean isCompulsoryFee(Fees fee, Boolean plPool, Boolean indusTraining);
     boolean isRelevantFee(Fees fee, StudentRequiredFieldsDTO student, Boolean plPool, Boolean indusTraining);
-
+    Set<String> getAllOtherFeesDescriptions();
     FeeTypes getFeeTypesByFeeGroupAndSemester(String feeGroup, Integer semester);
     Set<String> getAllSessions();
     Set<String> getAllParticulars();

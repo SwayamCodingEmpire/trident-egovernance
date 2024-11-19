@@ -4,23 +4,33 @@ import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.global.entities.redisEntities.NSR;
 import com.trident.egovernance.global.entities.redisEntities.StudentDocData;
+import com.trident.egovernance.global.entities.views.CollectionReport;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
+import com.trident.egovernance.global.repositories.permanentDB.FeeTypesRepository;
+import jakarta.persistence.Tuple;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class MapperServiceImpl implements MapperService {
     private final ModelMapper modelMapper;
+    private final Logger logger = LoggerFactory.getLogger(MapperServiceImpl.class);
+    private final FeeTypesRepository feeTypesRepository;
 
-    public MapperServiceImpl(ModelMapper modelMapper) {
+    public MapperServiceImpl(ModelMapper modelMapper, FeeTypesRepository feeTypesRepository) {
         this.modelMapper = modelMapper;
         modelMapper.typeMap(NSR.class, StudentAdmissionDetails.class)
                 .addMappings(mapper -> mapper.map(NSR::getTfw,StudentAdmissionDetails::setTfw));
+        this.feeTypesRepository = feeTypesRepository;
     }
     @Override
     public NSRDto convertToNSRDtoList(NSR nsr) {
@@ -92,6 +102,7 @@ public class MapperServiceImpl implements MapperService {
     }
 
     public List<DuesDetailsDto> convertToDuesDetailsDto(List<DuesDetails> duesDetails) {
+        logger.info(duesDetails.toString());
         return duesDetails.stream()
                 .map(duesDetails1 -> new DuesDetailsDto(duesDetails1))
                 .collect(Collectors.toList());
@@ -99,6 +110,7 @@ public class MapperServiceImpl implements MapperService {
 
     @Override
     public List<DuesDetailsDto> convertToDuesDetailsDtoFromOldDuesDetails(List<OldDueDetails> duesDetailsList) {
+        logger.info(duesDetailsList.toString());
         return duesDetailsList.stream()
                 .map(duesDetails1 -> new DuesDetailsDto(duesDetails1))
                 .collect(Collectors.toList());
@@ -138,5 +150,29 @@ public class MapperServiceImpl implements MapperService {
             collectionSummaries.add(new CollectionSummary(dailyCollectionSummary));
         }
         return collectionSummaries;
+    }
+
+//    @Override
+//    public Set<String> getListOfOtherFees() {
+//        feeTypesRepository.
+//    }
+
+    public List<CollectionReportDTO> convertFromTuplesToListOfCollectionReportDTO(List<Tuple> tuples){
+        Map<CollectionReport, List<MrDetailsDTO>> reportToDetailsMap = tuples.stream().collect(
+                Collectors.groupingBy(
+                        tuple -> tuple.get(0, CollectionReport.class), // Get the CollectionReport (first column in the tuple)
+                        Collectors.mapping(tuple -> {
+                            // Map each Tuple to MrDetailsDTO
+                            long slNo = tuple.get(1, Long.class); // Get the slNo (second column)
+                            String particulars = tuple.get(2, String.class); // Get the particulars (third column)
+                            BigDecimal amount = tuple.get(3, BigDecimal.class); // Get the amount (fourth column)
+                            return new MrDetailsDTO(slNo, particulars, amount);
+                        }, Collectors.toList())
+                )
+        );
+        // Convert the map entries to a list of CollectionReportDTO
+        return reportToDetailsMap.entrySet().stream()
+                .map(entry -> new CollectionReportDTO(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
     }
 }

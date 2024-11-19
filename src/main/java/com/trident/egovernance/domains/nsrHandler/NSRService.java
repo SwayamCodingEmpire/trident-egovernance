@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface NSRService {
-    void bulkSaveNSRData(List<NSR> nsrs);
+    void bulkSaveNSRData(Set<NSR> nsrs);
     NSRDto postNSRData(NSR nsr);
     NSRDto postNSRDataByStudent(NSR nsr);
     NSRDto getNSRDataByRollNo(String rollNo);

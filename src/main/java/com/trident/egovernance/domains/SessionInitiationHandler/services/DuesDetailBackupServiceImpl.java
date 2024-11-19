@@ -43,7 +43,7 @@ public class DuesDetailBackupServiceImpl {
             Pair<List<String>, HashMap<String, BigDecimal>> regdAndoldDues = createHashMapForRegdNoAndBalanceAmount(oldDueDetails);
             List<String> regdNosInMap = regdAndoldDues.getLeft();
             HashMap<String, BigDecimal> oldDuesCalculate = regdAndoldDues.getRight();
-            removeFromHashMapWhichHasZeroBalaMT(regdNosInMap, oldDuesCalculate);
+//            removeFromHashMapWhichHasZeroBalaMT(regdNosInMap, oldDuesCalculate);
 
             List<DuesDetails> duesDetails1 = createThePreviousDueRecordInDuesDetailsEntities(oldDuesCalculate, oldDueDetails, session);
 
@@ -51,6 +51,7 @@ public class DuesDetailBackupServiceImpl {
             logger.info(oldDueDetails1.toString());
             logger.info(duesDetails1.toString());
             duesDetailsRepository.deleteAllByRegdNoIn(regdNos);
+            duesDetailsRepository.saveAll(duesDetails1);
             return CompletableFuture.completedFuture(true);
         }catch (Exception e){
             status.setRollbackOnly();

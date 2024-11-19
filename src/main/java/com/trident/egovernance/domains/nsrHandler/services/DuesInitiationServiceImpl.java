@@ -1,5 +1,6 @@
 package com.trident.egovernance.domains.nsrHandler.services;
 
+import com.trident.egovernance.dto.DuesDetailsInitiationDTO;
 import com.trident.egovernance.dto.StudentRequiredFieldsDTO;
 import com.trident.egovernance.global.entities.permanentDB.DuesDetails;
 import com.trident.egovernance.global.entities.permanentDB.Fees;
@@ -28,7 +29,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Service
-class DuesInitiationServiceImpl implements DuesInitiationService {
+public class DuesInitiationServiceImpl implements DuesInitiationService {
     private final DuesDetailsRepository duesDetailsRepository;
     private final MasterTableServices masterTableServicesImpl;
     private final Logger logger = LoggerFactory.getLogger(DuesInitiationServiceImpl.class);
@@ -41,11 +42,12 @@ class DuesInitiationServiceImpl implements DuesInitiationService {
 
     @Async("taskExecutor")
     @Transactional
-    public CompletableFuture<Boolean> initiateDuesDetails(NSR student, SharedStateAmongDueInitiationAndNSRService sharedState) {
+    public CompletableFuture<Boolean> initiateDuesDetails(DuesDetailsInitiationDTO student, SharedStateAmongDueInitiationAndNSRService sharedState) {
         try {
             logger.info("Fetching fees from database");
-            List<Fees> fees = masterTableServicesImpl.getFeesByBatchIdAndRegdYear(student.getBatchId(),((student.getStudentType().compareTo(StudentType.REGULAR)==0) ? 1 : 2));
+            List<Fees> fees = masterTableServicesImpl.getFeesByBatchIdAndRegdYear(student.batchId(),student.currentYear());
             isInterrupted(sharedState.isProceed());
+            logger.info(fees.toString());
 
             Set<String> descriptions = fees.stream()
                     .map(Fees::getDescription)
@@ -55,17 +57,17 @@ class DuesInitiationServiceImpl implements DuesInitiationService {
                     .stream()
                     .collect(Collectors.toMap(StandardDeductionFormat::getDescription, standardDeductionFormat -> standardDeductionFormat));
 
-            Boolean plPool = BooleanString.YES.equals(student.getPlpoolm());
-            Boolean indusTraining = BooleanString.YES.equals(student.getIndortrng());
+            Boolean plPool = BooleanString.YES.equals(student.plpoolm());
+            Boolean indusTraining = BooleanString.YES.equals(student.indortrng());
 
 
                 List<DuesDetails> duesDetailsList = fees.stream()
                         .filter(fee -> masterTableServicesImpl.isRelevantFee(
                                 fee,
                                 new StudentRequiredFieldsDTO(
-                                        student.getTfw(),
-                                        student.getTransportOpted(),
-                                        student.getHostelOption()),
+                                        student.tfw(),
+                                        student.transportOpted(),
+                                        student.hostelOption()),
                                 plPool,
                                 indusTraining))
                         .map(fee ->  createDuesDetails(fee, student, deductionFormatMap))
@@ -81,6 +83,7 @@ class DuesInitiationServiceImpl implements DuesInitiationService {
 
             return CompletableFuture.completedFuture(true);
         } catch (Exception e) {
+            logger.info(student.toString());
             logger.error("Error occurred while processing dues details: " + e.getMessage());
             throw new RuntimeException("Error occurred while processing dues details: " + e.getMessage());
         }
@@ -91,17 +94,18 @@ class DuesInitiationServiceImpl implements DuesInitiationService {
 
 
     // Helper method to create DuesDetails for each fee
-    private DuesDetails createDuesDetails(Fees fee, NSR student, Map<String, StandardDeductionFormat> deductionFormatMap) {
+    private DuesDetails createDuesDetails(Fees fee, DuesDetailsInitiationDTO student, Map<String, StandardDeductionFormat> deductionFormatMap) {
         try {
             DuesDetails duesDetails = new DuesDetails();
-            duesDetails.setRegdNo(student.getRegdNo());
+            duesDetails.setId(-1L);
+            duesDetails.setRegdNo(student.regdNo());
             duesDetails.setDescription(fee.getDescription());
             duesDetails.setBalanceAmount(fee.getAmount());
             duesDetails.setAmountPaid(BigDecimal.ZERO);
             duesDetails.setAmountDue(fee.getAmount());
             duesDetails.setDeductionOrder(deductionFormatMap.get(fee.getDescription()).getDeductionOrder());
-            duesDetails.setDueYear(student.getStudentType().equals(StudentType.REGULAR) ? 1 : 2);
-            duesDetails.setSessionId(masterTableServicesImpl.getSessionId(student.getCourse(), duesDetails.getDueYear(), Year.now().getValue(), student.getStudentType()));
+            duesDetails.setDueYear(student.currentYear());
+            duesDetails.setSessionId(masterTableServicesImpl.getSessionId(student.course(), duesDetails.getDueYear(), Year.now().getValue(), student.studentType()));
             duesDetails.setAmountPaidToJee(BigDecimal.ZERO);
             duesDetails.setDueDate(Date.valueOf(LocalDate.now()));
             return duesDetails;

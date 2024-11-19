@@ -1,5 +1,6 @@
 package com.trident.egovernance.global.entities.permanentDB;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.trident.egovernance.global.helpers.FeeTypeTypeConverter;
 import com.trident.egovernance.global.helpers.FeeTypesType;
 import com.trident.egovernance.global.helpers.MrHead;
@@ -38,8 +39,10 @@ public class FeeTypes implements Serializable {
     @ToString.Exclude
     private Set<Fees> fees;
     @OneToMany(mappedBy = "feeType", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @ToString.Exclude
     private Set<DuesDetails> duesDetails;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "feeType", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<MrDetails> mrDetails;
 }

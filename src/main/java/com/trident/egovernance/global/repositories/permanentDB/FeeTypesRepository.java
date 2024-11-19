@@ -2,6 +2,7 @@ package com.trident.egovernance.global.repositories.permanentDB;
 
 import com.trident.egovernance.dto.FeeTypesMrHead;
 import com.trident.egovernance.global.entities.permanentDB.FeeTypes;
+import com.trident.egovernance.global.helpers.FeeTypesType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,6 +24,10 @@ public interface FeeTypesRepository extends JpaRepository<FeeTypes,String> {
 
     @Query("SELECT DISTINCT(f.description) FROM FEETYPES f")
     Set<String> findAllDescriptions();
+
+
+    @Query("SELECT f.description FROM FEETYPES f WHERE f.type = :type")
+    Set<String> findAllByType(FeeTypesType type);
 
 
 }

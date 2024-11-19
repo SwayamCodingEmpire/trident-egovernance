@@ -28,6 +28,8 @@ public interface StudentRepository extends JpaRepository<Student, String> {
     List<StudentOfficeDTO> findAllByStatusAlongWithParentContact(@Param("status") StudentStatus status);
 
     BasicStudentDto findByRegdNo(String regdNo);
+    @Query("SELECT s FROM STUDENT s LEFT JOIN FETCH STUDENT_ADMISSION_DETAILS LEFT JOIN FETCH HOSTEL LEFT JOIN FETCH TRANSPORT WHERE s.regdNo IN :regdNo")
+    List<DuesDetailsInitiationDTO> findByRegdNoIn(Set<String> regdNo);
 
     Long countAllByStatus(StudentStatus status);
     List<StudentOnlyDTO> findAllByAdmissionYearAndCourseAndCurrentYearAndStudentType(String admissionYear, Courses course, Integer currentYear, StudentType studentType);
@@ -78,8 +80,7 @@ SELECT DISTINCT
             "s.branchCode = :branchCode, s.admissionYear = :admissionYear, s.degreeYop = :degreeYop, s.phNo = :phNo, " +
             "s.email = :email, s.studentType = :studentType, s.hostelier = :hostelier, s.transportAvailed = :transportAvailed, " +
             "s.status = :status, s.batchId = :batchId, s.currentYear = :currentYear, s.aadhaarNo = :aadhaarNo, " +
-            "s.indortrng = :indortrng, s.plpoolm = :plpoolm, s.cfPayMode = :cfPayMode, s.religion = :religion, " +
-            "s.section = :section WHERE s.regdNo = :oldRegdNo")
+            "s.indortrng = :indortrng, s.plpoolm = :plpoolm, s.cfPayMode = :cfPayMode, s.religion = :religion WHERE s.regdNo = :oldRegdNo")
     int updateStudent(
             String studentName,
             Gender gender,
@@ -101,7 +102,7 @@ SELECT DISTINCT
             BooleanString plpoolm,
             CfPaymentMode cfPayMode,
             Religion religion,
-            String section,
+//            String section,
             String oldRegdNo
     ) throws DataIntegrityViolationException, ConstraintViolationException, SQLException;
 

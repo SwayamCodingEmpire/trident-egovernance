@@ -46,7 +46,7 @@ class NSRController {
     }
 
     @PostMapping("/bulk-post")
-    public ResponseEntity<Boolean> bulkPostNSRData(@RequestBody @Valid List<NSR> nsrs,BindingResult rBindingResult){
+    public ResponseEntity<Boolean> bulkPostNSRData(@RequestBody @Valid Set<NSR> nsrs,BindingResult rBindingResult){
         logger.info(nsrs.toString());
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();

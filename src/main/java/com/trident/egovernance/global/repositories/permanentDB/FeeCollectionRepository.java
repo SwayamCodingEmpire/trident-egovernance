@@ -18,6 +18,7 @@ public interface FeeCollectionRepository extends JpaRepository<FeeCollection,Lon
     @Query("select MAX(f.mrNo) from FEECOLLECTION f")
     Long getMaxMrNo();
 
+
     List<FeeCollection> findAllByStudent_RegdNo(String regdNo);
 
     @Query("SELECT new com.trident.egovernance.dto.RegdOnly(s.regdNo) FROM FEECOLLECTION f JOIN f.student s JOIN f.mrDetails m WHERE s.regdNo IN :regdNos AND m.particulars = :particulars")
@@ -51,4 +52,5 @@ public interface FeeCollectionRepository extends JpaRepository<FeeCollection,Lon
 
     @Query("SELECT DISTINCT f FROM FEECOLLECTION f LEFT JOIN FETCH f.student LEFT JOIN FETCH f.mrNo WHERE f.student.regdNo = :regdNo")
     Set<FeeCollection> findAllByRegdNo(String regdNo);
+
 }

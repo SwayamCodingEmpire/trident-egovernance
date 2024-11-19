@@ -102,14 +102,19 @@ public class OfficeServicesImpl {
     }
 
     public StudentIndividualRecordFetchDTO getStudentByRegdNo(String regdNo) {
-        try
-        {
-            Student student = studentRepository.findByRegdNoComplete(regdNo).orElseThrow(() -> new RecordNotFoundException("Student Not Found"));
-            List<StudentDocsOnlyDTO> studentOnlyDTOS = new ArrayList<>();
-            for (StudentDocs studentDocs1 : student.getStudentDocs()) {
-                StudentDocsOnlyDTO studentOnlyDTO = new StudentDocsOnlyDTO(studentDocs1);
-                studentOnlyDTOS.add(studentOnlyDTO);
-            }
+        try {
+            logger.info("Fetching student details for registration number: {}", regdNo);
+
+            // Fetch the student or throw an exception if not found
+            Student student = studentRepository.findByRegdNoComplete(regdNo)
+                    .orElseThrow(() -> new RecordNotFoundException("Student Not Found"));
+
+            // Map student documents to DTOs
+            List<StudentDocsOnlyDTO> studentDocsDTOS = student.getStudentDocs().stream()
+                    .map(StudentDocsOnlyDTO::new)
+                    .toList();
+
+            // Build and return the full DTO
             return new StudentIndividualRecordFetchDTO(
                     new StudentOnlyDTO(student),
                     new PersonalDetailsOnlyDTO(student.getPersonalDetails()),
@@ -117,14 +122,14 @@ public class OfficeServicesImpl {
                     new StudentCareerOnlyDTO(student.getStudentCareer()),
                     new HostelOnlyDTO(student.getHostel()),
                     new TransportOnlyDTO(student.getTransport()),
-                    studentOnlyDTOS
+                    studentDocsDTOS
             );
-        }
-        catch (NullPointerException e){
-            throw new RecordNotFoundException("All Details not properly initiated");
-        }
-        catch (RecordNotFoundException e){
-            throw new RecordNotFoundException("Student Not Found");
+        } catch (RecordNotFoundException e) {
+            logger.error("Student not found for registration number: {}", regdNo);
+            throw e; // Re-throwing the same exception without wrapping it
+        } catch (NullPointerException e) {
+            logger.error("Student details are not properly initialized for registration number: {}", regdNo, e);
+            throw new RecordNotFoundException("All details not properly initiated");
         }
     }
 
@@ -153,7 +158,7 @@ public class OfficeServicesImpl {
                     updatedStudent.plpoolm(),
                     updatedStudent.cfPayMode(),
                     updatedStudent.religion(),
-                    updatedStudent.section(),
+//                    updatedStudent.section(),
                     regdNo
             ) == 1){
                  return true;

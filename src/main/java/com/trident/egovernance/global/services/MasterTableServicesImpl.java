@@ -54,7 +54,7 @@ public class MasterTableServicesImpl implements MasterTableServices {
         return standardDeductionFormatRepository.findByDescriptions(descriptions);
     }
 
-    @Cacheable(value = "SessionId", key = "#course+#regdYear+#admissionYear+#studentType")
+    @Cacheable(value = "SessionId", key = "#course.displayName + '-' + #regdYear + '-' + #admissionYear + '-' + #studentType.enumName")
     @Override
     public String getSessionId(Courses course, int regdYear, int admissionYear, StudentType studentType){
 //        String currYear = String.valueOf(Year.now().getValue());
@@ -126,6 +126,11 @@ public class MasterTableServicesImpl implements MasterTableServices {
                 (isCompulsoryFee(fee, plPool, indusTraining) ||
                         (BooleanString.YES.equals(student.transportOpted()) && "TRANSPORTFEE".equals(fee.getFeeType().getFeeGroup())) ||
                         (BooleanString.YES.equals(student.hostelOption()) && "HOSTELFEE".equals(fee.getFeeType().getFeeGroup())));
+    }
+
+    @Override
+    public Set<String> getAllOtherFeesDescriptions() {
+        return feeTypesRepository.findAllByType(FeeTypesType.OTHER_FEES);
     }
 
     @Override

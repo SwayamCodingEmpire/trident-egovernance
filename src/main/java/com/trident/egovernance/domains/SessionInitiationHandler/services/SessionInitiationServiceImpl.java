@@ -1,6 +1,7 @@
 package com.trident.egovernance.domains.SessionInitiationHandler.services;
 
 import com.trident.egovernance.domains.SessionInitiationHandler.SessionInitiationService;
+import com.trident.egovernance.domains.nsrHandler.services.DuesInitiationServiceImpl;
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.permanentDB.FeeTypes;
 import com.trident.egovernance.global.entities.permanentDB.Sessions;
@@ -42,8 +43,9 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
     private final EntityManager entityManager;
     private final TransportRepository transportRepository;
     private final SessionsRepository sessionsRepository;
+    private final DuesInitiationServiceImpl duesInitiationServiceImpl;
 
-    public SessionInitiationServiceImpl(PlatformTransactionManager platformTransactionManager, DuesDetailBackupServiceImpl duesDetailBackupService, AdjustmentBackupServiceImpl adjustmentBackupService, DiscountBackUpServiceImpl discountBackUpService, HostelBackupServiceImpl hostelBackupService, StudentRepository studentRepository, TransportBackupServiceimpl transportBackupServiceimpl, NotpromotedRepository notpromotedRepository, HostelRepository hostelRepository, FeeCollectionRepository feeCollectionRepository, MrDetailsRepository mrDetailsRepository, MasterTableServicesImpl masterTableServicesImpl, EntityManager entityManager, TransportRepository transportRepository, SessionsRepository sessionsRepository) {
+    public SessionInitiationServiceImpl(PlatformTransactionManager platformTransactionManager, DuesDetailBackupServiceImpl duesDetailBackupService, AdjustmentBackupServiceImpl adjustmentBackupService, DiscountBackUpServiceImpl discountBackUpService, HostelBackupServiceImpl hostelBackupService, StudentRepository studentRepository, TransportBackupServiceimpl transportBackupServiceimpl, NotpromotedRepository notpromotedRepository, HostelRepository hostelRepository, FeeCollectionRepository feeCollectionRepository, MrDetailsRepository mrDetailsRepository, MasterTableServicesImpl masterTableServicesImpl, EntityManager entityManager, TransportRepository transportRepository, SessionsRepository sessionsRepository, DuesInitiationServiceImpl duesInitiationServiceImpl) {
         this.platformTransactionManager = platformTransactionManager;
         this.duesDetailBackupService = duesDetailBackupService;
         this.adjustmentBackupService = adjustmentBackupService;
@@ -59,6 +61,7 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
         this.entityManager = entityManager;
         this.transportRepository = transportRepository;
         this.sessionsRepository = sessionsRepository;
+        this.duesInitiationServiceImpl = duesInitiationServiceImpl;
     }
 
     public List<StudentOnlyDTO> getStudentsForPromotion(SessionInitiationDTO sessionInitiationDTO) {
@@ -268,7 +271,6 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
             if (masterTableServicesImpl.endSession(Date.valueOf(LocalDate.now()), sessionInitiationData.prevSessionId(), sessionInitiationData.courses(), sessionInitiationData.currentYear(), sessionInitiationData.studentType())) {
                 return feeCollectionRepository.updateFeeCollectionByMrForHostelRegistered(sessionInitiationData.currentYear() + 1, sessionInitiationData.sessionId(), hostelOptedMrNos) + mrDetailsRepository.updateMrDetailsByMrNoForHostelRegistered(hostelFees.getDescription(), hostelOptedMrNos) + studentRepository.updateStudentCurrentYearByRegdNo(sessionInitiationData.regdNos());
             }
-            // Return the total number of rows updated (or you can return just one batch's update count if needed
             throw new RuntimeException("Unable to start session");
         }catch (Exception e){
             logger.error(e.toString());
@@ -276,6 +278,10 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
             return 0;
         }
     }
+
+//    public boolean setDuesDetails(SessionInitiationData sessionInitiationData, TransactionStatus status){
+//        duesInitiationServiceImpl.initiateDuesDetails(studentRepository.findByRegdNoIn(sessionInitiationData.regdNos()))
+//        return true;}
 
 
 

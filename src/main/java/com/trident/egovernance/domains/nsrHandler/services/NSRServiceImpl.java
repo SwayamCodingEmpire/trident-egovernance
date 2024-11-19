@@ -1,5 +1,6 @@
 package com.trident.egovernance.domains.nsrHandler.services;
 
+import com.trident.egovernance.dto.DuesDetailsInitiationDTO;
 import com.trident.egovernance.dto.NSRDto;
 import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.global.entities.redisEntities.NSR;
@@ -16,7 +17,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -29,14 +34,16 @@ import java.util.stream.StreamSupport;
 @Service
 class NSRServiceImpl implements NSRService {
     private final DuesInitiationService duesInitiationServiceImpl;
+    private final PlatformTransactionManager platformTransactionManager;
     private final MapperService mapperService;
     private final CourseFetchingServiceImpl courseFetchingService;
     private final Logger logger = LoggerFactory.getLogger(NSRServiceImpl.class);
     private final NSRRepository nsrRepository;
     private final StudentRepository studentRepository;
 
-    public NSRServiceImpl(DuesInitiationService duesInitiationServiceImpl, MapperServiceImpl mapperService, CourseFetchingServiceImpl courseFetchingService, NSRRepository nsrRepository, StudentRepository studentRepository) {
+    public NSRServiceImpl(DuesInitiationService duesInitiationServiceImpl, PlatformTransactionManager platformTransactionManager, MapperServiceImpl mapperService, CourseFetchingServiceImpl courseFetchingService, NSRRepository nsrRepository, StudentRepository studentRepository) {
         this.duesInitiationServiceImpl = duesInitiationServiceImpl;
+        this.platformTransactionManager = platformTransactionManager;
         this.mapperService = mapperService;
         this.courseFetchingService = courseFetchingService;
         this.nsrRepository = nsrRepository;
@@ -60,8 +67,8 @@ class NSRServiceImpl implements NSRService {
     }
 
     @Override
-    public void bulkSaveNSRData(List<NSR> nsrs){
-        List<NSR> savedNSRs = (List<NSR>) nsrRepository.saveAll(nsrs);
+    public void bulkSaveNSRData(Set<NSR> nsrs){
+        Set<NSR> savedNSRs = (Set<NSR>) nsrRepository.saveAll(nsrs);
     }
 
     @Override
@@ -95,15 +102,18 @@ class NSRServiceImpl implements NSRService {
     @Override
     public Boolean saveToPermanentDatabase(String jeeApplicationNo){
         SharedStateAmongDueInitiationAndNSRService sharedState = new SharedStateAmongDueInitiationAndNSRService();
+        DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+        TransactionStatus status = platformTransactionManager.getTransaction(def);
         NSR nsr = nsrRepository.findById(jeeApplicationNo).orElseThrow(() -> new RecordNotFoundException("Record not found"));
         nsr.setBatchId(nsr.getCourse().getEnumName() + nsr.getAdmissionYear() + nsr.getBranchCode() + nsr.getStudentType());
+        nsr.setCurrentYear(((nsr.getStudentType().equals(StudentType.REGULAR))?1:2));
         logger.info("Batch ID : {}",nsr.getBatchId());
         logger.info("Fetched from Redis");
-        CompletableFuture<Boolean> processDues = duesInitiationServiceImpl.initiateDuesDetails(nsr,sharedState);
+        CompletableFuture<Boolean> processDues = duesInitiationServiceImpl.initiateDuesDetails(new DuesDetailsInitiationDTO(nsr),sharedState);
         try{
             logger.info("Fetching from Redis");
             Student student = mapperService.convertToStudent(nsr);
-            student.setCurrentYear(((student.getStudentType().equals(StudentType.REGULAR))?1:2));
             student.setHostelier(BooleanString.NO);
             student.setHostelier(BooleanString.NO);
             student.setTransportAvailed(BooleanString.NO);
@@ -161,16 +171,14 @@ class NSRServiceImpl implements NSRService {
             logger.info("Started saving to databse");
             studentRepository.save(student);
             logger.info("Saved to database");
-            if(processDues.join()){
-                return true;
-            }
-            else
-            {
-                throw new RuntimeException("Error occurred while processing dues details");
-            }
+            processDues.join();
+            platformTransactionManager.commit(status);
+            return true;
         }catch (Exception e){
             sharedState.setProceed(false);
-            throw new RuntimeException("Error occurred while saving to permanent database : "+e.getMessage());
+            status.setRollbackOnly();
+            platformTransactionManager.rollback(status);
+            return false;
         }
     }
 

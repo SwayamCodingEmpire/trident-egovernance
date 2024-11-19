@@ -5,6 +5,7 @@ import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.global.entities.redisEntities.NSR;
 import com.trident.egovernance.global.entities.redisEntities.StudentDocData;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
+import jakarta.persistence.Tuple;
 
 import java.util.List;
 import java.util.Set;
@@ -26,6 +27,7 @@ public interface MapperService {
     List<DuesDetailsDto> convertToDuesDetailsDtoFromOldDuesDetails(List<OldDueDetails> duesDetailsList);
     List<NSRDto> convertToNSRDtoList(List<NSR> nsrS);
 
+    List<CollectionReportDTO> convertFromTuplesToListOfCollectionReportDTO(List<Tuple> tuples);
     Set<NSRDto> convertToNSRDtoSet(Set<NSR> nsrS);
     Student convertToStudentFromStudentOnlyDTO(StudentOnlyDTO studentOnlyDTO);
 
@@ -42,4 +44,6 @@ public interface MapperService {
 
     StudentDocs convertToStudentDocsFromStudentDocsOnlyDTO(StudentDocsOnlyDTO studentDocsOnlyDTO);
     Set<CollectionSummary> convertToCollectionSummarySet(Set<DailyCollectionSummary> dailyCollectionSummaries);
+
+//    Set<String> getListOfOtherFees();
 }

@@ -23,7 +23,7 @@ public record DuesDetailsDto(
                 duesDetails.getAmountPaidToJee(),
                 duesDetails.getBalanceAmount(),
                 duesDetails.getDueYear(),
-                duesDetails.getFeeType().getSemester()
+                duesDetails.getFeeType().getSemester()==null ? -1 : duesDetails.getFeeType().getSemester()
         );
     }
 
@@ -35,7 +35,7 @@ public record DuesDetailsDto(
                 duesDetails.getAmountPaidToJee(),
                 duesDetails.getBalanceAmount(),
                 duesDetails.getDueYear(),
-                duesDetails.getFeeType().getSemester()
+                duesDetails.getFeeType().getSemester()==null ? -1 : duesDetails.getFeeType().getSemester()
         );
     }
 }

@@ -3,12 +3,15 @@ package com.trident.egovernance.domains.accountsSectionHandler;
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
 
+import java.sql.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public interface AccountSectionService {
     Map<Integer, Map<Integer, List<DuesDetailsDto>>> getDuesDetails(String regdNo);
+    List<CollectionReportDTO> getCollectionReportByDate(String paymentDate);
+    List<CollectionReportDTO> getCollectionReportBetweenDates(Date startDate, Date endDate);
     BasicStudentDto getBasicStudentDetails(String regdNo);
     FeeCollectionHistoryDto getFeeCollectionByRegdNo(String regdNo);
     FeeDashboardSummary getDashBoardNumbers(String paymentDate);
