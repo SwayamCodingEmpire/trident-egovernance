@@ -12,8 +12,10 @@ import java.util.List;
 
 public interface PaymentProcessingServices {
     PaymentProcessingInternalData processPayment(FeeCollection feeCollection, Student student, String regdNo, List<DuesDetails> duesDetails, BigDecimal collectedFees, long slNo);
-    MoneyReceipt processAutoPayment(FeeCollection feeCollection, String regdNo);
-    MoneyReceipt processNonAutoModes(FeeCollection feeCollection, String regdNo);
+    MoneyReceipt processAutoPayment(FeeCollection feeCollection, String regdNo, boolean isUpdate);
+    MoneyReceipt processNonAutoModes(FeeCollection feeCollection, String regdNo, boolean isUpdate);
 
-    MoneyReceipt processOtherFeesPayment(OtherFeesPayment otherFeesPayment, String regdNo);
+    MoneyReceipt processOtherFeesPayment(OtherFeesPayment otherFeesPayment, String regdNo, boolean isUpdate);
+    MoneyReceipt updateFeesCollection(FeeCollection feeCollection);
+    int deleteFeeCollectionRecord(Long mrNo);
 }

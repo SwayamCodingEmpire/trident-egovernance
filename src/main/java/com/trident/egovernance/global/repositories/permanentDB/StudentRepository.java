@@ -19,10 +19,6 @@ import java.util.Set;
 
 @Repository
 public interface StudentRepository extends JpaRepository<Student, String> {
-    @Query(value = "SELECT REGDNO, COURSE, CURRENTYEAR, SESSIONID, PREVSESSIONSID, STARTDATE " +
-            "FROM FEECDEMO.CURRENT_SESSION WHERE REGDNO = :regdNo", nativeQuery = true)
-    List<CurrentSessionDto> getCurrentSessionDtoByRegdNo(@Param("regdNo") String regdNo);
-
 //    List<StudentOfficeDTO> findAllByStatus(StudentStatus status);
     @Query("SELECT new com.trident.egovernance.dto.StudentOfficeDTO(s.regdNo, s.studentName, s.course, s.branchCode, s.phNo, s.email, s.studentType, s.currentYear, p.parentContact) FROM STUDENT s LEFT JOIN s.personalDetails p WHERE s.status=:status")
     List<StudentOfficeDTO> findAllByStatusAlongWithParentContact(@Param("status") StudentStatus status);

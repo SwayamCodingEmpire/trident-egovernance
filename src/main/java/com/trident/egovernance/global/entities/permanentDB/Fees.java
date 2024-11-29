@@ -1,5 +1,7 @@
 package com.trident.egovernance.global.entities.permanentDB;
 
+import com.trident.egovernance.dto.BasicFeeBatchDetails;
+import com.trident.egovernance.dto.SessionInitiationDTO;
 import com.trident.egovernance.global.helpers.CfPaymentMode;
 import com.trident.egovernance.global.helpers.TFWType;
 import jakarta.persistence.*;
@@ -18,9 +20,11 @@ import java.math.BigDecimal;
 public class Fees implements Serializable {
     @Id
     private Long feeId;
+    @Transient
+    private BasicFeeBatchDetails batchElements;
     private String batchId;
     private Integer regdYear;
-    @Column(insertable = false,updatable = false)
+    @Column(name = "DESCRIPTION")
     private String description;
     private BigDecimal amount;
     private String comments;
@@ -32,6 +36,6 @@ public class Fees implements Serializable {
     private CfPaymentMode payType;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "DESCRIPTION")
+    @JoinColumn(name = "DESCRIPTION", referencedColumnName = "DESCRIPTION", insertable = false, updatable = false)
     private FeeTypes feeType;
 }

@@ -5,9 +5,11 @@ import com.trident.egovernance.global.entities.permanentDB.Adjustments;
 import com.trident.egovernance.global.entities.permanentDB.Discount;
 import com.trident.egovernance.exceptions.InvalidStudentException;
 import com.trident.egovernance.domains.accountsSectionHandler.DiscountAndAdjustmentService;
+import com.trident.egovernance.global.entities.views.CurrentSession;
 import com.trident.egovernance.global.repositories.permanentDB.AdjustmentsRepository;
 import com.trident.egovernance.global.repositories.permanentDB.DiscountRepository;
 import com.trident.egovernance.global.repositories.permanentDB.StudentRepository;
+import com.trident.egovernance.global.repositories.views.CurrentSessionRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import org.slf4j.Logger;
@@ -27,19 +29,21 @@ class DiscountAndAdjustmentServiceImpl implements DiscountAndAdjustmentService {
     private final DiscountRepository discountRepository;
     private final AdjustmentsRepository adjustmentsRepository;
     private final Logger logger = LoggerFactory.getLogger(DiscountAndAdjustmentServiceImpl.class);
+    private final CurrentSessionRepository currentSessionRepository;
 
-    public DiscountAndAdjustmentServiceImpl(EntityManager entityManager, StudentRepository studentRepository, DiscountRepository discountRepository, AdjustmentsRepository adjustmentsRepository) {
+    public DiscountAndAdjustmentServiceImpl(EntityManager entityManager, StudentRepository studentRepository, DiscountRepository discountRepository, AdjustmentsRepository adjustmentsRepository, CurrentSessionRepository currentSessionRepository) {
         this.entityManager = entityManager;
         this.studentRepository = studentRepository;
         this.discountRepository = discountRepository;
         this.adjustmentsRepository = adjustmentsRepository;
+        this.currentSessionRepository = currentSessionRepository;
     }
 
     @Transactional
     public Boolean insertDiscountData(Discount discount) {
         if(discount.getRegdNo().compareTo("ALL")==0){
             String sql = "SELECT REGDNO " +
-                    "FROM FEECDEMO.CURRENT_SESSION WHERE CURRENTYEAR = :currentYear";
+                    "FROM FEECDEMO.CURRENT_SESSION WHERE CURRENTYEAR IN :currentYear";
             Query query = entityManager.createNativeQuery(sql);
             query.setParameter("currentYear", discount.getCurrentYear());
             List<String> regdNos = query.getResultList();
@@ -62,15 +66,16 @@ class DiscountAndAdjustmentServiceImpl implements DiscountAndAdjustmentService {
             }
         }
         else {
-            if(!studentRepository.existsById(discount.getRegdNo())){
-                throw new InvalidStudentException("Invalid Registration Number");
-            }
-            String sql = "SELECT CS " +
-                    "FROM FEECDEMO.CURRENT_SESSION CS WHERE CS.CURRENTYEAR = :currentYear AND CS.REGDNO = :regdNo";
-            Query query = entityManager.createNativeQuery(sql);
-            query.setParameter("currentYear", discount.getCurrentYear());
-            query.setParameter("regdNo", discount.getRegdNo());
-            CurrentSessionDto currentSessionDto = (CurrentSessionDto) query.getResultList();
+//            if(!studentRepository.existsById(discount.getRegdNo())){
+//                throw new InvalidStudentException("Invalid Registration Number");
+//            }
+//            String sql = "SELECT CS " +
+//                    "FROM FEECDEMO.CURRENT_SESSION CS WHERE CS.CURRENTYEAR = :currentYear AND CS.REGDNO = :regdNo";
+//            Query query = entityManager.createNativeQuery(sql);
+//            query.setParameter("currentYear", discount.getCurrentYear());
+//            query.setParameter("regdNo", discount.getRegdNo());
+            CurrentSession currentSession = currentSessionRepository.findById(discount.getRegdNo()).orElseThrow(()->new InvalidStudentException("Student not found"));
+//            CurrentSessionDto currentSessionDto = (CurrentSessionDto) query.getResultList();
 //            CurrentSessionDto currentSessions = rows.stream()
 //                            .map(row->new CurrentSessionDto(
 //                                    (String) row[0],  // REGDNO
@@ -82,8 +87,8 @@ class DiscountAndAdjustmentServiceImpl implements DiscountAndAdjustmentService {
 //
 //                            )).toList();
             discount.setRegdYear(discount.getCurrentYear());
-            discount.setSessionId(currentSessionDto.getSessionId());
-            logger.info(currentSessionDto.toString());
+            discount.setSessionId(currentSession.getSessionId());
+            logger.info(currentSession.toString());
             discountRepository.save(discount);
             return true;
         }

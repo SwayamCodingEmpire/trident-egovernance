@@ -4,7 +4,9 @@ import com.trident.egovernance.domains.accountsSectionHandler.AccountSectionServ
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.exceptions.DatabaseException;
 import com.trident.egovernance.global.entities.permanentDB.FeeCollection;
+import com.trident.egovernance.global.entities.permanentDB.MrDetails;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
+import com.trident.egovernance.global.helpers.FeeTypesType;
 import com.trident.egovernance.global.repositories.permanentDB.DuesDetailsRepository;
 import com.trident.egovernance.global.repositories.permanentDB.FeeCollectionRepository;
 import com.trident.egovernance.global.repositories.permanentDB.OldDuesDetailsRepository;
@@ -37,19 +39,17 @@ public class AccountSectionServicesImpl implements AccountSectionService {
     private final DuesDetailsRepository duesDetailsRepository;
     private final FeeCollectionRepository feeCollectionRepository;
     private final StudentRepository studentRepository;
-    private final MapperServiceImpl mapperServiceImpl;
     private final DailyCollectionSummaryRepository dailyCollectionSummaryRepository;
     private final Logger logger = LoggerFactory.getLogger(AccountSectionServicesImpl.class);
     private final CollectionReportRepository collectionReportRepository;
 
-    public AccountSectionServicesImpl(DateConverterServices dateConverterServices, MapperService mapperService, OldDuesDetailsRepository oldDuesDetailsRepository, DuesDetailsRepository duesDetailsRepository, FeeCollectionRepository feeCollectionRepository, StudentRepository studentRepository, MapperServiceImpl mapperServiceImpl, DailyCollectionSummaryRepository dailyCollectionSummaryRepository, CollectionReportRepository collectionReportRepository) {
+    public AccountSectionServicesImpl(DateConverterServices dateConverterServices, MapperService mapperService, OldDuesDetailsRepository oldDuesDetailsRepository, DuesDetailsRepository duesDetailsRepository, FeeCollectionRepository feeCollectionRepository, StudentRepository studentRepository, DailyCollectionSummaryRepository dailyCollectionSummaryRepository, CollectionReportRepository collectionReportRepository) {
         this.dateConverterServices = dateConverterServices;
         this.mapperService = mapperService;
         this.oldDuesDetailsRepository = oldDuesDetailsRepository;
         this.duesDetailsRepository = duesDetailsRepository;
         this.feeCollectionRepository = feeCollectionRepository;
         this.studentRepository = studentRepository;
-        this.mapperServiceImpl = mapperServiceImpl;
         this.dailyCollectionSummaryRepository = dailyCollectionSummaryRepository;
         this.collectionReportRepository = collectionReportRepository;
     }
@@ -73,13 +73,56 @@ public class AccountSectionServicesImpl implements AccountSectionService {
     }
 
     @Override
-    public FeeCollectionHistoryDto getFeeCollectionByRegdNo(String regdNo) {
+    public FeeCollectionHistoryDto getFeeCollectionByRegdNo(String regdNo, FeeTypesType feeTypes) {
         List<FeeCollection> feeCollectionsList = feeCollectionRepository.findAllByStudent_RegdNo(regdNo);
-        Map<Integer, List<FeeCollection>> feeCollectionGroupedByYear = feeCollectionsList
-                .stream()
-                .collect(Collectors.groupingBy(FeeCollection::getDueYear));
-        return new FeeCollectionHistoryDto(feeCollectionGroupedByYear.get(1), feeCollectionGroupedByYear.get(2), feeCollectionGroupedByYear.get(3), feeCollectionGroupedByYear.get(4));
+        // Update the field and extract the amount from the first MrDetails
+            List<FeeCollection> updatedFeeCollections = feeCollectionsList.stream()
+                    .filter(feeCollection ->
+                            feeCollection.getMrDetails().stream()
+                                    .findFirst()
+                                    .map(mrDetails -> checkFeeTypes(mrDetails, feeTypes))
+                                    .orElse(false) // Default to true if no MrDetails exist
+                    )
+                    .peek(feeCollection -> {
+                        // Extract value from Set<MrDetails>
+                        feeCollection.getMrDetails().stream()
+                                .findFirst()
+                                .ifPresent(mrDetails -> {
+                                    // Assuming you want to set some value from MrDetails to FeeCollection
+                                    feeCollection.setType(mrDetails.getFeeType().getType().equals(FeeTypesType.OTHER_FEES)
+                                            ? FeeTypesType.OTHER_FEES.getDisplayName()
+                                            : "FEES");
+                                });
+                    })
+                    .toList();
+
+
+        // Grouping the updated list by due year
+        Map<Integer, List<FeeCollectionAndMrDetails>> feeCollectionGroupedByYear = updatedFeeCollections.stream()
+                .map(feeCollection -> new FeeCollectionAndMrDetails(new FeeCollectionOnlyDTO(feeCollection), mapperService.convertToMrDetailsDTOSet(feeCollection.getMrDetails())))
+                .collect(Collectors.groupingBy(feeCollectionAndMrDetails -> feeCollectionAndMrDetails.feeCollection().dueYear()));
+
+        return new FeeCollectionHistoryDto(
+                feeCollectionGroupedByYear.get(1),
+                feeCollectionGroupedByYear.get(2),
+                feeCollectionGroupedByYear.get(3),
+                feeCollectionGroupedByYear.get(4)
+        );
     }
+
+    private boolean checkFeeTypes(MrDetails mrDetails, FeeTypesType feeTypesType) {
+        switch (feeTypesType) {
+            case OTHER_FEES:
+                return mrDetails.getFeeType().getType().equals(FeeTypesType.OTHER_FEES);
+            default:
+                return !mrDetails.getFeeType().getType().equals(FeeTypesType.OTHER_FEES);
+        }
+    }
+
+//    public FeeCollectionByMrNo getFeeCollectionBeMrNo(Long mrNo){
+//        FeeCollection feeCollection = feeCollectionRepository.findByMrNo(mrNo);
+//        return FeeCollectionByMrNo(new FeeCollectionOnlyDTO(feeCollection),)
+//    }
 
     public FeeDashboardSummary getDashBoardNumbers(String paymentDate) {
         return new FeeDashboardSummary(
@@ -121,13 +164,13 @@ public class AccountSectionServicesImpl implements AccountSectionService {
         return dailyCollectionSummaryRepository.findAllByPaymentDateIn(dates);
     }
 
-    public List<CollectionReportDTO> getCollectionReportByDate(String paymentDate){
+    public List<CollectionReportDTO> getCollectionReportByDate(String paymentDate) {
         List<Tuple> tuples = collectionReportRepository.findAllCollectionReportsWithMrDetailsByDate(paymentDate);
         return mapperService.convertFromTuplesToListOfCollectionReportDTO(tuples);
     }
 
-    public List<CollectionReportDTO> getCollectionReportBetweenDates(Date startDate, Date endDate){
-        List<Tuple> tuples = collectionReportRepository.findAllCollectionReportsWithMrDetailsByDateInBetween(startDate,endDate);
+    public List<CollectionReportDTO> getCollectionReportBetweenDates(Date startDate, Date endDate) {
+        List<Tuple> tuples = collectionReportRepository.findAllCollectionReportsWithMrDetailsByDateInBetween(startDate, endDate);
         return mapperService.convertFromTuplesToListOfCollectionReportDTO(tuples);
     }
 

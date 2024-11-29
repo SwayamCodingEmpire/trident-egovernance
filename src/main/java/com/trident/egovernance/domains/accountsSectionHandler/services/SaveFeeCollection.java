@@ -12,6 +12,7 @@ import com.trident.egovernance.global.repositories.permanentDB.FeeCollectionRepo
 import com.trident.egovernance.global.services.MasterTableServices;
 import org.springframework.boot.task.ThreadPoolTaskExecutorBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -34,7 +35,7 @@ public class SaveFeeCollection {
         this.threadPoolTaskExecutorBuilder = threadPoolTaskExecutorBuilder;
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     public MoneyReceipt getMrDetailsSorted(FeeCollection processedFeeCollection, List<DuesDetails> processedDuesDetails) {
         System.out.println(processedFeeCollection.getMrDetails().toString());
         FeeCollection savedFeeCollection = feeCollectionRepository.save(processedFeeCollection);
@@ -92,6 +93,7 @@ public class SaveFeeCollection {
             }
         }
         return new MoneyReceipt(
+                mrDetailsDtos.get(0).getMrNo(),
                 tat,
                 tactF,
                 feeCollectionDetails,

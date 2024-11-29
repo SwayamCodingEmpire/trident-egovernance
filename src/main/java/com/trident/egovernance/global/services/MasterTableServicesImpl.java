@@ -1,5 +1,6 @@
 package com.trident.egovernance.global.services;
 
+import com.trident.egovernance.dto.DescriptionTypeSemester;
 import com.trident.egovernance.dto.FeeTypesMrHead;
 import com.trident.egovernance.dto.StudentRequiredFieldsDTO;
 import com.trident.egovernance.global.entities.permanentDB.*;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Date;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class MasterTableServicesImpl implements MasterTableServices {
@@ -31,12 +33,13 @@ public class MasterTableServicesImpl implements MasterTableServices {
         this.standardDeductionFormatRepository = standardDeductionFormatRepository;
         this.paymentModeRepository = paymentModeRepository;
     }
+
     @Cacheable(value = "fees", key = "#batchId")
     @Override
-    public List<Fees> getFeesByBatchIdAndRegdYear(String batchId,Integer regdYear){
+    public List<Fees> getFeesByBatchIdAndRegdYear(String batchId, Integer regdYear) {
         logger.info("Fetching fees by batchId: {}", batchId);
         try {
-            List<Fees> fees = feesRepository.findAllByBatchIdAndRegdYear(batchId,regdYear);
+            List<Fees> fees = feesRepository.findAllByBatchIdAndRegdYear(batchId, regdYear);
             logger.info("Fetched fees by batchId: {}", fees);
             return fees;
         } catch (Exception e) {
@@ -46,21 +49,20 @@ public class MasterTableServicesImpl implements MasterTableServices {
     }
 
 
-
     @Cacheable(value = "standardDeductionFormat", key = "#descriptions.toString()")
     @Override
-    public List<StandardDeductionFormat> getStandardDeductionformatByDescriptions(Set<String> descriptions){
+    public List<StandardDeductionFormat> getStandardDeductionformatByDescriptions(Set<String> descriptions) {
         logger.info("Fetching standardDeductionFormat by descriptions: {}", descriptions);
         return standardDeductionFormatRepository.findByDescriptions(descriptions);
     }
 
     @Cacheable(value = "SessionId", key = "#course.displayName + '-' + #regdYear + '-' + #admissionYear + '-' + #studentType.enumName")
     @Override
-    public String getSessionId(Courses course, int regdYear, int admissionYear, StudentType studentType){
+    public String getSessionId(Courses course, int regdYear, int admissionYear, StudentType studentType) {
 //        String currYear = String.valueOf(Year.now().getValue());
 //        String nextYear = String.valueOf(Year.now().getValue()+1);
 //        return currYear+"-"+nextYear;
-        SessionIdId sessionIdId = new SessionIdId(course.getDisplayName(),regdYear, admissionYear,studentType.getEnumName());
+        SessionIdId sessionIdId = new SessionIdId(course.getDisplayName(), regdYear, admissionYear, studentType.getEnumName());
         logger.info(sessionIdId.toString());
         Sessions sessions = sessionsRepository.findById(sessionIdId).orElseThrow(() -> new RecordNotFoundException("Session not found"));
         logger.info(sessions.toString());
@@ -68,24 +70,22 @@ public class MasterTableServicesImpl implements MasterTableServices {
         return sessions.getSessionId();
     }
 
-    public int getAdmissionYearFromSession(String sessionId, Courses course, int regdYear, StudentType studentType){
-        try
-        {
+    public int getAdmissionYearFromSession(String sessionId, Courses course, int regdYear, StudentType studentType) {
+        try {
             return sessionsRepository.findBySessionIdAndCourseAndRegdYearAndStudentType(sessionId, course.getDisplayName(), regdYear, studentType.getEnumName()).getAdmissionYear();
         } catch (Exception e) {
             throw new RecordNotFoundException("Course not found");
         }
     }
 
-    public boolean endSession(Date endDate, String sessionId, Courses course, int regdYear, StudentType studentType){
-        try
-        {
-            if(sessionsRepository.updateSessionsForEndingSession(endDate, sessionId, course.getDisplayName(), regdYear, studentType.getEnumName()) == 1){
+    public boolean endSession(Date endDate, String sessionId, Courses course, int regdYear, StudentType studentType) {
+        try {
+            if (sessionsRepository.updateSessionsForEndingSession(endDate, sessionId, course.getDisplayName(), regdYear, studentType.getEnumName()) == 1) {
                 return true;
-            }else {
+            } else {
                 return false;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new RecordNotFoundException("Course not found");
         }
     }
@@ -97,12 +97,12 @@ public class MasterTableServicesImpl implements MasterTableServices {
     }
 
     @Override
-    public List<FeeTypesMrHead> getFeeTypesMrHeadByDescriptions(List<String> descriptions){
+    public List<FeeTypesMrHead> getFeeTypesMrHeadByDescriptions(List<String> descriptions) {
         return feeTypesRepository.findByDescriptionIn(descriptions);
     }
 
     @Override
-    public HashMap<String, MrHead> convertFeeTypesMrHeadToHashMap(List<String> descriptions){
+    public HashMap<String, MrHead> convertFeeTypesMrHeadToHashMap(List<String> descriptions) {
         List<FeeTypesMrHead> feeTypesMrHeads = feeTypesRepository.findByDescriptionIn(descriptions);
         HashMap<String, MrHead> feeTypesMrHeadHashMap = new HashMap<>();
         for (FeeTypesMrHead feeTypesMrHead : feeTypesMrHeads) {
@@ -131,6 +131,7 @@ public class MasterTableServicesImpl implements MasterTableServices {
     @Override
     public Set<String> getAllOtherFeesDescriptions() {
         return feeTypesRepository.findAllByType(FeeTypesType.OTHER_FEES);
+
     }
 
     @Override
@@ -144,12 +145,34 @@ public class MasterTableServicesImpl implements MasterTableServices {
     }
 
     @Override
-    public Set<String> getAllParticulars(){
+    public Set<String> getAllParticulars() {
         return feeTypesRepository.findAllDescriptions();
     }
 
     @Override
-    public List<PaymentMode> getAllPaymentModes(){
+    public List<PaymentMode> getAllPaymentModes() {
         return paymentModeRepository.findAll();
     }
+
+    public List<DescriptionTypeSemester> getAllFeeTypesForFeeAddition() {
+        return feeTypesRepository.findAllByTypeIn(Set.of(FeeTypesType.OTHER_FEES, FeeTypesType.COMPULSORY_FEES));
+    }
+
+    @Override
+    public List<Fees> saveFeesToDatabase(List<Fees> fees) {
+        for (Fees fees1 : fees) {
+            // Check for null to avoid NullPointerException
+            if (fees1.getBatchElements() != null) {
+                String batchId = fees1.getBatchElements().course() +
+                        String.valueOf(fees1.getBatchElements().admYear()) +
+                        fees1.getBatchElements().branchCode() +
+                        fees1.getBatchElements().studentType();
+                fees1.setBatchId(batchId); // Set the calculated batchId
+            }
+        }
+        feesRepository.saveAll(fees);
+        return fees; // Return the modified list
+    }
+
+
 }

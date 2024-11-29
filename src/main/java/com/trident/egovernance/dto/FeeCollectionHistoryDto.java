@@ -5,9 +5,9 @@ import com.trident.egovernance.global.entities.permanentDB.FeeCollection;
 import java.util.List;
 
 public record FeeCollectionHistoryDto(
-        List<FeeCollection> year1,
-        List<FeeCollection> year2,
-        List<FeeCollection> year3,
-        List<FeeCollection> year4
+        List<FeeCollectionAndMrDetails> year1,
+        List<FeeCollectionAndMrDetails> year2,
+        List<FeeCollectionAndMrDetails> year3,
+        List<FeeCollectionAndMrDetails> year4
 ) {
 }

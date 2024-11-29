@@ -175,4 +175,14 @@ public class MapperServiceImpl implements MapperService {
                 .map(entry -> new CollectionReportDTO(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
     }
+
+    public Set<MrDetailsDTO> convertToMrDetailsDTOSet(Set<MrDetails> mrDetailsSet) {
+        return mrDetailsSet.stream()
+                .map(mrDetails -> new MrDetailsDTO(
+                        mrDetails.getSlNo(),
+                        mrDetails.getParticulars(),
+                        mrDetails.getAmount()
+                ))
+                .collect(Collectors.toSet());
+    }
 }

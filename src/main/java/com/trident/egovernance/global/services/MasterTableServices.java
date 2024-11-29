@@ -1,5 +1,6 @@
 package com.trident.egovernance.global.services;
 
+import com.trident.egovernance.dto.DescriptionTypeSemester;
 import com.trident.egovernance.dto.FeeTypesMrHead;
 import com.trident.egovernance.dto.StudentRequiredFieldsDTO;
 import com.trident.egovernance.global.entities.permanentDB.*;
@@ -29,5 +30,7 @@ public interface MasterTableServices {
     Set<String> getAllSessions();
     Set<String> getAllParticulars();
     List<PaymentMode> getAllPaymentModes();
+    List<DescriptionTypeSemester> getAllFeeTypesForFeeAddition();
+    List<Fees> saveFeesToDatabase(List<Fees> fees);
 
 }

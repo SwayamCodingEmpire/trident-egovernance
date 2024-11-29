@@ -1,5 +1,6 @@
 package com.trident.egovernance.global.entities.permanentDB;
 
+import com.trident.egovernance.dto.MrDetailsDTO;
 import com.trident.egovernance.dto.OtherMrDetails;
 import jakarta.persistence.*;
 import lombok.*;
@@ -36,7 +37,7 @@ public class MrDetails {
     @JoinColumn(name = "PARTICULARS", referencedColumnName = "DESCRIPTION", insertable = false, updatable = false)
     private FeeTypes feeType;
 
-    public MrDetails(OtherMrDetails otherMrDetails,FeeCollection feeCollection) {
+    public MrDetails(MrDetailsDTO otherMrDetails, FeeCollection feeCollection) {
         this.slNo = otherMrDetails.slNo();
         this.particulars = otherMrDetails.particulars();
         this.amount = otherMrDetails.amount();

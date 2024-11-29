@@ -2,19 +2,19 @@ package com.trident.egovernance.domains.accountsSectionHandler.web;
 
 import com.trident.egovernance.domains.accountsSectionHandler.AccountSectionService;
 import com.trident.egovernance.dto.*;
+import com.trident.egovernance.global.entities.permanentDB.Fees;
 import com.trident.egovernance.global.entities.permanentDB.PaymentMode;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
+import com.trident.egovernance.global.helpers.FeeTypesType;
 import com.trident.egovernance.global.repositories.permanentDB.FeeCollectionRepository;
 import com.trident.egovernance.global.services.DateConverterServices;
 import com.trident.egovernance.global.services.MasterTableServicesImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.swing.plaf.PanelUI;
 import java.sql.Date;
 import java.util.*;
 import java.util.concurrent.*;
@@ -47,9 +47,9 @@ public class AccountSectionController {
         return ResponseEntity.ok(accountSectionService.getBasicStudentDetails(regdNo));
     }
 
-    @GetMapping("/get-fee-collection-history/{regdNo}")
-    public ResponseEntity<FeeCollectionHistoryDto> getFeeCollectionHistory(@PathVariable("regdNo") String regdNo) {
-        return ResponseEntity.ok(accountSectionService.getFeeCollectionByRegdNo(regdNo));
+    @GetMapping("/get-fee-collection-history/{regdNo}/{feeTypes}")
+    public ResponseEntity<FeeCollectionHistoryDto> getFeeCollectionHistory(@PathVariable("regdNo") String regdNo,@PathVariable("feeTypes") String feeTypes) {
+        return ResponseEntity.ok(accountSectionService.getFeeCollectionByRegdNo(regdNo, FeeTypesType.fromDisplayName(feeTypes)));
     }
 
     @GetMapping("/get-fee-collection/{input}")
@@ -138,6 +138,16 @@ public class AccountSectionController {
     @GetMapping("/get-other-fees")
     public ResponseEntity<Set<String>> getAllOtherFeesDescriptions() {
         return ResponseEntity.ok(masterTableServicesImpl.getAllOtherFeesDescriptions());
+    }
+
+    @GetMapping("/get-feeTypes")
+    public ResponseEntity<List<DescriptionTypeSemester>> saveFees(){
+        return ResponseEntity.ok(masterTableServicesImpl.getAllFeeTypesForFeeAddition());
+    }
+
+    @PostMapping("/save-Fees")
+    public ResponseEntity<List<Fees>> saveFeesToDatabase(@RequestBody List<Fees> fees){
+        return ResponseEntity.ok(masterTableServicesImpl.saveFeesToDatabase(fees));
     }
 }
 

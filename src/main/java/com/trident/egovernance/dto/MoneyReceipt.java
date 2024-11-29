@@ -10,6 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @ToString
 public class MoneyReceipt {
+    private Long mrNo;
     private List<MrDetailsDto> tat;
     private List<MrDetailsDto> tactF;
     private FeeCollectionDetails feeCollectionDetails;

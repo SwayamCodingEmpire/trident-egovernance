@@ -11,14 +11,18 @@ import com.trident.egovernance.global.helpers.FeeProcessingMode;
 import com.trident.egovernance.global.helpers.FeeTypesType;
 import com.trident.egovernance.global.repositories.permanentDB.DuesDetailsRepository;
 import com.trident.egovernance.global.repositories.permanentDB.FeeCollectionRepository;
+import com.trident.egovernance.global.repositories.permanentDB.FeeTypesRepository;
 import com.trident.egovernance.global.repositories.permanentDB.StudentRepository;
 import com.trident.egovernance.global.repositories.views.CurrentSessionRepository;
 import com.trident.egovernance.global.services.CurrentSessionFetcherServices;
+import com.trident.egovernance.global.services.MapperServiceImpl;
 import com.trident.egovernance.global.services.MasterTableServices;
 import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -37,8 +41,9 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
     private final FeeCollectionRepository feeCollectionRepository;
     private final SaveFeeCollection saveFeeCollection;
     private final CurrentSessionRepository currentSessionRepository;
+    private final MapperServiceImpl mapperServiceImpl;
 
-    public PaymentProcessingServicesImpl(StudentRepository studentRepository, MasterTableServices masterTableServicesImpl, CurrentSessionFetcherServices currentSessionFetchingService, DuesDetailsRepository duesDetailsRepository, EntityManager entityManager, FeeCollectionRepository feeCollectionRepository, SaveFeeCollection saveFeeCollection, CurrentSessionRepository currentSessionRepository) {
+    public PaymentProcessingServicesImpl(StudentRepository studentRepository, MasterTableServices masterTableServicesImpl, CurrentSessionFetcherServices currentSessionFetchingService, DuesDetailsRepository duesDetailsRepository, EntityManager entityManager, FeeCollectionRepository feeCollectionRepository, SaveFeeCollection saveFeeCollection, CurrentSessionRepository currentSessionRepository, MapperServiceImpl mapperServiceImpl) {
         this.currentSessionFetchingService = currentSessionFetchingService;
         this.studentRepository = studentRepository;
         this.masterTableServicesImpl = masterTableServicesImpl;
@@ -47,10 +52,11 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
         this.feeCollectionRepository = feeCollectionRepository;
         this.saveFeeCollection = saveFeeCollection;
         this.currentSessionRepository = currentSessionRepository;
+        this.mapperServiceImpl = mapperServiceImpl;
     }
 
 
-    public MoneyReceipt processAutoPayment(FeeCollection feeCollection, String regdNo) {
+    public MoneyReceipt processAutoPayment(FeeCollection feeCollection, String regdNo, boolean isUpdate) {
         Student student = studentRepository.findById(regdNo).orElseThrow(() -> new InvalidStudentException("Invalid Registration Number"));
 
 
@@ -61,8 +67,11 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
         feeCollection.setDueYear(student.getCurrentYear());
         feeCollection.setPaymentDate(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
         List<DuesDetails> duesDetails = duesDetailsRepository.findAllByRegdNoAndBalanceAmountNotOrderByDeductionOrder(regdNo, BigDecimal.ZERO);
-        long mrNo = feeCollectionRepository.getMaxMrNo() + 1;
-        feeCollection.setMrNo(mrNo);
+
+        if(!isUpdate){
+            long mrNo = feeCollectionRepository.getMaxMrNo() + 1;
+            feeCollection.setMrNo(mrNo);
+        }
         PaymentProcessingInternalData processedData = processPayment(feeCollection, student, regdNo, duesDetails, feeCollection.getCollectedFee(), 1);
         FeeCollection processedFeeCollection = processedData.feeCollection();
         List<DuesDetails> processedDuesDetails = processedData.duesDetails();
@@ -94,19 +103,22 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
     }
 
 
-    public MoneyReceipt processNonAutoModes(FeeCollection feeCollection, String regdNo) {
+    public MoneyReceipt processNonAutoModes(FeeCollection feeCollection, String regdNo, boolean isUpdate) {
         Student student = studentRepository.findById(regdNo).orElseThrow(() -> new InvalidStudentException("Invalid Registration Number"));
         if (feeCollection.getCollectedFee().compareTo(BigDecimal.ZERO) <= 0) {
             throw new InvalidInputsException("Invalid Collected Fee");
         }
-        long mrNo = feeCollectionRepository.getMaxMrNo() + 1;
-        feeCollection.setMrNo(mrNo);
+        if(!isUpdate){
+            long mrNo = feeCollectionRepository.getMaxMrNo() + 1;
+            feeCollection.setMrNo(mrNo);
+        }
         List<DuesDetails> duesDetailsOptionalFees = duesDetailsRepository.findAllByRegdNoAndBalanceAmountNotOrderByDeductionOrder(regdNo, BigDecimal.ZERO);
         List<DuesDetails> duesDetailsCourseFee = duesDetailsOptionalFees.stream()
                 .filter(duesDetails -> feeCollection.getFeeProcessingMode().equals(FeeProcessingMode.COURSEFEES) ? duesDetails.getFeeType().getFeeGroup().compareTo("COURSEFEE") == 0 : duesDetails.getFeeType().getType().equals(FeeTypesType.OPTIONAL_FEES))
                 .collect(Collectors.toCollection(ArrayList::new));
         duesDetailsOptionalFees.removeAll(duesDetailsCourseFee);
         feeCollection.setPaymentDate(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+        feeCollection.setDueYear(student.getCurrentYear());
         PaymentProcessingInternalData processedData = processPayment(feeCollection, student, regdNo, duesDetailsCourseFee, feeCollection.getCollectedFee(), 1);
         FeeCollection processedFeeCollection = processedData.feeCollection();
         logger.info(processedFeeCollection.toString());
@@ -129,10 +141,51 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
         return saveFeeCollection.getMrDetailsSorted(processedFeeCollection, processedDuesDetails);
     }
 
+    @Transactional
     @Override
-    public MoneyReceipt processOtherFeesPayment(OtherFeesPayment otherFeesPayment, String regdNo) {
+    public MoneyReceipt updateFeesCollection(FeeCollection feeCollection) {
+        String regdNo = feeCollectionRepository.findRegdNoByMrNo(feeCollection.getMrNo()).orElseThrow(() -> new InvalidInputsException("Invalid Money Receipt Number"));
+        if(deleteFeeCollectionRecord(feeCollection.getMrNo())>0){
+            if(feeCollection.getFeeProcessingMode() == null){
+                return processOtherFeesPayment(
+                        new OtherFeesPayment(
+                                feeCollection.getMrNo(),
+                                new OtherFeeCollection(
+                                        feeCollection.getCollectedFee(),
+                                        feeCollection.getPaymentMode()
+                                ),
+                                mapperServiceImpl.convertToMrDetailsDTOSet(feeCollection.getMrDetails())
+                        ),
+                        regdNo,
+                        true);
+            }
+            else if(feeCollection.getFeeProcessingMode().equals(FeeProcessingMode.AUTO)){
+                return processAutoPayment(feeCollection,regdNo,true);
+            }
+            else{
+                return processNonAutoModes(feeCollection,regdNo,true);
+            }
+        }
+        else {
+            throw new RecordNotFoundException("Invalid Fee Collection");
+        }
+    }
+
+    public int deleteFeeCollectionRecord(Long mrNo) {
+        logger.info(mrNo.toString());
+        return feeCollectionRepository.deleteByMrNo(mrNo);
+    }
+
+    @Override
+    public MoneyReceipt processOtherFeesPayment(OtherFeesPayment otherFeesPayment, String regdNo, boolean isUpdate) {
         logger.info(otherFeesPayment.toString());
-        Long mrNo = feeCollectionRepository.getMaxMrNo() + 1;
+        Long mrNo = 0L;
+        if(isUpdate){
+            mrNo = otherFeesPayment.mrNo();
+        }
+        else{
+            mrNo = feeCollectionRepository.getMaxMrNo() + 1;
+        }
         FeeCollection feeCollection = new FeeCollection(otherFeesPayment.feeCollection());
         feeCollection.setPaymentDate(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
         feeCollection.setMrNo(mrNo);

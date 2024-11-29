@@ -8,9 +8,12 @@ import com.trident.egovernance.global.entities.permanentDB.FeeCollection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Repository
@@ -19,6 +22,7 @@ public interface FeeCollectionRepository extends JpaRepository<FeeCollection,Lon
     Long getMaxMrNo();
 
 
+    @Query("SELECT f FROM FEECOLLECTION f LEFT JOIN FETCH f.mrDetails LEFT JOIN FETCH f.student WHERE f.student.regdNo = :regdNo")
     List<FeeCollection> findAllByStudent_RegdNo(String regdNo);
 
     @Query("SELECT new com.trident.egovernance.dto.RegdOnly(s.regdNo) FROM FEECOLLECTION f JOIN f.student s JOIN f.mrDetails m WHERE s.regdNo IN :regdNos AND m.particulars = :particulars")
@@ -53,4 +57,14 @@ public interface FeeCollectionRepository extends JpaRepository<FeeCollection,Lon
     @Query("SELECT DISTINCT f FROM FEECOLLECTION f LEFT JOIN FETCH f.student LEFT JOIN FETCH f.mrNo WHERE f.student.regdNo = :regdNo")
     Set<FeeCollection> findAllByRegdNo(String regdNo);
 
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM FEECOLLECTION f WHERE f.mrNo = :mrNo")
+    int deleteByMrNo(Long mrNo);
+
+    @Query("SELECT f.student.regdNo FROM FEECOLLECTION f WHERE f.mrNo = :mrNo")
+    Optional<String> findRegdNoByMrNo(Long mrNo);
+
+    @Query("SELECT f FROM FEECOLLECTION f LEFT JOIN FETCH f.mrDetails WHERE f.mrNo = :mrNo")
+    FeeCollection findByMrNo(Long mrNo);
 }

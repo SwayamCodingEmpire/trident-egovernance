@@ -44,6 +44,7 @@ public interface MapperService {
 
     StudentDocs convertToStudentDocsFromStudentDocsOnlyDTO(StudentDocsOnlyDTO studentDocsOnlyDTO);
     Set<CollectionSummary> convertToCollectionSummarySet(Set<DailyCollectionSummary> dailyCollectionSummaries);
+    Set<MrDetailsDTO> convertToMrDetailsDTOSet(Set<MrDetails> mrDetailsSet);
 
 //    Set<String> getListOfOtherFees();
 }

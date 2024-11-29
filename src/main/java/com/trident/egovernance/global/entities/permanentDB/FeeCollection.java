@@ -3,6 +3,7 @@ package com.trident.egovernance.global.entities.permanentDB;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.trident.egovernance.dto.OtherFeeCollection;
 import com.trident.egovernance.global.helpers.FeeProcessingMode;
+import com.trident.egovernance.global.helpers.FeeTypesType;
 import com.trident.egovernance.global.helpers.PaymentMode;
 import jakarta.persistence.*;
 import lombok.*;
@@ -44,6 +45,8 @@ public class FeeCollection {
     private String sessionId;
     @Transient
     private FeeProcessingMode feeProcessingMode;
+    @Transient
+    private String type;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REGDNO")
     @JsonIgnore
