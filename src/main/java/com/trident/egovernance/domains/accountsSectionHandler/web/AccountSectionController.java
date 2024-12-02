@@ -1,20 +1,20 @@
 package com.trident.egovernance.domains.accountsSectionHandler.web;
 
 import com.trident.egovernance.domains.accountsSectionHandler.AccountSectionService;
+import com.trident.egovernance.domains.accountsSectionHandler.services.FeeCollectionTransactions;
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.permanentDB.Fees;
 import com.trident.egovernance.global.entities.permanentDB.PaymentMode;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
 import com.trident.egovernance.global.helpers.FeeTypesType;
 import com.trident.egovernance.global.repositories.permanentDB.FeeCollectionRepository;
-import com.trident.egovernance.global.services.DateConverterServices;
 import com.trident.egovernance.global.services.MasterTableServicesImpl;
+import com.trident.egovernance.global.services.MiscellaniousServicesImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.swing.plaf.PanelUI;
 import java.sql.Date;
 import java.util.*;
 import java.util.concurrent.*;
@@ -23,16 +23,19 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/accounts-section")
 public class AccountSectionController {
+    private final FeeCollectionTransactions feeCollectionTransactions;
     private final AccountSectionService accountSectionService;
-    private final DateConverterServices dateConverterServices;
+    private final MiscellaniousServicesImpl miscellaniousServices;
+
     private final FeeCollectionRepository feeCollectionRepository;
     private final Logger logger = LoggerFactory.getLogger(AccountSectionController.class);
     private final MasterTableServicesImpl masterTableServicesImpl;
     ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
-    public AccountSectionController(AccountSectionService accountSectionService, DateConverterServices dateConverterServices, FeeCollectionRepository feeCollectionRepository, MasterTableServicesImpl masterTableServicesImpl) {
+    public AccountSectionController(FeeCollectionTransactions feeCollectionTransactions, AccountSectionService accountSectionService, MiscellaniousServicesImpl miscellaniousServices, FeeCollectionRepository feeCollectionRepository, MasterTableServicesImpl masterTableServicesImpl) {
+        this.feeCollectionTransactions = feeCollectionTransactions;
         this.accountSectionService = accountSectionService;
-        this.dateConverterServices = dateConverterServices;
+        this.miscellaniousServices = miscellaniousServices;
         this.feeCollectionRepository = feeCollectionRepository;
         this.masterTableServicesImpl = masterTableServicesImpl;
     }
@@ -55,7 +58,7 @@ public class AccountSectionController {
     @GetMapping("/get-fee-collection/{input}")
     public ResponseEntity<Collection<CollectionSummary>> getFeeCollectionBySessionId(@PathVariable("input") String input) {
         logger.info("get-fee-collection-by-sessionId/{}", input);
-        int formatIndex = dateConverterServices.checkFormat(input);
+        int formatIndex = miscellaniousServices.checkFormat(input);
         switch (formatIndex) {
             case 1:
                 return ResponseEntity.ok(accountSectionService.getAllDailyCollectionSummaryByPaymentDate(input));
@@ -123,11 +126,11 @@ public class AccountSectionController {
     @GetMapping("/get-collection-report-by-date/{input}")
     public ResponseEntity<List<CollectionReportDTO>> fetchCollectionReportsByDate(@PathVariable("input") String input) {
         logger.info("get-collection-report-by-date/{}", input);
-        int formatIndex = dateConverterServices.checkFormat(input);
+        int formatIndex = miscellaniousServices.checkFormat(input);
         return switch (formatIndex) {
             case 1 -> ResponseEntity.ok(accountSectionService.getCollectionReportByDate(input));
             case 3 -> {
-                Date[] dates = dateConverterServices.convertToDates(input);
+                Date[] dates = miscellaniousServices.convertToDates(input);
                 logger.info(dates.toString());
                 yield ResponseEntity.ok(accountSectionService.getCollectionReportBetweenDates(dates[0], dates[1]));
             }
@@ -140,15 +143,34 @@ public class AccountSectionController {
         return ResponseEntity.ok(masterTableServicesImpl.getAllOtherFeesDescriptions());
     }
 
-    @GetMapping("/get-feeTypes")
-    public ResponseEntity<List<DescriptionTypeSemester>> saveFees(){
-        return ResponseEntity.ok(masterTableServicesImpl.getAllFeeTypesForFeeAddition());
+    @PostMapping("/get-feeTypes")
+    public ResponseEntity<List<FeeTypesOnly>> saveFees(@RequestBody Set<FeeTypesType> feeTypes){
+        return ResponseEntity.ok(masterTableServicesImpl.getAllFeeTypesForFeeAddition(feeTypes));
     }
 
     @PostMapping("/save-Fees")
     public ResponseEntity<List<Fees>> saveFeesToDatabase(@RequestBody List<Fees> fees){
         return ResponseEntity.ok(masterTableServicesImpl.saveFeesToDatabase(fees));
     }
+
+    @PostMapping("/get-Fees-by-batch")
+    public ResponseEntity<Set<FeesOnly>> getFeesByBatch(@RequestBody BasicFeeBatchDetails basicFeeBatchDetails){
+        return ResponseEntity.ok(masterTableServicesImpl.getFeesByBatchId(basicFeeBatchDetails));
+    }
+
+    @PutMapping("/update-Fees")
+    public ResponseEntity<List<Fees>> updateFees(@RequestBody Set<Fees> fees){
+        return ResponseEntity.ok(masterTableServicesImpl.updateFees(fees));
+    }
+
+    @GetMapping("/get-money-receipt/{mrNo}")
+    public ResponseEntity<MoneyReceipt> getMoenyReceipt(@PathVariable("mrNo") Long mrNo){
+        return ResponseEntity.ok(feeCollectionTransactions.getMoneyReceiptByMrNo(mrNo));
+    }
+//
+//    public ResponseEntity<Boolean> addFeeTypes(@RequestBody Set<FeeTypesOnly> feeTypes){
+//
+//    }
 }
 
 

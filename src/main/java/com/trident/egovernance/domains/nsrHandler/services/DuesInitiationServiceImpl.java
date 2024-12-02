@@ -11,6 +11,7 @@ import com.trident.egovernance.domains.nsrHandler.DuesInitiationService;
 import com.trident.egovernance.global.repositories.permanentDB.DuesDetailsRepository;
 import com.trident.egovernance.global.repositories.permanentDB.SessionsRepository;
 import com.trident.egovernance.global.services.MasterTableServices;
+import com.trident.egovernance.global.services.MiscellaniousServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -33,10 +34,12 @@ public class DuesInitiationServiceImpl implements DuesInitiationService {
     private final DuesDetailsRepository duesDetailsRepository;
     private final MasterTableServices masterTableServicesImpl;
     private final Logger logger = LoggerFactory.getLogger(DuesInitiationServiceImpl.class);
+    private final MiscellaniousServices miscellaniousServices;
 
-    public DuesInitiationServiceImpl(DuesDetailsRepository duesDetailsRepository, MasterTableServices masterTableServicesImpl) {
+    public DuesInitiationServiceImpl(DuesDetailsRepository duesDetailsRepository, MasterTableServices masterTableServicesImpl, MiscellaniousServices miscellaniousServices) {
         this.duesDetailsRepository = duesDetailsRepository;
         this.masterTableServicesImpl = masterTableServicesImpl;
+        this.miscellaniousServices = miscellaniousServices;
     }
 
 
@@ -62,7 +65,7 @@ public class DuesInitiationServiceImpl implements DuesInitiationService {
 
 
                 List<DuesDetails> duesDetailsList = fees.stream()
-                        .filter(fee -> masterTableServicesImpl.isRelevantFee(
+                        .filter(fee -> miscellaniousServices.isRelevantFee(
                                 fee,
                                 new StudentRequiredFieldsDTO(
                                         student.tfw(),

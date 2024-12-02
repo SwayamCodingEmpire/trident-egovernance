@@ -51,10 +51,10 @@ public class PaymentController {
         logger.info("feesPayment");
         MoneyReceipt moneyReceipt = new MoneyReceipt();
         if(feeCollection.getFeeProcessingMode().equals(FeeProcessingMode.AUTO)){
-            moneyReceipt = paymentProcessingService.processAutoPayment(feeCollection,regdNo,false);
+            moneyReceipt = paymentProcessingService.processPaymentAutoMode(feeCollection,regdNo,false);
         }
         else{
-            moneyReceipt = paymentProcessingService.processNonAutoModes(feeCollection,regdNo,false);
+            moneyReceipt = paymentProcessingService.processPaymentNonAutoModes(feeCollection,regdNo,false);
         }// P
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -76,9 +76,7 @@ public class PaymentController {
 
     @DeleteMapping("/delete-fee-collection/{mrNo}")
     public ResponseEntity<Void> deleteFeeCollection(@PathVariable("mrNo") Long mrNo){
-        boolean isDeleted = paymentProcessingService.deleteFeeCollectionRecord(mrNo) > 0;
-
-        if (isDeleted) {
+        if (paymentProcessingService.deleteFeeCollection(mrNo)) {
             return ResponseEntity.noContent().build(); // 204 No Content
         } else {
             return ResponseEntity.notFound().build(); // 404 Not Found if deletion failed

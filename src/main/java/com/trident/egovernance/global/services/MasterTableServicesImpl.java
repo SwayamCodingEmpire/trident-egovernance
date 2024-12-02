@@ -1,8 +1,7 @@
 package com.trident.egovernance.global.services;
 
-import com.trident.egovernance.dto.DescriptionTypeSemester;
-import com.trident.egovernance.dto.FeeTypesMrHead;
-import com.trident.egovernance.dto.StudentRequiredFieldsDTO;
+import com.trident.egovernance.dto.*;
+import com.trident.egovernance.exceptions.ImproperProcedureException;
 import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.exceptions.RecordNotFoundException;
 import com.trident.egovernance.global.entities.permanentDB.PaymentMode;
@@ -12,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.util.*;
@@ -25,13 +25,17 @@ public class MasterTableServicesImpl implements MasterTableServices {
     private final FeeTypesRepository feeTypesRepository;
     private final StandardDeductionFormatRepository standardDeductionFormatRepository;
     private final PaymentModeRepository paymentModeRepository;
+    private final MapperService mapperService;
+    private final MiscellaniousServices miscellaniousServices;
 
-    public MasterTableServicesImpl(FeesRepository feesRepository, SessionsRepository sessionsRepository, FeeTypesRepository feeTypesRepository, StandardDeductionFormatRepository standardDeductionFormatRepository, PaymentModeRepository paymentModeRepository) {
+    public MasterTableServicesImpl(FeesRepository feesRepository, SessionsRepository sessionsRepository, FeeTypesRepository feeTypesRepository, StandardDeductionFormatRepository standardDeductionFormatRepository, PaymentModeRepository paymentModeRepository, MapperService mapperService, MiscellaniousServices miscellaniousServices) {
         this.feesRepository = feesRepository;
         this.sessionsRepository = sessionsRepository;
         this.feeTypesRepository = feeTypesRepository;
         this.standardDeductionFormatRepository = standardDeductionFormatRepository;
         this.paymentModeRepository = paymentModeRepository;
+        this.mapperService = mapperService;
+        this.miscellaniousServices = miscellaniousServices;
     }
 
     @Cacheable(value = "fees", key = "#batchId")
@@ -154,8 +158,8 @@ public class MasterTableServicesImpl implements MasterTableServices {
         return paymentModeRepository.findAll();
     }
 
-    public List<DescriptionTypeSemester> getAllFeeTypesForFeeAddition() {
-        return feeTypesRepository.findAllByTypeIn(Set.of(FeeTypesType.OTHER_FEES, FeeTypesType.COMPULSORY_FEES));
+    public List<FeeTypesOnly> getAllFeeTypesForFeeAddition(Set<FeeTypesType> feeTypesTypes) {
+        return feeTypesRepository.findAllByTypeIn(feeTypesTypes);
     }
 
     @Override
@@ -163,8 +167,8 @@ public class MasterTableServicesImpl implements MasterTableServices {
         for (Fees fees1 : fees) {
             // Check for null to avoid NullPointerException
             if (fees1.getBatchElements() != null) {
-                String batchId = fees1.getBatchElements().course() +
-                        String.valueOf(fees1.getBatchElements().admYear()) +
+                String batchId = fees1.getBatchElements().course().getEnumName() +
+                        fees1.getBatchElements().admYear() +
                         fees1.getBatchElements().branchCode() +
                         fees1.getBatchElements().studentType();
                 fees1.setBatchId(batchId); // Set the calculated batchId
@@ -174,5 +178,32 @@ public class MasterTableServicesImpl implements MasterTableServices {
         return fees; // Return the modified list
     }
 
+    @Override
+    public Set<FeesOnly> getFeesByBatchId(BasicFeeBatchDetails basicFeeBatchDetails) {
+        return mapperService.convertToFeesOnly(feesRepository.findAllByDescription(miscellaniousServices.getBatchId(basicFeeBatchDetails)));
+    }
 
+    @Override
+    @Transactional
+    public List<Fees> updateFees(Set<Fees> fees) {
+        try {
+            long feeId = feesRepository.getMaxIdForFees() + 1;
+            List<Fees> updateFees = fees.stream().toList();
+            for (Fees fees1 : updateFees) {
+                fees1.setBatchId(miscellaniousServices.getBatchId(fees1.getBatchElements()));
+                fees1.setFeeId(feeId);
+                feeId++;
+            }
+
+            return feesRepository.saveAll(fees);
+        } catch (Exception e) {
+            throw new ImproperProcedureException("Proper process Not Followed");
+        }
+    }
+
+    @Override
+    public Set<FeeTypesOnly> createNewFeeTypes(Set<FeeTypesOnly> feeTypes) {
+        List<FeeTypes> feeTypesList = mapperService.convertToFeeTypesList(feeTypes);
+        return mapperService.convertToFeeTypesOnlySet(feeTypesRepository.saveAll(feeTypesList));
+    }
 }

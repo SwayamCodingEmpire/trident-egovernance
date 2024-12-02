@@ -45,6 +45,10 @@ public interface MapperService {
     StudentDocs convertToStudentDocsFromStudentDocsOnlyDTO(StudentDocsOnlyDTO studentDocsOnlyDTO);
     Set<CollectionSummary> convertToCollectionSummarySet(Set<DailyCollectionSummary> dailyCollectionSummaries);
     Set<MrDetailsDTO> convertToMrDetailsDTOSet(Set<MrDetails> mrDetailsSet);
+    Set<FeesOnly> convertToFeesOnly(List<Fees> fees);
+    List<FeeTypes> convertToFeeTypesList(Set<FeeTypesOnly> feesList);
+    Set<FeeTypesOnly> convertToFeeTypesOnlySet(List<FeeTypes> feesList);
+    List<MrDetailsDto> convertToMrDetailsDtoSet(Set<MrDetails> mrDetailsSet);
 
 //    Set<String> getListOfOtherFees();
 }

@@ -35,7 +35,11 @@ public class Fees implements Serializable {
     @Enumerated(EnumType.STRING)
     private CfPaymentMode payType;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "DESCRIPTION", referencedColumnName = "DESCRIPTION", insertable = false, updatable = false)
     private FeeTypes feeType;
+
+
 }
+
+

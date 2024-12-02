@@ -11,7 +11,6 @@ import com.trident.egovernance.global.helpers.FeeProcessingMode;
 import com.trident.egovernance.global.helpers.FeeTypesType;
 import com.trident.egovernance.global.repositories.permanentDB.DuesDetailsRepository;
 import com.trident.egovernance.global.repositories.permanentDB.FeeCollectionRepository;
-import com.trident.egovernance.global.repositories.permanentDB.FeeTypesRepository;
 import com.trident.egovernance.global.repositories.permanentDB.StudentRepository;
 import com.trident.egovernance.global.repositories.views.CurrentSessionRepository;
 import com.trident.egovernance.global.services.CurrentSessionFetcherServices;
@@ -20,7 +19,6 @@ import com.trident.egovernance.global.services.MasterTableServices;
 import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +30,7 @@ import java.util.stream.Collectors;
 
 @Service
 class PaymentProcessingServicesImpl implements PaymentProcessingServices {
+    private final FeeCollectionTransactionServices feeCollectionTransactionServices;
     private final StudentRepository studentRepository;
     private final CurrentSessionFetcherServices currentSessionFetchingService;
     private final MasterTableServices masterTableServicesImpl;
@@ -39,11 +38,12 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
     private final EntityManager entityManager;
     private final Logger logger = LoggerFactory.getLogger(PaymentProcessingServicesImpl.class);
     private final FeeCollectionRepository feeCollectionRepository;
-    private final SaveFeeCollection saveFeeCollection;
+    private final FeeCollectionTransactions saveFeeCollection;
     private final CurrentSessionRepository currentSessionRepository;
     private final MapperServiceImpl mapperServiceImpl;
 
-    public PaymentProcessingServicesImpl(StudentRepository studentRepository, MasterTableServices masterTableServicesImpl, CurrentSessionFetcherServices currentSessionFetchingService, DuesDetailsRepository duesDetailsRepository, EntityManager entityManager, FeeCollectionRepository feeCollectionRepository, SaveFeeCollection saveFeeCollection, CurrentSessionRepository currentSessionRepository, MapperServiceImpl mapperServiceImpl) {
+    public PaymentProcessingServicesImpl(FeeCollectionTransactionServices feeCollectionTransactionServices, StudentRepository studentRepository, MasterTableServices masterTableServicesImpl, CurrentSessionFetcherServices currentSessionFetchingService, DuesDetailsRepository duesDetailsRepository, EntityManager entityManager, FeeCollectionRepository feeCollectionRepository, FeeCollectionTransactions saveFeeCollection, CurrentSessionRepository currentSessionRepository, MapperServiceImpl mapperServiceImpl) {
+        this.feeCollectionTransactionServices = feeCollectionTransactionServices;
         this.currentSessionFetchingService = currentSessionFetchingService;
         this.studentRepository = studentRepository;
         this.masterTableServicesImpl = masterTableServicesImpl;
@@ -56,7 +56,7 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
     }
 
 
-    public MoneyReceipt processAutoPayment(FeeCollection feeCollection, String regdNo, boolean isUpdate) {
+    public MoneyReceipt processPaymentAutoMode(FeeCollection feeCollection, String regdNo, boolean isUpdate) {
         Student student = studentRepository.findById(regdNo).orElseThrow(() -> new InvalidStudentException("Invalid Registration Number"));
 
 
@@ -68,7 +68,7 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
         feeCollection.setPaymentDate(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
         List<DuesDetails> duesDetails = duesDetailsRepository.findAllByRegdNoAndBalanceAmountNotOrderByDeductionOrder(regdNo, BigDecimal.ZERO);
 
-        if(!isUpdate){
+        if (!isUpdate) {
             long mrNo = feeCollectionRepository.getMaxMrNo() + 1;
             feeCollection.setMrNo(mrNo);
         }
@@ -82,33 +82,19 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
             processedDuesDetails.add(duesDetail);
         }
         logger.info(processedDuesDetails.toString());
-//        duesDetailsRepository.saveAllAndFlush(duesDetails);
         processedFeeCollection.setMrDetails(processedMrDetails);
         logger.info(feeCollection.toString());
         logger.info(feeCollection.getMrDetails().toString());
-//        FeeCollection savedFeeCollection = feeCollectionRepository.save(processedFeeCollection);
-//        logger.info(savedFeeCollection.toString());
-//        return sortMrDetailsByMrHead(savedFeeCollection.getMrDetails().stream()
-//                .map(mrDetail ->
-//                        new MrDetailsDto(
-//                                savedFeeCollection.getMrNo(),
-//                                mrDetail.getId(),
-//                                mrDetail.getSlNo(),
-//                                mrDetail.getParticulars(),
-//                                mrDetail.getAmount()
-//                        )
-//                )
-//                .collect(Collectors.toList()));
         return saveFeeCollection.getMrDetailsSorted(processedFeeCollection, duesDetails);
     }
 
 
-    public MoneyReceipt processNonAutoModes(FeeCollection feeCollection, String regdNo, boolean isUpdate) {
+    public MoneyReceipt processPaymentNonAutoModes(FeeCollection feeCollection, String regdNo, boolean isUpdate) {
         Student student = studentRepository.findById(regdNo).orElseThrow(() -> new InvalidStudentException("Invalid Registration Number"));
         if (feeCollection.getCollectedFee().compareTo(BigDecimal.ZERO) <= 0) {
             throw new InvalidInputsException("Invalid Collected Fee");
         }
-        if(!isUpdate){
+        if (!isUpdate) {
             long mrNo = feeCollectionRepository.getMaxMrNo() + 1;
             feeCollection.setMrNo(mrNo);
         }
@@ -144,9 +130,9 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
     @Transactional
     @Override
     public MoneyReceipt updateFeesCollection(FeeCollection feeCollection) {
-        String regdNo = feeCollectionRepository.findRegdNoByMrNo(feeCollection.getMrNo()).orElseThrow(() -> new InvalidInputsException("Invalid Money Receipt Number"));
-        if(deleteFeeCollectionRecord(feeCollection.getMrNo())>0){
-            if(feeCollection.getFeeProcessingMode() == null){
+        FeeCollection feeCollection1 = feeCollectionRepository.findByMrNo(feeCollection.getMrNo()).orElseThrow(() -> new InvalidInputsException("Invalid Money Receipt Number"));
+        if (feeCollectionTransactionServices.deleteFeeCollectionRecord(feeCollection1) > 0) {
+            if (feeCollection.getFeeProcessingMode() == null) {
                 return processOtherFeesPayment(
                         new OtherFeesPayment(
                                 feeCollection.getMrNo(),
@@ -156,34 +142,31 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
                                 ),
                                 mapperServiceImpl.convertToMrDetailsDTOSet(feeCollection.getMrDetails())
                         ),
-                        regdNo,
+                        feeCollection1.getStudent().getRegdNo(),
                         true);
+            } else if (feeCollection.getFeeProcessingMode().equals(FeeProcessingMode.AUTO)) {
+                return processPaymentAutoMode(feeCollection, feeCollection1.getStudent().getRegdNo(), true);
+            } else {
+                return processPaymentNonAutoModes(feeCollection, feeCollection1.getStudent().getRegdNo(), true);
             }
-            else if(feeCollection.getFeeProcessingMode().equals(FeeProcessingMode.AUTO)){
-                return processAutoPayment(feeCollection,regdNo,true);
-            }
-            else{
-                return processNonAutoModes(feeCollection,regdNo,true);
-            }
-        }
-        else {
+        } else {
             throw new RecordNotFoundException("Invalid Fee Collection");
         }
     }
 
-    public int deleteFeeCollectionRecord(Long mrNo) {
-        logger.info(mrNo.toString());
-        return feeCollectionRepository.deleteByMrNo(mrNo);
+
+    public boolean deleteFeeCollection(Long mrNo) {
+        FeeCollection feeCollection = feeCollectionRepository.findByMrNo(mrNo).orElseThrow(()-> new InvalidInputsException("Invalid Fee Collection"));
+        return feeCollectionTransactionServices.deleteFeeCollectionRecord(feeCollection)>0;
     }
 
     @Override
     public MoneyReceipt processOtherFeesPayment(OtherFeesPayment otherFeesPayment, String regdNo, boolean isUpdate) {
         logger.info(otherFeesPayment.toString());
         Long mrNo = 0L;
-        if(isUpdate){
+        if (isUpdate) {
             mrNo = otherFeesPayment.mrNo();
-        }
-        else{
+        } else {
             mrNo = feeCollectionRepository.getMaxMrNo() + 1;
         }
         FeeCollection feeCollection = new FeeCollection(otherFeesPayment.feeCollection());
@@ -192,29 +175,28 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
         CurrentSession currentSession = currentSessionRepository.findById(regdNo).orElseThrow(() -> new InvalidStudentException("Invalid Registration Number"));
         feeCollection.setDueYear(currentSession.getCurrentYear());
         feeCollection.setSessionId(currentSession.getSessionId());
-        feeCollection.setStudent(entityManager.getReference(Student.class,regdNo));
+        feeCollection.setStudent(entityManager.getReference(Student.class, regdNo));
         Set<MrDetails> mrDetailsSet = otherFeesPayment.otherMrDetails().stream()
-                .map(otherMrDetails -> new MrDetails(otherMrDetails,feeCollection))
+                .map(otherMrDetails -> new MrDetails(otherMrDetails, feeCollection))
                 .collect(Collectors.toSet());
         feeCollection.setMrDetails(mrDetailsSet);
         FeeCollection savedFeeCollection = feeCollectionRepository.save(feeCollection);
-        MoneyReceipt moneyReceipt = saveFeeCollection.sortMrDetailsByMrHead(savedFeeCollection.getMrDetails().stream()
-                        .map(mrDetail ->
-                                new MrDetailsDto(
-                                        savedFeeCollection.getMrNo(),
-                                        mrDetail.getId(),
-                                        mrDetail.getSlNo(),
-                                        mrDetail.getParticulars(),
-                                        mrDetail.getAmount()
+        MoneyReceipt moneyReceipt = saveFeeCollection.sortMrDetailsByMrHead
+                (
+                        savedFeeCollection.getMrDetails().stream()
+                                .map(mrDetail ->
+                                        new MrDetailsDto(
+                                                savedFeeCollection.getMrNo(),
+                                                mrDetail.getId(),
+                                                mrDetail.getSlNo(),
+                                                mrDetail.getParticulars(),
+                                                mrDetail.getAmount()
+                                        )
                                 )
-                        )
-                        .collect(Collectors.toList()),
-                new FeeCollectionDetails(savedFeeCollection.getPaymentMode(),
-                        savedFeeCollection.getDdNo(),
-                        savedFeeCollection.getDdBank(),
-                        savedFeeCollection.getDdDate()),
-                null
-        );
+                                .collect(Collectors.toList()),
+                        new FeeCollectionDetails(savedFeeCollection),
+                        null
+                );
         logger.info(moneyReceipt.toString());
         return moneyReceipt;
     }
@@ -303,4 +285,6 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
         duesDetail.setDeductionOrder(masterTableServicesImpl.getStandardDeductionFormat("EXCESS FEE").orElseThrow(() -> new RecordNotFoundException("Invalid Input")).getDeductionOrder());
         return duesDetail;
     }
+
+
 }

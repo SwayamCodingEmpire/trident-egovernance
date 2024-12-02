@@ -1,6 +1,5 @@
 package com.trident.egovernance.dto;
 
-import com.trident.egovernance.global.entities.permanentDB.PaymentDuesDetails;
 import lombok.*;
 
 import java.util.List;
@@ -10,6 +9,7 @@ import java.util.List;
 @NoArgsConstructor
 @ToString
 public class MoneyReceipt {
+    private String paymentDate;
     private Long mrNo;
     private List<MrDetailsDto> tat;
     private List<MrDetailsDto> tactF;

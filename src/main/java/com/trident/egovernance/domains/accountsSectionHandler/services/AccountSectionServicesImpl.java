@@ -15,7 +15,7 @@ import com.trident.egovernance.global.repositories.views.CollectionReportReposit
 import com.trident.egovernance.global.repositories.views.DailyCollectionSummaryRepository;
 import com.trident.egovernance.global.services.DateConverterServices;
 import com.trident.egovernance.global.services.MapperService;
-import com.trident.egovernance.global.services.MapperServiceImpl;
+import com.trident.egovernance.global.services.MiscellaniousServices;
 import jakarta.persistence.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,12 +28,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @Service
 public class AccountSectionServicesImpl implements AccountSectionService {
-    private final DateConverterServices dateConverterServices;
+    private final MiscellaniousServices miscellaniousServices;
     private final MapperService mapperService;
     private final OldDuesDetailsRepository oldDuesDetailsRepository;
     private final DuesDetailsRepository duesDetailsRepository;
@@ -43,8 +42,8 @@ public class AccountSectionServicesImpl implements AccountSectionService {
     private final Logger logger = LoggerFactory.getLogger(AccountSectionServicesImpl.class);
     private final CollectionReportRepository collectionReportRepository;
 
-    public AccountSectionServicesImpl(DateConverterServices dateConverterServices, MapperService mapperService, OldDuesDetailsRepository oldDuesDetailsRepository, DuesDetailsRepository duesDetailsRepository, FeeCollectionRepository feeCollectionRepository, StudentRepository studentRepository, DailyCollectionSummaryRepository dailyCollectionSummaryRepository, CollectionReportRepository collectionReportRepository) {
-        this.dateConverterServices = dateConverterServices;
+    public AccountSectionServicesImpl(MiscellaniousServices miscellaniousServices, MapperService mapperService, OldDuesDetailsRepository oldDuesDetailsRepository, DuesDetailsRepository duesDetailsRepository, FeeCollectionRepository feeCollectionRepository, StudentRepository studentRepository, DailyCollectionSummaryRepository dailyCollectionSummaryRepository, CollectionReportRepository collectionReportRepository) {
+        this.miscellaniousServices = miscellaniousServices;
         this.mapperService = mapperService;
         this.oldDuesDetailsRepository = oldDuesDetailsRepository;
         this.duesDetailsRepository = duesDetailsRepository;
@@ -153,10 +152,10 @@ public class AccountSectionServicesImpl implements AccountSectionService {
         Set<String> dates = new HashSet<>();
         switch (unit) {
             case "week":
-                dates.addAll(dateConverterServices.getLastNumberOfDays(7 * timePeriod));
+                dates.addAll(miscellaniousServices.getLastNumberOfDays(7 * timePeriod));
                 break;
             case "month":
-                dates.addAll(dateConverterServices.getLastNumberOfDays(30 * timePeriod));
+                dates.addAll(miscellaniousServices.getLastNumberOfDays(30 * timePeriod));
                 break;
             default:
                 throw new DatabaseException("Unsupported unit");

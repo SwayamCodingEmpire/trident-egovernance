@@ -28,7 +28,7 @@ public class MrDetails {
     private String particulars;
     @Column(name = "AMOUNT")
     private BigDecimal amount;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "MRNO")
     @ToString.Exclude
     private FeeCollection feeCollection;

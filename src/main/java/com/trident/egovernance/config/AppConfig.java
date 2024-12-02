@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Configuration
@@ -35,5 +36,10 @@ public class AppConfig {
     @Bean("taskExecutor")
     public Executor taskExecutor(){
         return Executors.newVirtualThreadPerTaskExecutor();
+    }
+
+    @Bean
+    public ExecutorService executorService() {
+        return (ExecutorService) Executors.newVirtualThreadPerTaskExecutor();
     }
 }

@@ -1,15 +1,14 @@
 package com.trident.egovernance.global.repositories.permanentDB;
 
-import com.trident.egovernance.dto.DuesDetailsDto;
 import com.trident.egovernance.dto.DuesSummaryDTO;
 import com.trident.egovernance.global.entities.permanentDB.DuesDetails;
+import com.trident.egovernance.dto.PaymentDuesDetails;
 import com.trident.egovernance.global.helpers.DuesDetailsId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +30,15 @@ public interface DuesDetailsRepository extends JpaRepository<DuesDetails, DuesDe
 
     @Query("SELECT new com.trident.egovernance.dto.DuesSummaryDTO(SUM(d.amountDue),SUM(d.amountPaid),SUM(d.balanceAmount)) FROM DUESDETAIL d")
     DuesSummaryDTO getDuesDetailsSummary();
+    List<DuesDetails> findAllByRegdNoOrderByDeductionOrderDesc(String regdNo);
 
-//    @Query("SELECT ")
+    @Query("SELECT new com.trident.egovernance.global.entities.permanentDB.PaymentDuesDetails(SUM(d.amountDue), SUM(d.amountPaid), SUM(d.balanceAmount)) FROM DUESDETAIL d WHERE d.regdNo = :regdNo")
+    PaymentDuesDetails findSummaryByRegdNo(String regdNo);
+
+    @Query("SELECT COALESCE(SUM(d.balanceAmount), 0) FROM DUESDETAIL d WHERE d.regdNo = :regdNo AND d.description = :arrears")
+    BigDecimal getArrearsByRegdNo(String regdNo, String arrears);
+
+
+    @Query("SELECT d FROM DUESDETAIL d WHERE CONCAT(d.regdNo, '::', d.description) IN :keys")
+    List<DuesDetails> fetchDuesDetailsByRegdNoAndDescription(Set<String> keys);
 }

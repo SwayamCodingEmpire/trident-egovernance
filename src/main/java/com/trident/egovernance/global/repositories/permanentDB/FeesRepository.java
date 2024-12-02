@@ -14,5 +14,8 @@ public interface FeesRepository extends JpaRepository<Fees,Long> {
     List<Fees> findAllByBatchIdAndRegdYear(String batchId, Integer regdYear);
     @Query("SELECT f FROM FEES f JOIN FETCH f.feeType WHERE f.description IN :descriptions")
     List<Fees> findByDescriptionIn(@Param("descriptions") List<String> descriptions);
+    List<Fees> findAllByDescription(String description);
+    @Query("SELECT MAX(f.feeId) FROM FEES f")
+    Long getMaxIdForFees();
 
 }

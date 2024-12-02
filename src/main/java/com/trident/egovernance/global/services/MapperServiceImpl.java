@@ -185,4 +185,31 @@ public class MapperServiceImpl implements MapperService {
                 ))
                 .collect(Collectors.toSet());
     }
+
+    @Override
+    public Set<FeesOnly> convertToFeesOnly(List<Fees> fees) {
+        return fees.stream()
+                .map(fees1 -> new FeesOnly(fees1))
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public List<FeeTypes> convertToFeeTypesList(Set<FeeTypesOnly> feesList) {
+        return feesList.stream()
+                .map(FeeTypes::new)
+                .toList();
+    }
+
+    @Override
+    public Set<FeeTypesOnly> convertToFeeTypesOnlySet(List<FeeTypes> feesList) {
+        return feesList.stream()
+                .map(FeeTypesOnly::new)
+                .collect(Collectors.toSet());
+    }
+    @Override
+    public List<MrDetailsDto> convertToMrDetailsDtoSet(Set<MrDetails> mrDetailsSet) {
+        return mrDetailsSet.stream()
+                .map(MrDetailsDto::new)
+                .collect(Collectors.toList());
+    }
 }

@@ -1,6 +1,7 @@
 package com.trident.egovernance.global.entities.permanentDB;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.trident.egovernance.dto.FeeTypesOnly;
 import com.trident.egovernance.global.helpers.FeeTypeTypeConverter;
 import com.trident.egovernance.global.helpers.FeeTypesType;
 import com.trident.egovernance.global.helpers.MrHead;
@@ -9,6 +10,7 @@ import jakarta.validation.constraints.Min;
 import lombok.*;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 @Getter
@@ -33,7 +35,6 @@ public class FeeTypes implements Serializable {
     @Column(name = "PARTOF")
     private String partOf;
     @Column(name = "SEM")
-    @Min(0)
     private Integer semester;
     @OneToMany(mappedBy = "feeType",cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @ToString.Exclude
@@ -45,4 +46,16 @@ public class FeeTypes implements Serializable {
     @ToString.Exclude
     @OneToMany(mappedBy = "feeType", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<MrDetails> mrDetails;
+
+    public FeeTypes(FeeTypesOnly feeTypesOnly){
+        this.description=feeTypesOnly.description();
+        this.type=feeTypesOnly.type();
+        this.feeGroup=feeTypesOnly.feeGroup();
+        this.mrHead=feeTypesOnly.mrHead();
+        this.partOf=feeTypesOnly.partOf();
+        this.semester=feeTypesOnly.semester();
+        this.fees=null;
+        this.duesDetails=null;
+        this.mrDetails=null;
+    }
 }

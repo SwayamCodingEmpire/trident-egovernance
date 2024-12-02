@@ -43,7 +43,7 @@ public class FeeCollection {
     private int dueYear;
     @Column(name = "SESSIONID")
     private String sessionId;
-    @Transient
+    @Enumerated(EnumType.STRING)
     private FeeProcessingMode feeProcessingMode;
     @Transient
     private String type;
@@ -53,7 +53,6 @@ public class FeeCollection {
     private Student student;
     @ToString.Exclude
     @OneToMany(mappedBy = "feeCollection",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
-    @JsonIgnore
     private Set<MrDetails> mrDetails;
     public FeeCollection(OtherFeeCollection otherFeeCollection) {
         this.collectedFee = otherFeeCollection.collectedFee();

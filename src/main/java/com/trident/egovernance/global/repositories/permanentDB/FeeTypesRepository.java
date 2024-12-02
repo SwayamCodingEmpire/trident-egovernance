@@ -1,7 +1,7 @@
 package com.trident.egovernance.global.repositories.permanentDB;
 
 import com.trident.egovernance.dto.DescriptionTypeSemester;
-import com.trident.egovernance.dto.FeeTypesForFeesAddition;
+import com.trident.egovernance.dto.FeeTypesOnly;
 import com.trident.egovernance.dto.FeeTypesMrHead;
 import com.trident.egovernance.global.entities.permanentDB.FeeTypes;
 import com.trident.egovernance.global.helpers.FeeTypesType;
@@ -31,9 +31,6 @@ public interface FeeTypesRepository extends JpaRepository<FeeTypes,String> {
     @Query("SELECT f.description FROM FEETYPES f WHERE f.type = :type")
     Set<String> findAllByType(FeeTypesType type);
 
-    @Query("SELECT new com.trident.egovernance.dto.FeeTypesForFeesAddition(f.description,f.feeGroup,f.semester) FROM FEETYPES f ")
-    Set<FeeTypesForFeesAddition> findAllForFeeCollection();
-
-    List<DescriptionTypeSemester> findAllByTypeIn(Set<FeeTypesType> feeTypes);
+    List<FeeTypesOnly> findAllByTypeIn(Set<FeeTypesType> feeTypes);
 
 }

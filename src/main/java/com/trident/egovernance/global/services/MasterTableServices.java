@@ -1,10 +1,9 @@
 package com.trident.egovernance.global.services;
 
-import com.trident.egovernance.dto.DescriptionTypeSemester;
-import com.trident.egovernance.dto.FeeTypesMrHead;
-import com.trident.egovernance.dto.StudentRequiredFieldsDTO;
+import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.global.helpers.Courses;
+import com.trident.egovernance.global.helpers.FeeTypesType;
 import com.trident.egovernance.global.helpers.MrHead;
 import com.trident.egovernance.global.helpers.StudentType;
 
@@ -30,7 +29,9 @@ public interface MasterTableServices {
     Set<String> getAllSessions();
     Set<String> getAllParticulars();
     List<PaymentMode> getAllPaymentModes();
-    List<DescriptionTypeSemester> getAllFeeTypesForFeeAddition();
+    List<FeeTypesOnly> getAllFeeTypesForFeeAddition(Set<FeeTypesType> feeTypesTypes);
     List<Fees> saveFeesToDatabase(List<Fees> fees);
-
+    Set<FeesOnly> getFeesByBatchId(BasicFeeBatchDetails basicFeeBatchDetails);
+    List<Fees> updateFees(Set<Fees> fees);
+    Set<FeeTypesOnly> createNewFeeTypes(Set<FeeTypesOnly> feeTypes);
 }
