@@ -42,13 +42,19 @@ public class DuesInitiationServiceImpl implements DuesInitiationService {
         this.miscellaniousServices = miscellaniousServices;
     }
 
-
     @Async("taskExecutor")
     @Transactional
-    public CompletableFuture<Boolean> initiateDuesDetails(DuesDetailsInitiationDTO student, SharedStateAmongDueInitiationAndNSRService sharedState) {
+    @Override
+    public CompletableFuture<Boolean> initiateDues(DuesDetailsInitiationDTO student, SharedStateAmongDueInitiationAndNSRService sharedState) {
+        return CompletableFuture.completedFuture(initiateDuesDetails(student, sharedState));
+    }
+
+    @Transactional
+    @Override
+    public Boolean initiateDuesDetails(DuesDetailsInitiationDTO student, SharedStateAmongDueInitiationAndNSRService sharedState) {
         try {
             logger.info("Fetching fees from database");
-            List<Fees> fees = masterTableServicesImpl.getFeesByBatchIdAndRegdYear(student.batchId(),student.currentYear());
+            List<Fees> fees = masterTableServicesImpl.getFeesByBatchIdAndRegdYear(student.batchId(), student.currentYear());
             isInterrupted(sharedState.isProceed());
             logger.info(fees.toString());
 
@@ -64,27 +70,28 @@ public class DuesInitiationServiceImpl implements DuesInitiationService {
             Boolean indusTraining = BooleanString.YES.equals(student.indortrng());
 
 
-                List<DuesDetails> duesDetailsList = fees.stream()
-                        .filter(fee -> miscellaniousServices.isRelevantFee(
-                                fee,
-                                new StudentRequiredFieldsDTO(
-                                        student.tfw(),
-                                        student.transportOpted(),
-                                        student.hostelOption()),
-                                plPool,
-                                indusTraining))
-                        .map(fee ->  createDuesDetails(fee, student, deductionFormatMap))
-                        .filter(Objects::nonNull)
-                        .toList();
+            List<DuesDetails> duesDetailsList = fees.stream()
+                    .filter(fee -> miscellaniousServices.isRelevantFee(
+                            fee,
+                            new StudentRequiredFieldsDTO(
+                                    student.tfw(),
+                                    student.transportOpted(),
+                                    student.hostelOption()),
+                            plPool,
+                            indusTraining)
+                    )
+                    .map(fee -> createDuesDetails(fee, student, deductionFormatMap))
+                    .filter(Objects::nonNull)
+                    .toList();
 
-                logger.info("Saving dues details to database");
-                isInterrupted(sharedState.isProceed());
-                duesDetailsRepository.saveAllAndFlush(duesDetailsList);
-                isInterrupted(sharedState.isProceed());
-                logger.info("Saved dues details to database");
+            logger.info("Saving dues details to database");
+            isInterrupted(sharedState.isProceed());
+            duesDetailsRepository.saveAllAndFlush(duesDetailsList);
+            isInterrupted(sharedState.isProceed());
+            logger.info("Saved dues details to database");
 
 
-            return CompletableFuture.completedFuture(true);
+            return true;
         } catch (Exception e) {
             logger.info(student.toString());
             logger.error("Error occurred while processing dues details: " + e.getMessage());
@@ -95,9 +102,8 @@ public class DuesInitiationServiceImpl implements DuesInitiationService {
     // Helper method to check if the fee is relevant
 
 
-
     // Helper method to create DuesDetails for each fee
-    private DuesDetails createDuesDetails(Fees fee, DuesDetailsInitiationDTO student, Map<String, StandardDeductionFormat> deductionFormatMap) {
+    public DuesDetails createDuesDetails(Fees fee, DuesDetailsInitiationDTO student, Map<String, StandardDeductionFormat> deductionFormatMap) {
         try {
             DuesDetails duesDetails = new DuesDetails();
             duesDetails.setId(-1L);
@@ -119,7 +125,7 @@ public class DuesInitiationServiceImpl implements DuesInitiationService {
     }
 
     private void isInterrupted(boolean proceed) throws InterruptedException {
-        if(!proceed){
+        if (!proceed) {
             throw new InterruptedException();
         }
     }

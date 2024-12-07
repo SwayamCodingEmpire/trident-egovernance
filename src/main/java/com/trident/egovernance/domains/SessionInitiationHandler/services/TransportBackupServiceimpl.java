@@ -27,15 +27,14 @@ public class TransportBackupServiceimpl {
     }
 
     @Async
-    public CompletableFuture<Boolean> transferToOldTransport(Set<String> regdNos, TransactionStatus status) {
+    public Boolean transferToOldTransport(Set<String> regdNos) {
         try{
             oldTransportRepository.saveTransportToOld(regdNos);
 //            transportRepository.deleteAllByRegdNoIn(regdNos);
             transportRepository.updateRegdYear(regdNos);
-            return CompletableFuture.completedFuture(true);
+            return true;
         }catch (Exception e){
-            status.setRollbackOnly();
-            return CompletableFuture.completedFuture(false);
+            return false;
         }
     }
 

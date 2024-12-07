@@ -26,6 +26,9 @@ public class SessionInitiationController {
     public ResponseEntity<List<StudentOnlyDTO>> getStudentForPromotion(@RequestBody SessionInitiationDTO sessionInitiationDTO) {
         return ResponseEntity.ok(sessionInitiationService.getStudentsForPromotion(sessionInitiationDTO));
     }
+
+//    @PostMapping("/create-new-session")
+//    public boolean createNewSession(@RequestBody SessionInitiationDTO sessionInitiationDTO) {}
     @PostMapping("/initiate")
     public ResponseEntity<Boolean> testNewSession(@RequestBody SessionInitiationData sessionInitiationData){
         return ResponseEntity.ok(sessionInitiationService.initiateNewSession(sessionInitiationData));

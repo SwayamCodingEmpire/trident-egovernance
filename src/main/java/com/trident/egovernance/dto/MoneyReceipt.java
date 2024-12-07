@@ -12,7 +12,9 @@ public class MoneyReceipt {
     private String paymentDate;
     private Long mrNo;
     private List<MrDetailsDto> tat;
+//    private MoneyDTO tatTotalAmount;
     private List<MrDetailsDto> tactF;
+//    private MoneyDTO tactFTotalAmount;
     private FeeCollectionDetails feeCollectionDetails;
     private PaymentDuesDetails paymentDuesDetails;
 }

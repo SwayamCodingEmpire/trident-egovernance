@@ -13,6 +13,7 @@ import com.trident.egovernance.global.repositories.permanentDB.DuesDetailsReposi
 import com.trident.egovernance.global.repositories.permanentDB.FeeCollectionRepository;
 import com.trident.egovernance.global.services.MapperService;
 import com.trident.egovernance.global.services.MasterTableServices;
+import org.apache.commons.lang3.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.task.ThreadPoolTaskExecutorBuilder;
@@ -60,38 +61,45 @@ public class FeeCollectionTransactions implements FeeCollectionTransactionServic
         BigDecimal totalPaid = BigDecimal.ZERO;
         BigDecimal amountDue = BigDecimal.ZERO;
         BigDecimal arrears = BigDecimal.ZERO;
-        for(DuesDetails d : savedDuesDetails) {
-            if(d.getDescription().compareTo("PREVIOUS DUES") != 0) {
+        for (DuesDetails d : savedDuesDetails) {
+            if (d.getDescription().compareTo("PREVIOUS DUES") != 0) {
                 currentDues = currentDues.add(d.getAmountDue());
                 totalPaid = totalPaid.add(d.getAmountPaid());
                 amountDue = amountDue.add(d.getBalanceAmount());
-            }
-            else{
+            } else {
                 arrears = arrears.add(d.getBalanceAmount());
             }
         }
         return sortMrDetailsByMrHead(mapperService.convertToMrDetailsDtoSet(savedFeeCollection.getMrDetails()),
                 new FeeCollectionDetails(savedFeeCollection),
-                new PaymentDuesDetails(arrears,currentDues,totalPaid,amountDue)
-                );
+                new PaymentDuesDetails(arrears, currentDues, totalPaid, amountDue)
+        );
     }
 
     @Override
-    public MoneyReceipt sortMrDetailsByMrHead(List<MrDetailsDto> mrDetailsDtos, FeeCollectionDetails feeCollectionDetails, PaymentDuesDetails paymentDuesDetails){
+    public MoneyReceipt sortMrDetailsByMrHead(List<MrDetailsDto> mrDetailsDtos, FeeCollectionDetails feeCollectionDetails, PaymentDuesDetails paymentDuesDetails) {
         List<String> descriptionsOfMrHead = mrDetailsDtos.stream()
                 .map(MrDetailsDto::getParticulars)
                 .collect(Collectors.toList());
         HashMap<String, MrHead> feeTypesMrHeadHashMap = masterTableServices.convertFeeTypesMrHeadToHashMap(descriptionsOfMrHead);
         List<MrDetailsDto> tat = new ArrayList<>();
         List<MrDetailsDto> tactF = new ArrayList<>();
-        for(MrDetailsDto mrDetailsDto: mrDetailsDtos){
-            if(feeTypesMrHeadHashMap.get(mrDetailsDto.getParticulars()).equals(MrHead.TAT)){
+        for (MrDetailsDto mrDetailsDto : mrDetailsDtos) {
+            if (feeTypesMrHeadHashMap.get(mrDetailsDto.getParticulars()).equals(MrHead.TAT)) {
                 tat.add(mrDetailsDto);
-            }
-            else if(feeTypesMrHeadHashMap.get(mrDetailsDto.getParticulars()).equals(MrHead.TACTF)){
+            } else if (feeTypesMrHeadHashMap.get(mrDetailsDto.getParticulars()).equals(MrHead.TACTF)) {
                 tactF.add(mrDetailsDto);
             }
         }
+
+        BigDecimal tatAmount = tat.stream()
+                .map(MrDetailsDto::getAmount) // Extract amounts
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal tactFAmount = tactF.stream()
+                .map(MrDetailsDto::getAmount) // Extract amounts
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        WordUtils wordUtils = new WordUtils();
         return new MoneyReceipt(
                 feeCollectionDetails.date(),
                 mrDetailsDtos.get(0).getMrNo(),
@@ -120,25 +128,24 @@ public class FeeCollectionTransactions implements FeeCollectionTransactionServic
         // Combine the results of both futures
         CompletableFuture<MoneyReceipt> receiptFuture = CompletableFuture.allOf(summaryFuture, arrearsFuture)
                 .thenApply(voidResult -> {
-                    try {
-                        // Both futures have completed successfully
-                        PaymentDuesDetails summary = summaryFuture.join(); // Get result of summaryFuture
-                        BigDecimal arrears = arrearsFuture.join();         // Get result of arrearsFuture
+                            try {
+                                // Both futures have completed successfully
+                                PaymentDuesDetails summary = summaryFuture.join(); // Get result of summaryFuture
+                                BigDecimal arrears = arrearsFuture.join();         // Get result of arrearsFuture
 
-                        summary = new PaymentDuesDetails(arrears, summary.currentDues(), summary.totalPaid(), summary.amountDue());
-                        // Create and populate the MoneyReceipt object
-                        MoneyReceipt moneyReceipt = new MoneyReceipt();
-                        moneyReceipt.setPaymentDuesDetails(summary);
-                        // Use provided logic to process data
-                        return sortMrDetailsByMrHead(
-                                mapperService.convertToMrDetailsDtoSet(feeCollection.getMrDetails()),
-                                new FeeCollectionDetails(feeCollection),
-                                moneyReceipt.getPaymentDuesDetails()
-                        );
-                    } catch (Exception e) {
-                        throw new RuntimeException("Error processing MoneyReceipt", e);
-                    }
-                });
+                                PaymentDuesDetails newSummary = new PaymentDuesDetails(arrears, summary.currentDues(), summary.totalPaid(), summary.amountDue());
+                                // Create and populate the MoneyReceipt object
+                                // Use provided logic to process data
+                                return sortMrDetailsByMrHead(
+                                        mapperService.convertToMrDetailsDtoSet(feeCollection.getMrDetails()),
+                                        new FeeCollectionDetails(feeCollection),
+                                        newSummary
+                                );
+                            } catch (Exception e) {
+                                throw new RuntimeException("Error processing MoneyReceipt", e);
+                            }
+                        }
+                );
 
         // Block and get the final result
         return receiptFuture.join();
@@ -158,7 +165,7 @@ public class FeeCollectionTransactions implements FeeCollectionTransactionServic
                         duesDetails -> duesDetails
                 ));
         for (MrDetails mrDetails : oldFeeCollection.getMrDetails()) {
-            DuesDetails duesDetails = duesDetailsMap.get(generateKey(oldFeeCollection.getStudent().getRegdNo(),mrDetails.getParticulars()));
+            DuesDetails duesDetails = duesDetailsMap.get(generateKey(oldFeeCollection.getStudent().getRegdNo(), mrDetails.getParticulars()));
             if (duesDetails != null) {
                 duesDetails.setAmountPaid(duesDetails.getAmountPaid().subtract(mrDetails.getAmount()));
                 duesDetails.setBalanceAmount(duesDetails.getAmountDue().subtract(duesDetails.getAmountPaid().add(duesDetails.getAmountPaidToJee())));

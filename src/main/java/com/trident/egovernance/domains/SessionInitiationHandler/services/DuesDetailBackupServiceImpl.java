@@ -2,14 +2,15 @@ package com.trident.egovernance.domains.SessionInitiationHandler.services;
 
 import com.trident.egovernance.global.entities.permanentDB.DuesDetails;
 import com.trident.egovernance.global.entities.permanentDB.OldDueDetails;
+import com.trident.egovernance.global.entities.permanentDB.StandardDeductionFormat;
 import com.trident.egovernance.global.repositories.permanentDB.DuesDetailsRepository;
 import com.trident.egovernance.global.repositories.permanentDB.OldDuesDetailsRepository;
+import com.trident.egovernance.global.services.MasterTableServices;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionStatus;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -26,14 +27,16 @@ public class DuesDetailBackupServiceImpl {
     private final DuesDetailsRepository duesDetailsRepository;
     private final OldDuesDetailsRepository oldDuesDetailsRepository;
     private final Logger logger = LoggerFactory.getLogger(DuesDetailBackupServiceImpl.class);
+    private final MasterTableServices masterTableServices;
 
-    public DuesDetailBackupServiceImpl(DuesDetailsRepository duesDetailsRepository, OldDuesDetailsRepository oldDuesDetailsRepository) {
+    public DuesDetailBackupServiceImpl(DuesDetailsRepository duesDetailsRepository, OldDuesDetailsRepository oldDuesDetailsRepository, MasterTableServices masterTableServices) {
         this.duesDetailsRepository = duesDetailsRepository;
         this.oldDuesDetailsRepository = oldDuesDetailsRepository;
+        this.masterTableServices = masterTableServices;
     }
 
     @Async
-    public CompletableFuture<Boolean> transferToOldDuesDetails(Set<String> regdNos, TransactionStatus status, String session) {
+    public Boolean transferToOldDuesDetails(Set<String> regdNos,String session) {
         try{
             List<DuesDetails> duesDetails = duesDetailsRepository.findAllByRegdNoIn(regdNos);
             logger.info(duesDetails.toString());
@@ -52,10 +55,10 @@ public class DuesDetailBackupServiceImpl {
             logger.info(duesDetails1.toString());
             duesDetailsRepository.deleteAllByRegdNoIn(regdNos);
             duesDetailsRepository.saveAll(duesDetails1);
-            return CompletableFuture.completedFuture(true);
+            return true;
         }catch (Exception e){
-            status.setRollbackOnly();
-            return CompletableFuture.completedFuture(false);
+
+            return false;
         }
     }
 
@@ -92,6 +95,7 @@ public class DuesDetailBackupServiceImpl {
         }
     }
 
+
     private List<DuesDetails> createThePreviousDueRecordInDuesDetailsEntities(HashMap<String, BigDecimal> oldDuesCalculate, List<OldDueDetails> oldDueDetails, String session) {
         return oldDueDetails.parallelStream()
                 .filter(oldDueDetail -> oldDuesCalculate.containsKey(oldDueDetail.getRegdNo()))
@@ -111,7 +115,8 @@ public class DuesDetailBackupServiceImpl {
 
                     duesDetails.setBalanceAmount(duesDetails.getAmountDue().subtract(duesDetails.getAmountPaid()));
                     duesDetails.setDescription("PREVIOUS DUE");
-                    duesDetails.setDeductionOrder(1);
+                    StandardDeductionFormat standardDeductionFormat = masterTableServices.getStandardDeductionFormat(duesDetails.getDescription()).orElseThrow(()->new RuntimeException("Logical Error"));
+                    duesDetails.setDeductionOrder(standardDeductionFormat.getDeductionOrder());
                     duesDetails.setSessionId(session);
                     duesDetails.setAmountPaidToJee(oldDueDetail.getAmountPaidToJee());
                     duesDetails.setDueDate(Date.valueOf(LocalDate.now()));

@@ -104,4 +104,7 @@ SELECT DISTINCT
 
     @Query("UPDATE STUDENT s SET s.currentYear = s.currentYear+1 WHERE s.regdNo IN :regdNos")
     int updateStudentCurrentYearByRegdNo(Set<String> regdNo);
+
+    @Query("SELECT new com.trident.egovernance.dto.DuesDetailsInitiationDTO(s.regdNo, s.studentType, s.indortrng, s.plpoolm, s.studentAdmissionDetails.tfw, s.transport.transportOpted, s.hostel.hostelOption, s.hostel.hostelChoice, s.currentYear, s.course, s.batchId) FROM STUDENT s LEFT JOIN s.studentCareer LEFT JOIN s.studentAdmissionDetails LEFT JOIN s.transport LEFT JOIN s.hostel WHERE s.regdNo IN :regdNo")
+    List<DuesDetailsInitiationDTO> findStudentByRegdNo(Set<String> regdNo);
 }

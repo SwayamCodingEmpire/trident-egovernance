@@ -3,12 +3,14 @@ package com.trident.egovernance.global.controllers;
 import com.trident.egovernance.config.security.CustomUserDetails;
 import com.trident.egovernance.dto.FeeCollectionOnlyDTO;
 import com.trident.egovernance.dto.FeeTypesMrHead;
+import com.trident.egovernance.dto.MoneyDTO;
 import com.trident.egovernance.global.entities.permanentDB.FeeCollection;
 import com.trident.egovernance.global.entities.permanentDB.Student;
 import com.trident.egovernance.global.repositories.permanentDB.FeeCollectionRepository;
 import com.trident.egovernance.global.repositories.permanentDB.MrDetailsRepository;
 import com.trident.egovernance.global.repositories.permanentDB.StudentRepository;
 import com.trident.egovernance.global.services.MasterTableServicesImpl;
+import com.trident.egovernance.global.services.MiscellaniousServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -23,13 +25,15 @@ import java.util.Set;
 @RequestMapping("/test")
 public class TestController {
     private final StudentRepository studentRepository;
+    private final MiscellaniousServices miscellaniousServices;
     private final MasterTableServicesImpl masterTableServicesImpl;
     private final MrDetailsRepository mrDetailsRepository;
     private final Logger logger = LoggerFactory.getLogger(TestController.class);
     private final FeeCollectionRepository feeCollectionRepository;
 
-    public TestController(StudentRepository studentRepository, MasterTableServicesImpl masterTableServicesImpl, MrDetailsRepository mrDetailsRepository, FeeCollectionRepository feeCollectionRepository) {
+    public TestController(StudentRepository studentRepository, MiscellaniousServices miscellaniousServices, MasterTableServicesImpl masterTableServicesImpl, MrDetailsRepository mrDetailsRepository, FeeCollectionRepository feeCollectionRepository) {
         this.studentRepository = studentRepository;
+        this.miscellaniousServices = miscellaniousServices;
         this.masterTableServicesImpl = masterTableServicesImpl;
         this.mrDetailsRepository = mrDetailsRepository;
         this.feeCollectionRepository = feeCollectionRepository;
@@ -57,6 +61,11 @@ public class TestController {
         return ResponseEntity.ok(feeCollectionRepository.findAllBySessionId(sessionId).stream()
                 .map(feeCollection -> new FeeCollectionOnlyDTO(feeCollection))
                 .toList());
+    }
+
+    @PostMapping("/money-to-words")
+    public ResponseEntity<String> convertMoneyToWords(@RequestBody MoneyDTO moneyDTO){
+        return ResponseEntity.ok(miscellaniousServices.getMoneyIntoWords(moneyDTO.amount()));
     }
 }
 

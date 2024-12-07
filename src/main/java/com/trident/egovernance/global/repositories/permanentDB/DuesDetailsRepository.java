@@ -30,9 +30,8 @@ public interface DuesDetailsRepository extends JpaRepository<DuesDetails, DuesDe
 
     @Query("SELECT new com.trident.egovernance.dto.DuesSummaryDTO(SUM(d.amountDue),SUM(d.amountPaid),SUM(d.balanceAmount)) FROM DUESDETAIL d")
     DuesSummaryDTO getDuesDetailsSummary();
-    List<DuesDetails> findAllByRegdNoOrderByDeductionOrderDesc(String regdNo);
 
-    @Query("SELECT new com.trident.egovernance.global.entities.permanentDB.PaymentDuesDetails(SUM(d.amountDue), SUM(d.amountPaid), SUM(d.balanceAmount)) FROM DUESDETAIL d WHERE d.regdNo = :regdNo")
+    @Query("SELECT new com.trident.egovernance.dto.PaymentDuesDetails(SUM(d.amountDue), SUM(d.amountPaid), SUM(d.balanceAmount)) FROM DUESDETAIL d WHERE d.regdNo = :regdNo AND d.description <> 'PREVIOUS DUE'")
     PaymentDuesDetails findSummaryByRegdNo(String regdNo);
 
     @Query("SELECT COALESCE(SUM(d.balanceAmount), 0) FROM DUESDETAIL d WHERE d.regdNo = :regdNo AND d.description = :arrears")

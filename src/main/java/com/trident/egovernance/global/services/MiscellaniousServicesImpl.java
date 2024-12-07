@@ -10,7 +10,9 @@ import com.trident.egovernance.global.helpers.TFWType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import pl.allegro.finance.tradukisto.MoneyConverters;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -27,7 +29,7 @@ import java.util.stream.IntStream;
 @Service
 public class MiscellaniousServicesImpl implements MiscellaniousServices {
     private final Logger logger = LoggerFactory.getLogger(MiscellaniousServicesImpl.class);
-    public String getBatchId(BasicFeeBatchDetails basicFeeBatchDetails) {
+    public String generateBatchId(BasicFeeBatchDetails basicFeeBatchDetails) {
         StringBuilder batchId = new StringBuilder();
         batchId.append(basicFeeBatchDetails.course().getEnumName());
         batchId.append(basicFeeBatchDetails.admYear());
@@ -143,5 +145,11 @@ public class MiscellaniousServicesImpl implements MiscellaniousServices {
                 (isCompulsoryFee(fee, plPool, indusTraining) ||
                         (BooleanString.YES.equals(student.transportOpted()) && "TRANSPORTFEE".equals(fee.getFeeType().getFeeGroup())) ||
                         (BooleanString.YES.equals(student.hostelOption()) && "HOSTELFEE".equals(fee.getFeeType().getFeeGroup())));
+    }
+
+    @Override
+    public String getMoneyIntoWords(BigDecimal input) {
+        MoneyConverters converter = MoneyConverters.ENGLISH_BANKING_MONEY_VALUE;
+        return converter.asWords(input);
     }
 }

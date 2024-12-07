@@ -8,5 +8,6 @@ import org.springframework.transaction.TransactionStatus;
 import java.util.concurrent.CompletableFuture;
 
 public interface DuesInitiationService {
-    CompletableFuture<Boolean> initiateDuesDetails(DuesDetailsInitiationDTO student, SharedStateAmongDueInitiationAndNSRService sharedState);
+    Boolean initiateDuesDetails(DuesDetailsInitiationDTO student, SharedStateAmongDueInitiationAndNSRService sharedState);
+    CompletableFuture<Boolean> initiateDues(DuesDetailsInitiationDTO student, SharedStateAmongDueInitiationAndNSRService sharedState);
 }

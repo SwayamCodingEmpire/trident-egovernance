@@ -30,8 +30,8 @@ public interface MasterTableServices {
     Set<String> getAllParticulars();
     List<PaymentMode> getAllPaymentModes();
     List<FeeTypesOnly> getAllFeeTypesForFeeAddition(Set<FeeTypesType> feeTypesTypes);
-    List<Fees> saveFeesToDatabase(List<Fees> fees);
+    List<Fees> saveFeesToDatabase(FeesCRUDDto feesCRUDDto);
     Set<FeesOnly> getFeesByBatchId(BasicFeeBatchDetails basicFeeBatchDetails);
-    List<Fees> updateFees(Set<Fees> fees);
+    List<Fees> updateFees(FeesCRUDDto feesCRUDDto);
     Set<FeeTypesOnly> createNewFeeTypes(Set<FeeTypesOnly> feeTypes);
 }

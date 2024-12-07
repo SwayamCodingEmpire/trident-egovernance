@@ -25,14 +25,14 @@ public class HostelBackupServiceImpl {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public CompletableFuture<Boolean> transferToOldHostel(Set<String> regdNos, TransactionStatus status) {
+    public Boolean transferToOldHostel(Set<String> regdNos) {
         try {
             oldHostelRepository.saveHostelToOld(regdNos);
 //            hostelRepository.deleteByRegdNoIn(regdNos);
-            return CompletableFuture.completedFuture(true);
+//            hostelRepository.updateHostelByRegdNoIn()
+            return true;
         }catch (Exception e){
-            status.setRollbackOnly();
-            return CompletableFuture.completedFuture(false);
+            return false;
         }
     }
 

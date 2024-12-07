@@ -16,10 +16,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -44,8 +46,9 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
     private final TransportRepository transportRepository;
     private final SessionsRepository sessionsRepository;
     private final DuesInitiationServiceImpl duesInitiationServiceImpl;
+    private final DuesDetailsReInitiationServiceImpl duesDetailsReInitiationServiceImpl;
 
-    public SessionInitiationServiceImpl(PlatformTransactionManager platformTransactionManager, DuesDetailBackupServiceImpl duesDetailBackupService, AdjustmentBackupServiceImpl adjustmentBackupService, DiscountBackUpServiceImpl discountBackUpService, HostelBackupServiceImpl hostelBackupService, StudentRepository studentRepository, TransportBackupServiceimpl transportBackupServiceimpl, NotpromotedRepository notpromotedRepository, HostelRepository hostelRepository, FeeCollectionRepository feeCollectionRepository, MrDetailsRepository mrDetailsRepository, MasterTableServicesImpl masterTableServicesImpl, EntityManager entityManager, TransportRepository transportRepository, SessionsRepository sessionsRepository, DuesInitiationServiceImpl duesInitiationServiceImpl) {
+    public SessionInitiationServiceImpl(PlatformTransactionManager platformTransactionManager, DuesDetailBackupServiceImpl duesDetailBackupService, AdjustmentBackupServiceImpl adjustmentBackupService, DiscountBackUpServiceImpl discountBackUpService, HostelBackupServiceImpl hostelBackupService, StudentRepository studentRepository, TransportBackupServiceimpl transportBackupServiceimpl, NotpromotedRepository notpromotedRepository, HostelRepository hostelRepository, FeeCollectionRepository feeCollectionRepository, MrDetailsRepository mrDetailsRepository, MasterTableServicesImpl masterTableServicesImpl, EntityManager entityManager, TransportRepository transportRepository, SessionsRepository sessionsRepository, DuesInitiationServiceImpl duesInitiationServiceImpl, DuesDetailsReInitiationServiceImpl duesDetailsReInitiationServiceImpl) {
         this.platformTransactionManager = platformTransactionManager;
         this.duesDetailBackupService = duesDetailBackupService;
         this.adjustmentBackupService = adjustmentBackupService;
@@ -62,6 +65,7 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
         this.transportRepository = transportRepository;
         this.sessionsRepository = sessionsRepository;
         this.duesInitiationServiceImpl = duesInitiationServiceImpl;
+        this.duesDetailsReInitiationServiceImpl = duesDetailsReInitiationServiceImpl;
     }
 
     public List<StudentOnlyDTO> getStudentsForPromotion(SessionInitiationDTO sessionInitiationDTO) {
@@ -69,35 +73,27 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
 
     }
 
+    @Transactional
     public Boolean initiateNewSession(SessionInitiationData sessionInitiationData){
-        DefaultTransactionDefinition def = new DefaultTransactionDefinition();
-        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
-        TransactionStatus status = platformTransactionManager.getTransaction(def);
         try{
             logger.info(sessionInitiationData.toString());
             Set<String> regdNos = sessionInitiationData.regdNos();
-            CompletableFuture<Boolean> transportbackUp = transportBackupServiceimpl.transferToOldTransport(regdNos,status);
-            CompletableFuture<Boolean> hostelBackUp = hostelBackupService.transferToOldHostel(regdNos,status);
-            CompletableFuture<Boolean> adjustmentbackUp = adjustmentBackupService.transferToOldAdjustment(regdNos,status);
-            CompletableFuture<Boolean> discountbackUp = discountBackUpService.transferToOldDiscount(regdNos,status);
-            CompletableFuture<Boolean> duesDetailsbackUp = duesDetailBackupService.transferToOldDuesDetails(regdNos,status,sessionInitiationData.sessionId());
+            Boolean transportbackUp = transportBackupServiceimpl.transferToOldTransport(regdNos);
+            Boolean hostelBackUp = hostelBackupService.transferToOldHostel(regdNos);
+            Boolean adjustmentbackUp = adjustmentBackupService.transferToOldAdjustment(regdNos);
+            Boolean discountbackUp = discountBackUpService.transferToOldDiscount(regdNos);
+            Boolean duesDetailsbackUp = duesDetailBackupService.transferToOldDuesDetails(regdNos,sessionInitiationData.sessionId());
 //            duesDetailBackupService.saveToDuesDetails(previousYearDues);
-            CompletableFuture<Void> allOf = CompletableFuture.allOf(transportbackUp, hostelBackUp, adjustmentbackUp, discountbackUp, duesDetailsbackUp);
-            allOf.join();
-            promoteStudent(sessionInitiationData,status);
-            platformTransactionManager.commit(status);
             logger.info("Transaction Commited Successfully");
             return true;
         }catch (Exception e){
-            status.setRollbackOnly();
-            platformTransactionManager.rollback(status);
             throw new RuntimeException(e);
         }
     }
 
     public boolean initiateDueDetails(SessionInitiationData sessionInitiationData){return true;}
 
-    private int promoteStudent(SessionInitiationData sessionInitiationData,TransactionStatus transactionStatus){
+    private boolean promoteStudent(SessionInitiationData sessionInitiationData,TransactionStatus transactionStatus){
 //        Set<FeeCollectionDTOWithRegdNo> feeCollectionDTOWithRegdNos = feeCollectionRepository.findAllByMrDetails_ParticularsAndSessionIdNew("HOSTEL ADVANCE", sessionInitiationData.prevSessionId(), sessionInitiationData.regdNos());
 //        Set<String> hostelNotOpted = new HashSet<>(sessionInitiationData.regdNos());
 //        Set<Long> hostelOptedMrNos = new HashSet<>();
@@ -268,14 +264,22 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
                     admissionYear,
                     sessionInitiationData.studentType().name()
             ));
-            if (masterTableServicesImpl.endSession(Date.valueOf(LocalDate.now()), sessionInitiationData.prevSessionId(), sessionInitiationData.courses(), sessionInitiationData.currentYear(), sessionInitiationData.studentType())) {
-                return feeCollectionRepository.updateFeeCollectionByMrForHostelRegistered(sessionInitiationData.currentYear() + 1, sessionInitiationData.sessionId(), hostelOptedMrNos) + mrDetailsRepository.updateMrDetailsByMrNoForHostelRegistered(hostelFees.getDescription(), hostelOptedMrNos) + studentRepository.updateStudentCurrentYearByRegdNo(sessionInitiationData.regdNos());
+            feeCollectionRepository.updateFeeCollectionByMrForHostelRegistered(sessionInitiationData.currentYear() + 1, sessionInitiationData.sessionId(), hostelOptedMrNos);
+            mrDetailsRepository.updateMrDetailsByMrNoForHostelRegistered(hostelFees.getDescription(), hostelOptedMrNos);
+            studentRepository.updateStudentCurrentYearByRegdNo(sessionInitiationData.regdNos());
+            List<DuesDetailsInitiationDTO> duesDetailsInitiationDTOS = studentRepository.findStudentByRegdNo(sessionInitiationData.regdNos());
+            for (FeeCollectionDTOWithRegdNo f : feeCollectionDTOWithRegdNos) {
+                f.feeCollection().getMrDetails().forEach(
+                        mrDetails -> mrDetails.setParticulars
+                                (
+                                        hostelFees.getDescription()
+                                )
+                );
             }
-            throw new RuntimeException("Unable to start session");
+            return duesDetailsReInitiationServiceImpl.reInitiateDuesDetails(duesDetailsInitiationDTOS,feeCollectionDTOWithRegdNos);
         }catch (Exception e){
             logger.error(e.toString());
-            transactionStatus.setRollbackOnly();
-            return 0;
+            return false;
         }
     }
 

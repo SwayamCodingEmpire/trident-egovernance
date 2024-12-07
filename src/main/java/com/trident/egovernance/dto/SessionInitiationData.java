@@ -8,12 +8,14 @@ import java.util.List;
 import java.util.Set;
 
 public record SessionInitiationData(
+        Integer admYear,
         String prevSessionId,
         Date startDate,
         String sessionId,
         Courses courses,
         Set<String> regdNos,
         StudentType studentType,
+        String branchCode,
         int currentYear
 ) {
 }

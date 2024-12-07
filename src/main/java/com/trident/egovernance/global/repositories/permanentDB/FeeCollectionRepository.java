@@ -38,8 +38,8 @@ public interface FeeCollectionRepository extends JpaRepository<FeeCollection,Lon
 
     @Query("SELECT new com.trident.egovernance.dto.FeeCollectionDTOWithRegdNo(fc, s.regdNo) " +
             "FROM FEECOLLECTION fc " +
-            "JOIN fc.mrDetails md " +
-            "JOIN fc.student s " +
+            "LEFT JOIN FETCH fc.mrDetails md " +
+            "LEFT JOIN fc.student s " +
             "WHERE md.particulars = :particulars AND fc.sessionId = :sessionId AND s.regdNo IN :regdNos")
     Set<FeeCollectionDTOWithRegdNo> findAllByMrDetails_ParticularsAndSessionIdNew(
             String particulars, String sessionId, Set<String> regdNos);

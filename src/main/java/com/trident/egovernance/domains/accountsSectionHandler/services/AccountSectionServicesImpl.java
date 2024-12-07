@@ -7,10 +7,7 @@ import com.trident.egovernance.global.entities.permanentDB.FeeCollection;
 import com.trident.egovernance.global.entities.permanentDB.MrDetails;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
 import com.trident.egovernance.global.helpers.FeeTypesType;
-import com.trident.egovernance.global.repositories.permanentDB.DuesDetailsRepository;
-import com.trident.egovernance.global.repositories.permanentDB.FeeCollectionRepository;
-import com.trident.egovernance.global.repositories.permanentDB.OldDuesDetailsRepository;
-import com.trident.egovernance.global.repositories.permanentDB.StudentRepository;
+import com.trident.egovernance.global.repositories.permanentDB.*;
 import com.trident.egovernance.global.repositories.views.CollectionReportRepository;
 import com.trident.egovernance.global.repositories.views.DailyCollectionSummaryRepository;
 import com.trident.egovernance.global.services.DateConverterServices;
@@ -41,8 +38,9 @@ public class AccountSectionServicesImpl implements AccountSectionService {
     private final DailyCollectionSummaryRepository dailyCollectionSummaryRepository;
     private final Logger logger = LoggerFactory.getLogger(AccountSectionServicesImpl.class);
     private final CollectionReportRepository collectionReportRepository;
+    private final FeeTypesRepository feeTypesRepository;
 
-    public AccountSectionServicesImpl(MiscellaniousServices miscellaniousServices, MapperService mapperService, OldDuesDetailsRepository oldDuesDetailsRepository, DuesDetailsRepository duesDetailsRepository, FeeCollectionRepository feeCollectionRepository, StudentRepository studentRepository, DailyCollectionSummaryRepository dailyCollectionSummaryRepository, CollectionReportRepository collectionReportRepository) {
+    public AccountSectionServicesImpl(MiscellaniousServices miscellaniousServices, MapperService mapperService, OldDuesDetailsRepository oldDuesDetailsRepository, DuesDetailsRepository duesDetailsRepository, FeeCollectionRepository feeCollectionRepository, StudentRepository studentRepository, DailyCollectionSummaryRepository dailyCollectionSummaryRepository, CollectionReportRepository collectionReportRepository, FeeTypesRepository feeTypesRepository) {
         this.miscellaniousServices = miscellaniousServices;
         this.mapperService = mapperService;
         this.oldDuesDetailsRepository = oldDuesDetailsRepository;
@@ -51,6 +49,7 @@ public class AccountSectionServicesImpl implements AccountSectionService {
         this.studentRepository = studentRepository;
         this.dailyCollectionSummaryRepository = dailyCollectionSummaryRepository;
         this.collectionReportRepository = collectionReportRepository;
+        this.feeTypesRepository = feeTypesRepository;
     }
 
 
@@ -146,6 +145,11 @@ public class AccountSectionServicesImpl implements AccountSectionService {
 
     public Set<CollectionSummary> getAllDailyCollectionSummaryByPaymentDate(String paymentDate) {
         return mapperService.convertToCollectionSummarySet(dailyCollectionSummaryRepository.findAllByPaymentDate(paymentDate));
+    }
+
+    @Override
+    public List<FeeTypesOnly> getFines() {
+        return feeTypesRepository.findAllByFeeGroup("FINES");
     }
 
     public Set<DailyCollectionSummary> collectionSummaryByTimePeriod(String unit, int timePeriod) {

@@ -25,14 +25,13 @@ public class AdjustmentBackupServiceImpl {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public CompletableFuture<Boolean> transferToOldAdjustment(Set<String> regdNos, TransactionStatus status) {
+    public Boolean transferToOldAdjustment(Set<String> regdNos) {
         try{
             oldAdjustmentRepository.saveAdjustmentsToOld(regdNos);
-            adjustmentsRepository.deleteAllByRegdNoIn(regdNos);
-            return CompletableFuture.completedFuture(true);
+            deleteFromAdjustments(regdNos);
+            return true;
         }catch (Exception e){
-            status.setRollbackOnly();
-            return CompletableFuture.completedFuture(false);
+            return false;
         }
     }
 

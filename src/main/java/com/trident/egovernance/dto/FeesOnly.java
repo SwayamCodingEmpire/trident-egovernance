@@ -9,6 +9,7 @@ import com.trident.egovernance.global.helpers.TFWType;
 import java.math.BigDecimal;
 
 public record FeesOnly(
+        Long feeId,
         BasicFeeBatchDetails batchElements,
         Integer regdYear,
         String description,
@@ -21,6 +22,7 @@ public record FeesOnly(
 ) {
     public FeesOnly(Fees fees) {
         this(
+                fees.getFeeId(),
                 extractBasicFeeBatchDetails(fees.getBatchId()), // Delegate to helper for batch elements
                 fees.getRegdYear(),
                 fees.getDescription(),

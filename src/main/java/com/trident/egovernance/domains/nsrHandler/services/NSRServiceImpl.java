@@ -102,15 +102,12 @@ class NSRServiceImpl implements NSRService {
     @Override
     public Boolean saveToPermanentDatabase(String jeeApplicationNo){
         SharedStateAmongDueInitiationAndNSRService sharedState = new SharedStateAmongDueInitiationAndNSRService();
-        DefaultTransactionDefinition def = new DefaultTransactionDefinition();
-        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
-        TransactionStatus status = platformTransactionManager.getTransaction(def);
         NSR nsr = nsrRepository.findById(jeeApplicationNo).orElseThrow(() -> new RecordNotFoundException("Record not found"));
         nsr.setBatchId(nsr.getCourse().getEnumName() + nsr.getAdmissionYear() + nsr.getBranchCode() + nsr.getStudentType());
         nsr.setCurrentYear(((nsr.getStudentType().equals(StudentType.REGULAR))?1:2));
         logger.info("Batch ID : {}",nsr.getBatchId());
         logger.info("Fetched from Redis");
-        CompletableFuture<Boolean> processDues = duesInitiationServiceImpl.initiateDuesDetails(new DuesDetailsInitiationDTO(nsr),sharedState);
+        CompletableFuture<Boolean> processDues = duesInitiationServiceImpl.initiateDues(new DuesDetailsInitiationDTO(nsr),sharedState);
         try{
             logger.info("Fetching from Redis");
             Student student = mapperService.convertToStudent(nsr);
@@ -172,12 +169,9 @@ class NSRServiceImpl implements NSRService {
             studentRepository.save(student);
             logger.info("Saved to database");
             processDues.join();
-            platformTransactionManager.commit(status);
             return true;
         }catch (Exception e){
             sharedState.setProceed(false);
-            status.setRollbackOnly();
-            platformTransactionManager.rollback(status);
             return false;
         }
     }

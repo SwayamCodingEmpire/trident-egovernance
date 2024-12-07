@@ -33,4 +33,6 @@ public interface FeeTypesRepository extends JpaRepository<FeeTypes,String> {
 
     List<FeeTypesOnly> findAllByTypeIn(Set<FeeTypesType> feeTypes);
 
+    List<FeeTypesOnly> findAllByFeeGroup(String feeGroup);
+
 }

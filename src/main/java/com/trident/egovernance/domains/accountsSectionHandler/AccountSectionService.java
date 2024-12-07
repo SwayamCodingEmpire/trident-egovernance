@@ -19,5 +19,7 @@ public interface AccountSectionService {
     List<CollectionSummary> getFeeCollectionsBySessionId(String sessionId);
     Set<DailyCollectionSummary> collectionSummaryByTimePeriod(String unit, int timePeriod);
     Set<CollectionSummary> getAllDailyCollectionSummaryByPaymentDate(String paymentDate);
+
+    List<FeeTypesOnly> getFines();
 //    FeeCollectionAndMrDetails getFeeCollectionBeMrNo(Long mrNo);
 }

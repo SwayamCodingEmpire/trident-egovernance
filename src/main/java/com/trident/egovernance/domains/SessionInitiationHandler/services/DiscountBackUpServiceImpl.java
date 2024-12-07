@@ -25,14 +25,13 @@ public class DiscountBackUpServiceImpl {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public CompletableFuture<Boolean> transferToOldDiscount(Set<String> regdNos, TransactionStatus status) {
+    public Boolean transferToOldDiscount(Set<String> regdNos) {
         try{
             oldDiscountRepository.saveToOldDiscount(regdNos);
             discountRepository.deleteByRegdNoIn(regdNos);
-            return CompletableFuture.completedFuture(true);
+            return true;
         }catch (Exception e){
-            status.setRollbackOnly();
-            return CompletableFuture.completedFuture(false);
+            return false;
         }
     }
 

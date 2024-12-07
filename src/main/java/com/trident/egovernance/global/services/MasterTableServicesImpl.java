@@ -2,6 +2,7 @@ package com.trident.egovernance.global.services;
 
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.exceptions.ImproperProcedureException;
+import com.trident.egovernance.exceptions.InvalidInputsException;
 import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.exceptions.RecordNotFoundException;
 import com.trident.egovernance.global.entities.permanentDB.PaymentMode;
@@ -15,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class MasterTableServicesImpl implements MasterTableServices {
@@ -163,39 +163,40 @@ public class MasterTableServicesImpl implements MasterTableServices {
     }
 
     @Override
-    public List<Fees> saveFeesToDatabase(List<Fees> fees) {
-        for (Fees fees1 : fees) {
-            // Check for null to avoid NullPointerException
-            if (fees1.getBatchElements() != null) {
-                String batchId = fees1.getBatchElements().course().getEnumName() +
-                        fees1.getBatchElements().admYear() +
-                        fees1.getBatchElements().branchCode() +
-                        fees1.getBatchElements().studentType();
-                fees1.setBatchId(batchId); // Set the calculated batchId
-            }
+    @Transactional
+    public List<Fees> saveFeesToDatabase(FeesCRUDDto feesCRUDDto) {
+        if (feesCRUDDto.batchElements() == null) {
+            throw new InvalidInputsException("Batch elements cannot be null");
         }
-        feesRepository.saveAll(fees);
-        return fees; // Return the modified list
+        long feeId = feesRepository.getMaxIdForFees() + 1;
+        for (Fees fees1 : feesCRUDDto.feesList()) {
+            // Check for null to avoid NullPointerException
+            String batchId = miscellaniousServices.generateBatchId(feesCRUDDto.batchElements());
+            fees1.setFeeId(feeId);
+            fees1.setBatchId(batchId); // Set the calculated batchId
+            feeId++;
+
+        }
+        return feesRepository.saveAll(feesCRUDDto.feesList());
     }
 
     @Override
     public Set<FeesOnly> getFeesByBatchId(BasicFeeBatchDetails basicFeeBatchDetails) {
-        return mapperService.convertToFeesOnly(feesRepository.findAllByDescription(miscellaniousServices.getBatchId(basicFeeBatchDetails)));
+        return mapperService.convertToFeesOnly(feesRepository.findAllByDescription(miscellaniousServices.generateBatchId(basicFeeBatchDetails)));
     }
 
     @Override
     @Transactional
-    public List<Fees> updateFees(Set<Fees> fees) {
+    public List<Fees> updateFees(FeesCRUDDto feesCRUDDto) {
         try {
             long feeId = feesRepository.getMaxIdForFees() + 1;
-            List<Fees> updateFees = fees.stream().toList();
+            List<Fees> updateFees = feesCRUDDto.feesList().stream().toList();
             for (Fees fees1 : updateFees) {
-                fees1.setBatchId(miscellaniousServices.getBatchId(fees1.getBatchElements()));
+                fees1.setBatchId(miscellaniousServices.generateBatchId(fees1.getBatchElements()));
                 fees1.setFeeId(feeId);
                 feeId++;
             }
-
-            return feesRepository.saveAll(fees);
+            return feesRepository.saveAll(feesCRUDDto.feesList());
         } catch (Exception e) {
             throw new ImproperProcedureException("Proper process Not Followed");
         }

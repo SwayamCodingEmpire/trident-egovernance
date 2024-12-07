@@ -149,8 +149,8 @@ public class AccountSectionController {
     }
 
     @PostMapping("/save-Fees")
-    public ResponseEntity<List<Fees>> saveFeesToDatabase(@RequestBody List<Fees> fees){
-        return ResponseEntity.ok(masterTableServicesImpl.saveFeesToDatabase(fees));
+    public ResponseEntity<List<Fees>> saveFeesToDatabase(@RequestBody FeesCRUDDto feesList){
+        return ResponseEntity.ok(masterTableServicesImpl.saveFeesToDatabase(feesList));
     }
 
     @PostMapping("/get-Fees-by-batch")
@@ -159,13 +159,18 @@ public class AccountSectionController {
     }
 
     @PutMapping("/update-Fees")
-    public ResponseEntity<List<Fees>> updateFees(@RequestBody Set<Fees> fees){
-        return ResponseEntity.ok(masterTableServicesImpl.updateFees(fees));
+    public ResponseEntity<List<Fees>> updateFees(@RequestBody FeesCRUDDto feesList){
+        return ResponseEntity.ok(masterTableServicesImpl.updateFees(feesList));
     }
 
     @GetMapping("/get-money-receipt/{mrNo}")
     public ResponseEntity<MoneyReceipt> getMoenyReceipt(@PathVariable("mrNo") Long mrNo){
         return ResponseEntity.ok(feeCollectionTransactions.getMoneyReceiptByMrNo(mrNo));
+    }
+
+    @GetMapping("/get-fines-list")
+    public ResponseEntity<List<FeeTypesOnly>> getFines(){
+        return ResponseEntity.ok(accountSectionService.getFines());
     }
 //
 //    public ResponseEntity<Boolean> addFeeTypes(@RequestBody Set<FeeTypesOnly> feeTypes){
