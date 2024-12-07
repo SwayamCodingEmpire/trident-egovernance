@@ -4,7 +4,6 @@ import com.trident.egovernance.global.helpers.Courses;
 import com.trident.egovernance.global.helpers.StudentType;
 
 import java.sql.Date;
-import java.util.List;
 import java.util.Set;
 
 public record SessionInitiationData(
@@ -12,7 +11,7 @@ public record SessionInitiationData(
         String prevSessionId,
         Date startDate,
         String sessionId,
-        Courses courses,
+        Courses course,
         Set<String> regdNos,
         StudentType studentType,
         String branchCode,
