@@ -8,7 +8,8 @@ import java.io.Serializable;
 public record UserJobInformationDto(
         String displayName,
         String jobTitle,
-        String department
-) implements Serializable {
+        String department,
+        String employeeId
+) implements Serializable{
 
 }

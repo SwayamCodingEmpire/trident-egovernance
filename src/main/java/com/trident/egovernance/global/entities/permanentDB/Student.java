@@ -1,6 +1,8 @@
 package com.trident.egovernance.global.entities.permanentDB;
 
 import com.trident.egovernance.dto.StudentOnlyDTO;
+import com.trident.egovernance.global.entities.views.Attendance;
+import com.trident.egovernance.global.entities.views.Results;
 import com.trident.egovernance.global.helpers.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
@@ -79,10 +81,9 @@ public class Student {
 //    @Column(name = "SECTIONID")
 //    private Long sectionId;
 //    @Column(name = "SEMESTER")
-//    @Min(0)
 //    private Integer semester;
     // Constructor to initialize Student from StudentOnlyDTO
-    public  Student(StudentOnlyDTO studentOnlyDTO) {
+    public Student(StudentOnlyDTO studentOnlyDTO) {
         this.regdNo = studentOnlyDTO.regdNo();
         this.studentName = studentOnlyDTO.studentName();
         this.gender = studentOnlyDTO.gender();
@@ -122,13 +123,18 @@ public class Student {
     @OneToOne(mappedBy = "student", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @ToString.Exclude
     private Transport transport;
+    @OneToOne(mappedBy = "student") // Reference the Results entity
+    private Results results;
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @ToString.Exclude
     private List<FeeCollection> feeCollection;
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY,cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @ToString.Exclude
     private List<StudentDocs> studentDocs;
+
+    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
+    private List<Attendance> attendances;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "SECTIONID")
+    @JoinColumn(name = "SECTIONID", referencedColumnName = "SECTIONID")
     private Sections section;
 }

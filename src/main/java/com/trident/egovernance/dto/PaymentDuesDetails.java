@@ -17,4 +17,13 @@ public record PaymentDuesDetails(
                 amountDue
         );
     }
+
+    public PaymentDuesDetails(com.trident.egovernance.global.entities.permanentDB.PaymentDuesDetails paymentDuesDetails) {
+        this(
+                paymentDuesDetails.getArrears(),
+                paymentDuesDetails.getCurrentDues(),
+                paymentDuesDetails.getTotalPaid(),
+                paymentDuesDetails.getAmountDue()
+        );
+    }
 }

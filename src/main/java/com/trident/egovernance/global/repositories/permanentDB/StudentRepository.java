@@ -22,6 +22,11 @@ public interface StudentRepository extends JpaRepository<Student, String> {
 //    List<StudentOfficeDTO> findAllByStatus(StudentStatus status);
     @Query("SELECT new com.trident.egovernance.dto.StudentOfficeDTO(s.regdNo, s.studentName, s.course, s.branchCode, s.phNo, s.email, s.studentType, s.currentYear, p.parentContact) FROM STUDENT s LEFT JOIN s.personalDetails p WHERE s.status=:status")
     List<StudentOfficeDTO> findAllByStatusAlongWithParentContact(@Param("status") StudentStatus status);
+    @Query("SELECT s FROM STUDENT s " +
+            "LEFT JOIN FETCH s.personalDetails " +
+            "LEFT JOIN FETCH s.section " +
+            "WHERE s.regdNo = :regdNo")
+    Student findStudentProfileData(String regdNo);
 
     BasicStudentDto findByRegdNo(String regdNo);
     @Query("SELECT s FROM STUDENT s LEFT JOIN FETCH STUDENT_ADMISSION_DETAILS LEFT JOIN FETCH HOSTEL LEFT JOIN FETCH TRANSPORT WHERE s.regdNo IN :regdNo")

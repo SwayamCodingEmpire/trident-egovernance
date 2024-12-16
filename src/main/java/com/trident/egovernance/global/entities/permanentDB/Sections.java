@@ -7,13 +7,14 @@ import lombok.*;
 
 import java.util.List;
 
-@Entity(name = "SECTIONS")
-@Table(name = "SECTIONS")
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
 @ToString
+@Entity(name = "SECTIONS")
+@Table(name = "SECTIONS")
 public class Sections {
     @Id
     @Column(name = "SECTIONID")

@@ -96,7 +96,7 @@ public class DuesDetailsReInitiationServiceImpl {
 
                 if (key != null && duesDetailsMap.containsKey(key)) {
                     DuesDetails duesDetails = duesDetailsMap.get(key);
-                    BigDecimal collectedFee = fee.feeCollection().getCollectedFee();
+                    BigDecimal collectedFee = fee.feeCollection().getMrDetails().stream().findFirst().map(MrDetails::getAmount).orElse(BigDecimal.ZERO);
                     duesDetails.setAmountPaid(duesDetails.getAmountPaid().add(collectedFee));
                     duesDetails.setBalanceAmount(duesDetails.getBalanceAmount().subtract(collectedFee));
                     logger.info("Updated dues for regdNo: {}, description: {}", fee.regdNo(), key);

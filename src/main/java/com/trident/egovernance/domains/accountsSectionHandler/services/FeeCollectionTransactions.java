@@ -1,18 +1,17 @@
 package com.trident.egovernance.domains.accountsSectionHandler.services;
 
-import com.trident.egovernance.dto.FeeCollectionDetails;
-import com.trident.egovernance.dto.MrDetailsDto;
-import com.trident.egovernance.dto.MoneyReceipt;
+import com.trident.egovernance.dto.*;
 import com.trident.egovernance.exceptions.RecordNotFoundException;
 import com.trident.egovernance.global.entities.permanentDB.DuesDetails;
 import com.trident.egovernance.global.entities.permanentDB.FeeCollection;
-import com.trident.egovernance.dto.PaymentDuesDetails;
 import com.trident.egovernance.global.entities.permanentDB.MrDetails;
 import com.trident.egovernance.global.helpers.MrHead;
 import com.trident.egovernance.global.repositories.permanentDB.DuesDetailsRepository;
 import com.trident.egovernance.global.repositories.permanentDB.FeeCollectionRepository;
+import com.trident.egovernance.global.repositories.permanentDB.PaymentDuesDetailsRepository;
 import com.trident.egovernance.global.services.MapperService;
 import com.trident.egovernance.global.services.MasterTableServices;
+import com.trident.egovernance.global.services.MiscellaniousServices;
 import org.apache.commons.lang3.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +19,10 @@ import org.springframework.boot.task.ThreadPoolTaskExecutorBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import pl.allegro.finance.tradukisto.ValueConverters;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -35,27 +36,24 @@ public class FeeCollectionTransactions implements FeeCollectionTransactionServic
     private final FeeCollectionRepository feeCollectionRepository;
     private final DuesDetailsRepository duesDetailsRepository;
     private final MasterTableServices masterTableServices;
-    private final ThreadPoolTaskExecutorBuilder threadPoolTaskExecutorBuilder;
     private final MapperService mapperService;
+    private final PaymentDuesDetailsRepository paymentDuesDetailsRepository;
+    private final MiscellaniousServices miscellaniousServices;
 
-    public FeeCollectionTransactions(ExecutorService executorService, FeeCollectionRepository feeCollectionRepository, DuesDetailsRepository duesDetailsRepository, MasterTableServices masterTableServices, ThreadPoolTaskExecutorBuilder threadPoolTaskExecutorBuilder, MapperService mapperService) {
+    public FeeCollectionTransactions(FeeCollectionRepository feeCollectionRepository, DuesDetailsRepository duesDetailsRepository, MasterTableServices masterTableServices, MapperService mapperService, PaymentDuesDetailsRepository paymentDuesDetailsRepository, MiscellaniousServices miscellaniousServices) {
         this.executorService = Executors.newVirtualThreadPerTaskExecutor();
         this.feeCollectionRepository = feeCollectionRepository;
         this.duesDetailsRepository = duesDetailsRepository;
         this.masterTableServices = masterTableServices;
-        this.threadPoolTaskExecutorBuilder = threadPoolTaskExecutorBuilder;
         this.mapperService = mapperService;
+        this.paymentDuesDetailsRepository = paymentDuesDetailsRepository;
+        this.miscellaniousServices = miscellaniousServices;
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public MoneyReceipt getMrDetailsSorted(FeeCollection processedFeeCollection, List<DuesDetails> processedDuesDetails) {
         System.out.println(processedFeeCollection.getMrDetails().toString());
-        FeeCollection savedFeeCollection = feeCollectionRepository.save(processedFeeCollection);
-        savedFeeCollection.getPaymentMode();
-        savedFeeCollection.getDdNo();
-        savedFeeCollection.getDdDate();
-        savedFeeCollection.getDdBank();
         List<DuesDetails> savedDuesDetails = duesDetailsRepository.saveAllAndFlush(processedDuesDetails);
         BigDecimal currentDues = BigDecimal.ZERO;
         BigDecimal totalPaid = BigDecimal.ZERO;
@@ -70,9 +68,19 @@ public class FeeCollectionTransactions implements FeeCollectionTransactionServic
                 arrears = arrears.add(d.getBalanceAmount());
             }
         }
+        PaymentDuesDetails paymentDuesDetails = new PaymentDuesDetails(arrears, currentDues, totalPaid, amountDue);
+        com.trident.egovernance.global.entities.permanentDB.PaymentDuesDetails paymentDuesDetailsEntity = new com.trident.egovernance.global.entities.permanentDB.PaymentDuesDetails(paymentDuesDetails);
+        paymentDuesDetailsEntity.setFeeCollection(processedFeeCollection);
+        processedFeeCollection.setPaymentDuesDetails(paymentDuesDetailsEntity);
+        FeeCollection savedFeeCollection = feeCollectionRepository.save(processedFeeCollection);
+        savedFeeCollection.getPaymentMode();
+        savedFeeCollection.getDdNo();
+        savedFeeCollection.getDdDate();
+        savedFeeCollection.getDdBank();
+
         return sortMrDetailsByMrHead(mapperService.convertToMrDetailsDtoSet(savedFeeCollection.getMrDetails()),
                 new FeeCollectionDetails(savedFeeCollection),
-                new PaymentDuesDetails(arrears, currentDues, totalPaid, amountDue)
+                paymentDuesDetails
         );
     }
 
@@ -95,20 +103,37 @@ public class FeeCollectionTransactions implements FeeCollectionTransactionServic
         BigDecimal tatAmount = tat.stream()
                 .map(MrDetailsDto::getAmount) // Extract amounts
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-
+        MoneyDTO tatMoney = miscellaniousServices.convertMoneyToWords(tatAmount);
         BigDecimal tactFAmount = tactF.stream()
                 .map(MrDetailsDto::getAmount) // Extract amounts
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        WordUtils wordUtils = new WordUtils();
+        MoneyDTO tactMoney = miscellaniousServices.convertMoneyToWords(tactFAmount);
+        tat.sort(Comparator.comparingLong(MrDetailsDto::getSlNo));
+        tactF.sort(Comparator.comparingLong(MrDetailsDto::getSlNo));
         return new MoneyReceipt(
                 feeCollectionDetails.date(),
                 mrDetailsDtos.get(0).getMrNo(),
                 tat,
+                tatMoney,
                 tactF,
+                tactMoney,
                 feeCollectionDetails,
                 paymentDuesDetails
         );
     }
+
+//    @Override
+//    public MoneyReceipt getMoneyReceiptByMrNo(Long mrNo) {
+//        FeeCollection feeCollection = feeCollectionRepository.findByMrNo(mrNo)
+//                .orElseThrow(() -> new RecordNotFoundException("No such fee collection found"));
+//
+//        com.trident.egovernance.global.entities.permanentDB.PaymentDuesDetails paymentDuesDetails = paymentDuesDetailsRepository.findById(mrNo).orElse(null);
+//        return sortMrDetailsByMrHead(
+//                mapperService.convertToMrDetailsDtoSet(feeCollection.getMrDetails()),
+//                new FeeCollectionDetails(feeCollection),
+//                new PaymentDuesDetails(paymentDuesDetails)
+//        );
+//    }
 
     @Override
     public MoneyReceipt getMoneyReceiptByMrNo(Long mrNo) {

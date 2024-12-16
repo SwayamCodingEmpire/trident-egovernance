@@ -1,5 +1,6 @@
 package com.trident.egovernance.global.repositories.permanentDB;
 
+import com.trident.egovernance.dto.DuesDetailsDto;
 import com.trident.egovernance.dto.DuesSummaryDTO;
 import com.trident.egovernance.global.entities.permanentDB.DuesDetails;
 import com.trident.egovernance.dto.PaymentDuesDetails;
@@ -31,7 +32,7 @@ public interface DuesDetailsRepository extends JpaRepository<DuesDetails, DuesDe
     @Query("SELECT new com.trident.egovernance.dto.DuesSummaryDTO(SUM(d.amountDue),SUM(d.amountPaid),SUM(d.balanceAmount)) FROM DUESDETAIL d")
     DuesSummaryDTO getDuesDetailsSummary();
 
-    @Query("SELECT new com.trident.egovernance.dto.PaymentDuesDetails(SUM(d.amountDue), SUM(d.amountPaid), SUM(d.balanceAmount)) FROM DUESDETAIL d WHERE d.regdNo = :regdNo AND d.description <> 'PREVIOUS DUE'")
+    @Query("SELECT new com.trident.egovernance.dto.PaymentDuesDetails(SUM(d.amountDue), SUM(d.amountPaid), SUM(d.balanceAmount)) FROM DUESDETAIL d WHERE d.regdNo = :regdNo")
     PaymentDuesDetails findSummaryByRegdNo(String regdNo);
 
     @Query("SELECT COALESCE(SUM(d.balanceAmount), 0) FROM DUESDETAIL d WHERE d.regdNo = :regdNo AND d.description = :arrears")
@@ -40,4 +41,8 @@ public interface DuesDetailsRepository extends JpaRepository<DuesDetails, DuesDe
 
     @Query("SELECT d FROM DUESDETAIL d WHERE CONCAT(d.regdNo, '::', d.description) IN :keys")
     List<DuesDetails> fetchDuesDetailsByRegdNoAndDescription(Set<String> keys);
+
+
+    @Query("SELECT new com.trident.egovernance.dto.DuesDetailsDto(d) FROM DUESDETAIL d WHERE d.regdNo = :regdNo")
+    Set<DuesDetailsDto> findAllByRegdNo(String regdNo);
 }

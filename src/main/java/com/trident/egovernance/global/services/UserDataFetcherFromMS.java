@@ -1,6 +1,7 @@
 package com.trident.egovernance.global.services;
 
 import com.trident.egovernance.dto.BasicMSUserDto;
+import com.trident.egovernance.dto.ProfileDTO;
 import com.trident.egovernance.dto.UserJobInformationDto;
 import com.trident.egovernance.exceptions.UserNotLoggedInException;
 import org.slf4j.Logger;
@@ -54,22 +55,25 @@ public class UserDataFetcherFromMS {
 
 
 
-    @Cacheable(key = "#authentication.name", value = "userJobInformation")
-    public UserJobInformationDto getUserJobInformation(Authentication authentication){
-        logger.info("Running getUserJobInformation" + authentication.getName());
-        if(authentication.isAuthenticated()){
-            BasicMSUserDto basicMSUserDto = new BasicMSUserDto(appBearerTokenService.getAppBearerToken("defaultKey"),getClaims().get("preferred_username").toString());
-            return fetchUserJobInformation(basicMSUserDto);
-        }
-        throw new UserNotLoggedInException("User not logged in");
-    }
+//    @Cacheable(key = "#authentication.name", value = "profileDTO")
+//    public ProfileDTO getUserJobInformation(Authentication authentication){
+//        logger.info("Running getUserJobInformation" + authentication.getName());
+//        if(authentication.isAuthenticated()){
+//            BasicMSUserDto basicMSUserDto = new BasicMSUserDto(appBearerTokenService.getAppBearerToken("defaultKey"),getClaims().get("preferred_username").toString());
+//            UserJobInformationDto userJobInformationDto =  fetchUserJobInformation(basicMSUserDto);
+//            if(userJobInformationDto.jobTitle().equals(new String("student"))){
+//                return
+//            }
+//        }
+//        throw new UserNotLoggedInException("User not logged in");
+//    }
 //
 
     @Cacheable(key = "#basicMSUserDto.username()", value = "UserJobInformationFilterData")
     public UserJobInformationDto fetchUserJobInformation(BasicMSUserDto basicMSUserDto) {
         logger.info("Fetching the user job information");
         String uri = UriComponentsBuilder.fromPath("/"+basicMSUserDto.username())
-                .queryParam("$select","displayName,jobTitle,department")
+                .queryParam("$select","displayName,jobTitle,department,employeeId")
                 .toUriString();
         return webClientGraph.get()
                 .uri(uri)

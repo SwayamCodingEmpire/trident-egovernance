@@ -54,6 +54,10 @@ public class FeeCollection {
     @ToString.Exclude
     @OneToMany(mappedBy = "feeCollection",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private Set<MrDetails> mrDetails;
+
+    @ToString.Exclude
+    @OneToOne(mappedBy = "feeCollection", cascade = CascadeType.ALL, orphanRemoval = true)
+    private PaymentDuesDetails paymentDuesDetails;
     public FeeCollection(OtherFeeCollection otherFeeCollection) {
         this.collectedFee = otherFeeCollection.collectedFee();
         this.paymentMode = otherFeeCollection.paymentMode();

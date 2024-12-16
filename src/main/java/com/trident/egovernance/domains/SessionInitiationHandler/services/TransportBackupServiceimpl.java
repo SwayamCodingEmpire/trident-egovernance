@@ -26,7 +26,6 @@ public class TransportBackupServiceimpl {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    @Async
     public Boolean transferToOldTransport(Set<String> regdNos) {
         try{
             oldTransportRepository.saveTransportToOld(regdNos);

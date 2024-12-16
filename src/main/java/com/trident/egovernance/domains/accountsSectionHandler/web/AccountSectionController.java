@@ -164,7 +164,7 @@ public class AccountSectionController {
     }
 
     @GetMapping("/get-money-receipt/{mrNo}")
-    public ResponseEntity<MoneyReceipt> getMoenyReceipt(@PathVariable("mrNo") Long mrNo){
+    public ResponseEntity<MoneyReceipt> getMoneyReceipt(@PathVariable("mrNo") Long mrNo){
         return ResponseEntity.ok(feeCollectionTransactions.getMoneyReceiptByMrNo(mrNo));
     }
 

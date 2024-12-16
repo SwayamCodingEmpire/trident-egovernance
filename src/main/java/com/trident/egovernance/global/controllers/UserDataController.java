@@ -1,8 +1,10 @@
 package com.trident.egovernance.global.controllers;
 
+import com.trident.egovernance.dto.ProfileDTO;
 import com.trident.egovernance.dto.TestingDto;
 import com.trident.egovernance.dto.UserJobInformationDto;
 import com.trident.egovernance.global.services.AppBearerTokenService;
+import com.trident.egovernance.global.services.ProfileFetcherService;
 import com.trident.egovernance.global.services.UserDataFetcherFromMS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,11 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api")
 public class UserDataController {
+    private final ProfileFetcherService profileFetcherService;
     private final Logger logger = LoggerFactory.getLogger(UserDataController.class);
     private final UserDataFetcherFromMS userDataFetcherFromMS;
     private final AppBearerTokenService appBearerTokenService;
 
-    public UserDataController(UserDataFetcherFromMS userDataFetcherFromMS, AppBearerTokenService appBearerTokenService) {
+    public UserDataController(ProfileFetcherService profileFetcherService, UserDataFetcherFromMS userDataFetcherFromMS, AppBearerTokenService appBearerTokenService) {
+        this.profileFetcherService = profileFetcherService;
         this.userDataFetcherFromMS = userDataFetcherFromMS;
         this.appBearerTokenService = appBearerTokenService;
     }
@@ -40,11 +44,11 @@ public class UserDataController {
         return ResponseEntity.ok(testingDto);
     }
 
-    @GetMapping("/get-job-information")
-    public ResponseEntity<UserJobInformationDto> getUserJobInformation(Authentication authentication){
+    @GetMapping("/get-user-information")
+    public ResponseEntity<ProfileDTO> getUserJobInformation(Authentication authentication){
         logger.info(authentication.getName());
         logger.info("Fetching the user job information");
-        return ResponseEntity.ok(userDataFetcherFromMS.getUserJobInformation(authentication));
+        return ResponseEntity.ok(profileFetcherService.getUserJobInformation(authentication));
     }
 
 }

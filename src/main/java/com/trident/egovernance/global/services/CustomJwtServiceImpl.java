@@ -7,13 +7,17 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+
 @Service
 public class CustomJwtServiceImpl implements CustomJwtService {
     @Value("${jwt.secret.key}")
@@ -37,7 +41,11 @@ public class CustomJwtServiceImpl implements CustomJwtService {
 
     @Override
     public String generateToken(Map<String, Object> extractClaims, CustomUserDetails customUserDetails) {
-        extractClaims.put("roles",customUserDetails.getAuthorities());
+        List<String> roles = customUserDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+        roles.add("ROLE_NSR");
+        extractClaims.put("roles",roles);
         return buildToken(extractClaims,customUserDetails,jwtExpiration);
     }
     private String buildToken(Map<String,Object> extractClaims, CustomUserDetails customUserDetails, long jwtExpiration){

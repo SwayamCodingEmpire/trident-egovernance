@@ -1,7 +1,6 @@
 package com.trident.egovernance.global.services;
 
-import com.trident.egovernance.dto.BasicFeeBatchDetails;
-import com.trident.egovernance.dto.StudentRequiredFieldsDTO;
+import com.trident.egovernance.dto.*;
 import com.trident.egovernance.exceptions.InvalidInputsException;
 import com.trident.egovernance.global.entities.permanentDB.Fees;
 import com.trident.egovernance.global.helpers.BooleanString;
@@ -9,10 +8,18 @@ import com.trident.egovernance.global.helpers.FeeTypesType;
 import com.trident.egovernance.global.helpers.TFWType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import pl.allegro.finance.tradukisto.MoneyConverters;
+import pl.allegro.finance.tradukisto.ValueConverters;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -22,13 +29,20 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Service
 public class MiscellaniousServicesImpl implements MiscellaniousServices {
+    private final UserDataFetcherFromMS userDataFetcherFromMS;
     private final Logger logger = LoggerFactory.getLogger(MiscellaniousServicesImpl.class);
+
+    public MiscellaniousServicesImpl(UserDataFetcherFromMS userDataFetcherFromMS) {
+        this.userDataFetcherFromMS = userDataFetcherFromMS;
+    }
+
     public String generateBatchId(BasicFeeBatchDetails basicFeeBatchDetails) {
         StringBuilder batchId = new StringBuilder();
         batchId.append(basicFeeBatchDetails.course().getEnumName());
@@ -151,5 +165,55 @@ public class MiscellaniousServicesImpl implements MiscellaniousServices {
     public String getMoneyIntoWords(BigDecimal input) {
         MoneyConverters converter = MoneyConverters.ENGLISH_BANKING_MONEY_VALUE;
         return converter.asWords(input);
+    }
+    @Override
+    public MoneyDTO convertMoneyToWords(BigDecimal input) {
+        var converters = ValueConverters.ENGLISH_INTEGER;
+        String amountInWords = new String();
+        if(input.signum() < 0) {
+            BigDecimal absTatAmount = input.abs();
+            BigDecimal integralPart = absTatAmount.setScale(0, RoundingMode.DOWN);
+            BigDecimal fractionalPart = absTatAmount.remainder(BigDecimal.ONE).multiply(new BigDecimal(100)).setScale(0, RoundingMode.HALF_UP);
+            String rupees = converters.asWords(integralPart.intValue());
+            String paise = converters.asWords(fractionalPart.intValue());
+            if(paise.compareTo("zero")==0){
+                amountInWords = "Excess Amount Paid of " + "Rupees " + rupees + " Only";
+            }
+            else{
+                amountInWords = "Excess Amount Paid of " + "Rupees " + rupees + " Paise " + paise + " Only";
+            }
+
+        }
+        else{
+            BigDecimal integralPart = input.setScale(0, RoundingMode.DOWN);
+            BigDecimal fractionalPart = input.remainder(BigDecimal.ONE).multiply(new BigDecimal(100)).setScale(0, RoundingMode.HALF_UP);
+            String rupees = converters.asWords(integralPart.intValue());
+            String paise = converters.asWords(fractionalPart.intValue());
+            if(paise.compareTo("zero")==0){
+                amountInWords = "Rupees " + rupees + " Only";
+            }
+            else{
+                amountInWords = "Rupees " + rupees + " Paise " + paise + " Only";
+            }
+        }
+        return new MoneyDTO(input,amountInWords);
+    }
+
+    public UserJobInformationDto getUserJobInformation() {
+        try{
+            JwtAuthenticationToken authentication = (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
+                List<GrantedAuthority> authorities =
+                        authentication.getAuthorities().stream().toList();
+
+                if (!authorities.isEmpty() && authorities.size() > 0) {
+                    // First authority is jobTitle with "ROLE_" prefix
+                    return new UserJobInformationDto(jwt.getClaimAsString("name"), authorities.get(0).getAuthority().substring(5), authorities.get(1).getAuthority(), authorities.get(2).getAuthority());
+                }
+            }
+            return null;
+        }catch (ClassCastException e){
+            throw new InvalidInputsException("Invalid Authentication Token");
+        }
     }
 }

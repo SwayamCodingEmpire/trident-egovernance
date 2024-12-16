@@ -2,6 +2,7 @@ package com.trident.egovernance.domains.accountsSectionHandler.web;
 
 import com.trident.egovernance.domains.accountsSectionHandler.AccountSectionService;
 import com.trident.egovernance.dto.MoneyReceipt;
+import com.trident.egovernance.dto.MrDetailsDto;
 import com.trident.egovernance.dto.OtherFeesPayment;
 import com.trident.egovernance.global.entities.permanentDB.Adjustments;
 import com.trident.egovernance.global.entities.permanentDB.Discount;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Comparator;
 
 @RestController
 @RequestMapping("/accounts-section/payment")
@@ -55,7 +57,8 @@ public class PaymentController {
         }
         else{
             moneyReceipt = paymentProcessingService.processPaymentNonAutoModes(feeCollection,regdNo,false);
-        }// P
+        }
+
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .buildAndExpand(moneyReceipt.getMrNo())

@@ -2,6 +2,7 @@ package com.trident.egovernance.config.security;
 
 import com.trident.egovernance.filters.CustomAuthorityAssignerFilter;
 import com.trident.egovernance.filters.NSRJwtFilter;
+import com.trident.egovernance.global.helpers.AppConstants;
 import io.netty.channel.ChannelOption;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -66,17 +67,18 @@ public class SecurityConfig {
             "/public/**",
             "/accounts-section/**",
             "/initiate-session/**",
-            "/office/**"
+            "/office/**",
     };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.authorizeHttpRequests(authorize ->{
+        httpSecurity.authorizeHttpRequests(authorize -> {
+            authorize.requestMatchers("/student-portal/**").hasRole("STUDENT");
             authorize.requestMatchers(PUBLIC_URLS).permitAll();
-            authorize.requestMatchers("/test/hello").hasAuthority("NSR");
+            authorize.requestMatchers("/test/hello").hasRole("NSR");
             authorize.requestMatchers("/api/**").authenticated();
-                }).sessionManagement(session->{
-                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        }).sessionManagement(session -> {
+            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         });
         httpSecurity.authenticationProvider(customAuthenticationProvider);
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
@@ -95,7 +97,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsFilter corsFilter(){
+    public CorsFilter corsFilter() {
         CorsConfiguration configuration = new CorsConfiguration();
 //        configuration.setAllowedOrigins(List.of("http://127.0.0.1:49865","http://127.0.0.1:50296"));
 
@@ -104,7 +106,7 @@ public class SecurityConfig {
         configuration.setAllowCredentials(true);
         configuration.setAllowedOriginPatterns(List.of("*"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**",configuration);
+        source.registerCorsConfiguration("/**", configuration);
         return new CorsFilter(source);
     }
 
@@ -161,8 +163,7 @@ public class SecurityConfig {
                     .block(); // Convert Mono to blocking call
         }
     }
-
-    }
+}
 //    @Bean
 //    public JwtDecoder jwtDecoder() {
 //        try {

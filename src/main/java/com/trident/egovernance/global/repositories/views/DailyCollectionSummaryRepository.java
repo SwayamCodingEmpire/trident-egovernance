@@ -5,11 +5,13 @@ import com.trident.egovernance.global.helpers.DailyCollectionSummaryId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Set;
 
 @Repository
+@Transactional(readOnly = true)
 public interface DailyCollectionSummaryRepository extends JpaRepository<DailyCollectionSummary, DailyCollectionSummaryId> {
     Set<DailyCollectionSummary> findAllByPaymentDate(String paymentDate);
     Set<DailyCollectionSummary> findAllByPaymentDateIn(Set<String> paymentDates);

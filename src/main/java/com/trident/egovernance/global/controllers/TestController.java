@@ -1,6 +1,7 @@
 package com.trident.egovernance.global.controllers;
 
 import com.trident.egovernance.config.security.CustomUserDetails;
+import com.trident.egovernance.domains.student.services.StudentDashBoardsServiceImpl;
 import com.trident.egovernance.dto.FeeCollectionOnlyDTO;
 import com.trident.egovernance.dto.FeeTypesMrHead;
 import com.trident.egovernance.dto.MoneyDTO;
@@ -30,13 +31,15 @@ public class TestController {
     private final MrDetailsRepository mrDetailsRepository;
     private final Logger logger = LoggerFactory.getLogger(TestController.class);
     private final FeeCollectionRepository feeCollectionRepository;
+    private final StudentDashBoardsServiceImpl studentDashBoardsServiceImpl;
 
-    public TestController(StudentRepository studentRepository, MiscellaniousServices miscellaniousServices, MasterTableServicesImpl masterTableServicesImpl, MrDetailsRepository mrDetailsRepository, FeeCollectionRepository feeCollectionRepository) {
+    public TestController(StudentRepository studentRepository, MiscellaniousServices miscellaniousServices, MasterTableServicesImpl masterTableServicesImpl, MrDetailsRepository mrDetailsRepository, FeeCollectionRepository feeCollectionRepository, StudentDashBoardsServiceImpl studentDashBoardsServiceImpl) {
         this.studentRepository = studentRepository;
         this.miscellaniousServices = miscellaniousServices;
         this.masterTableServicesImpl = masterTableServicesImpl;
         this.mrDetailsRepository = mrDetailsRepository;
         this.feeCollectionRepository = feeCollectionRepository;
+        this.studentDashBoardsServiceImpl = studentDashBoardsServiceImpl;
     }
 
     @GetMapping("/hello")
@@ -66,6 +69,11 @@ public class TestController {
     @PostMapping("/money-to-words")
     public ResponseEntity<String> convertMoneyToWords(@RequestBody MoneyDTO moneyDTO){
         return ResponseEntity.ok(miscellaniousServices.getMoneyIntoWords(moneyDTO.amount()));
+    }
+
+    @GetMapping("/test-query/{regdNo}")
+    public void testQuery(@PathVariable String regdNo){
+        studentDashBoardsServiceImpl.testQueryForStudentDashboard(regdNo);
     }
 }
 

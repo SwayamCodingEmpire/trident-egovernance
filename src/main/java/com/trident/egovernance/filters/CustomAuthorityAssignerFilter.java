@@ -42,9 +42,11 @@ public class CustomAuthorityAssignerFilter extends OncePerRequestFilter {
             Map<String,Object> claims = jwts.getClaims();
             BasicMSUserDto basicMSUserDto = new BasicMSUserDto(apptoken,claims.get("preferred_username").toString());
             UserJobInformationDto userJobInformationDto = userDataFetcherFromMS.fetchUserJobInformation(basicMSUserDto);
+            String roleJobTitle = "ROLE_" + userJobInformationDto.jobTitle().toUpperCase().replace(" ", "_");
             Collection<GrantedAuthority> newAuthorities = List.of(
-                    new SimpleGrantedAuthority(userJobInformationDto.jobTitle()),
-                    new SimpleGrantedAuthority(userJobInformationDto.department())
+                    new SimpleGrantedAuthority(roleJobTitle),
+                    new SimpleGrantedAuthority(userJobInformationDto.department()),
+                    new SimpleGrantedAuthority(userJobInformationDto.employeeId())
             );
             JwtAuthenticationToken newAuth = new JwtAuthenticationToken(jwt,newAuthorities);
             SecurityContextHolder.getContext().setAuthentication(newAuth);
