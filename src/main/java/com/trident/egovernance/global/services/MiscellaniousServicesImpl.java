@@ -36,10 +36,12 @@ import java.util.stream.IntStream;
 
 @Service
 public class MiscellaniousServicesImpl implements MiscellaniousServices {
+    private final MenuBladeFetcherService menuBladeFetcherService;
     private final UserDataFetcherFromMS userDataFetcherFromMS;
     private final Logger logger = LoggerFactory.getLogger(MiscellaniousServicesImpl.class);
 
-    public MiscellaniousServicesImpl(UserDataFetcherFromMS userDataFetcherFromMS) {
+    public MiscellaniousServicesImpl(MenuBladeFetcherService menuBladeFetcherService, UserDataFetcherFromMS userDataFetcherFromMS) {
+        this.menuBladeFetcherService = menuBladeFetcherService;
         this.userDataFetcherFromMS = userDataFetcherFromMS;
     }
 
@@ -215,5 +217,19 @@ public class MiscellaniousServicesImpl implements MiscellaniousServices {
         }catch (ClassCastException e){
             throw new InvalidInputsException("Invalid Authentication Token");
         }
+    }
+
+    public RoleDetails getMenuItems() {
+        UserJobInformationDto userJobInformationDto = getUserJobInformation();
+        NavigationMenu navigationMenu = menuBladeFetcherService.getNavigationMenu();
+        String role = userJobInformationDto.jobTitle();
+
+        logger.info(navigationMenu.toString());
+        return switch (role) {
+            case "STUDENT" -> navigationMenu.menus().get("STUDENT");
+            case "OFFICE" -> navigationMenu.menus().get("OFFICE");
+            case "ACCOUNTS" -> navigationMenu.menus().get("ACCOUNTS");
+            default -> throw new InvalidInputsException("Invalid role: " + role);
+        };
     }
 }

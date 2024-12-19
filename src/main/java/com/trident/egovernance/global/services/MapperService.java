@@ -5,6 +5,7 @@ import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.global.entities.redisEntities.NSR;
 import com.trident.egovernance.global.entities.redisEntities.StudentDocData;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
+import com.trident.egovernance.global.entities.views.SemesterResult;
 import jakarta.persistence.Tuple;
 
 import java.util.List;
@@ -50,5 +51,8 @@ public interface MapperService {
     Set<FeeTypesOnly> convertToFeeTypesOnlySet(List<FeeTypes> feesList);
     List<MrDetailsDto> convertToMrDetailsDtoSet(Set<MrDetails> mrDetailsSet);
 
+    List<Subject_Details> convertToSubjectDetailsList(List<SubjectTempDTO> subjectList);
+
+    List<SubjectResultData> convertToSubjectResultsData(List<SemesterResult> semesterResults);
 //    Set<String> getListOfOtherFees();
 }

@@ -6,6 +6,7 @@ import com.trident.egovernance.global.entities.redisEntities.NSR;
 import com.trident.egovernance.global.entities.redisEntities.StudentDocData;
 import com.trident.egovernance.global.entities.views.CollectionReport;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
+import com.trident.egovernance.global.entities.views.SemesterResult;
 import com.trident.egovernance.global.repositories.permanentDB.FeeTypesRepository;
 import jakarta.persistence.Tuple;
 import org.modelmapper.ModelMapper;
@@ -13,11 +14,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.security.auth.Subject;
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -210,6 +209,18 @@ public class MapperServiceImpl implements MapperService {
     public List<MrDetailsDto> convertToMrDetailsDtoSet(Set<MrDetails> mrDetailsSet) {
         return mrDetailsSet.stream()
                 .map(MrDetailsDto::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<Subject_Details> convertToSubjectDetailsList(List<SubjectTempDTO> subjectList) {
+        return subjectList.stream()
+                .map(Subject_Details::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<SubjectResultData> convertToSubjectResultsData(List<SemesterResult> semesterResults) {
+        return semesterResults.stream()
+                .map(SubjectResultData::new)
                 .collect(Collectors.toList());
     }
 }

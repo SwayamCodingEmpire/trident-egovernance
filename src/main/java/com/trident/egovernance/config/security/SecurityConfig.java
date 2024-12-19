@@ -68,14 +68,18 @@ public class SecurityConfig {
             "/accounts-section/**",
             "/initiate-session/**",
             "/office/**",
+            "/subjects/**"
     };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeHttpRequests(authorize -> {
-            authorize.requestMatchers("/student-portal/**").hasRole("STUDENT");
+            authorize.requestMatchers("/student-portal/**").hasAnyRole("STUDENT", "ADMIN");
+            authorize.requestMatchers("/office/**").hasAnyRole("OFFICE", "ADMIN");
+            authorize.requestMatchers("/accounts-section/**").hasAnyRole("ACCOUNTS", "ADMIN");
             authorize.requestMatchers(PUBLIC_URLS).permitAll();
-            authorize.requestMatchers("/test/hello").hasRole("NSR");
+            authorize.requestMatchers("/test/hello").hasAnyRole("NSR", "ADMIN");
+            authorize.requestMatchers("/NSR/**").hasAnyRole("NSR", "ADMIN");
             authorize.requestMatchers("/api/**").authenticated();
         }).sessionManagement(session -> {
             session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);

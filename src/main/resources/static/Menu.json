@@ -1,0 +1,94 @@
+{
+  "STUDENT": {
+    "redirectUrl": "/student/dashboard",
+    "allowedRoutes": [
+      "/student/dashboard",
+      "/student/dashboard/1",
+      "/student/accountdetails"
+    ],
+    "urls": [
+      {
+        "title": "Dashboard",
+        "url": "/student/dashboard",
+        "logo": "logo",
+        "children": [
+          {
+            "title": "Dashboard",
+            "url": "/student/dashboard/1",
+            "logo": "logo",
+            "children": null
+          }
+        ]
+      },
+      {
+        "title": "Account Details",
+        "url": "/student/accountdetails",
+        "logo": "logo",
+        "children": null
+      }
+    ]
+  },
+  "OFFICE": {
+    "redirectUrl": "/office/dashboard",
+    "allowedRoutes": [
+      "/newstudentreporting",
+      "/office/dashboard",
+      "/office/studentreport"
+    ],
+    "urls": [
+      {
+        "title": "New Student Reporting",
+        "url": "/newstudentreporting",
+        "logo": "logo",
+        "children": null
+      },
+      {
+        "title": "Dashboard",
+        "url": "/office/dashboard",
+        "logo": "logo",
+        "children": null
+      },
+      {
+        "title": "Student Reports",
+        "url": "/office/studentreport",
+        "logo": "logo",
+        "children": null
+      }
+    ]
+  },
+  "ACCOUNTS": {
+    "redirectUrl": "/feecollection/dashboard",
+    "allowedRoutes": [
+      "/feecollection/feecollectiondetails",
+      "/feecollection/dashboard",
+      "/feecollection/otherfeecollection",
+      "/feecollection/studentfeecollection"
+    ],
+    "urls": [
+      {
+        "title": "Fee Collection Details",
+        "url": "/feecollection/feecollectiondetails",
+        "logo": "logo",
+        "children": null
+      },
+      {
+        "title": "Dashboard",
+        "url": "/feecollection/dashboard",
+        "logo": "logo",
+        "children": null
+      },
+      {
+        "title": "Other Fees Collection",
+        "url": "/feecollection/otherfeecollection",
+        "logo": "logo",
+        "children": null
+      },
+      {
+        "title": "Student Fees Collection",
+        "url": "/feecollection/studentfeecollection",
+        "logo": "logo",
+        "children": null
+      }
+    ]
+  }
+}

@@ -359,6 +359,7 @@ public class OfficeServicesImpl {
 //        }
 //    }
 
+@Transactional
     public Boolean updateStudentDocsTable(List<StudentDocsOnlyDTO> updates, String regdNo){
         try{
             List<StudentDocs> studentDocs = new ArrayList<>();

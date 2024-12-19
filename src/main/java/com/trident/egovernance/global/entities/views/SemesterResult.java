@@ -1,5 +1,6 @@
 package com.trident.egovernance.global.entities.views;
 
+import com.trident.egovernance.global.entities.permanentDB.Subject_Details;
 import com.trident.egovernance.global.helpers.SemesterResultId;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -32,4 +33,8 @@ public class SemesterResult {
     private int credits;
     @Column(name = "RESPUBDATE")
     private String resPubDate;
+
+    @ManyToOne
+    @JoinColumn(name = "SUBJECTCODE", referencedColumnName = "SUBJECTCODE", insertable = false, updatable = false)
+    private Subject_Details subjectDetails;
 }

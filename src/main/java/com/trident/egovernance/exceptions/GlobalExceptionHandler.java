@@ -1,6 +1,8 @@
 package com.trident.egovernance.exceptions;
 
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.trident.egovernance.global.entities.redisEntities.NSR;
@@ -74,6 +76,21 @@ public class GlobalExceptionHandler {
             String[] errors = exception.getMessage().split("\\s*,\\s*");
             problemDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(422),exception.getMessage());
             problemDetail.setProperty("description",errors);
+            return problemDetail;
+        }
+        if(exception instanceof IOException){
+            problemDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(404),exception.getMessage());
+            problemDetail.setProperty("description","Unable to read");
+            return problemDetail;
+        }
+        if(exception instanceof StreamReadException ){
+            problemDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(404),exception.getMessage());
+            problemDetail.setProperty("description","Unable to read");
+            return problemDetail;
+        }
+        if(exception instanceof DatabindException){
+            problemDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(404),exception.getMessage());
+            problemDetail.setProperty("description","Unable to read");
             return problemDetail;
         }
         if(exception instanceof HttpMessageNotReadableException){

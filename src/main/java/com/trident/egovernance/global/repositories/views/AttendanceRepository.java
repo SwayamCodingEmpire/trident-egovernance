@@ -14,5 +14,6 @@ import java.util.List;
 @Transactional(readOnly = true)
 public interface AttendanceRepository extends JpaRepository<Attendance, AttendanceId> {
 
-    List<AttendanceSummaryDTO> findAllByRegdNo(String regdNo);
+//    @Query("SELECT new com.trident.egovernance.dto.AttendanceSummaryDTO(a.subAbbr, a.totalClasses, a.totalAttended) FROM ATTENDANCE a WHERE a.regdNo = :regdNo")
+//    List<AttendanceSummaryDTO> findAllByRegdNo(String regdNo);
 }

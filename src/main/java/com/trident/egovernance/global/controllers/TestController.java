@@ -7,11 +7,14 @@ import com.trident.egovernance.dto.FeeTypesMrHead;
 import com.trident.egovernance.dto.MoneyDTO;
 import com.trident.egovernance.global.entities.permanentDB.FeeCollection;
 import com.trident.egovernance.global.entities.permanentDB.Student;
+import com.trident.egovernance.global.helpers.StringRecordTemp;
+import com.trident.egovernance.global.helpers.SubjectInfo;
 import com.trident.egovernance.global.repositories.permanentDB.FeeCollectionRepository;
 import com.trident.egovernance.global.repositories.permanentDB.MrDetailsRepository;
 import com.trident.egovernance.global.repositories.permanentDB.StudentRepository;
 import com.trident.egovernance.global.services.MasterTableServicesImpl;
 import com.trident.egovernance.global.services.MiscellaniousServices;
+import com.trident.egovernance.global.services.SubjectDataFetcherService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -26,18 +29,19 @@ import java.util.Set;
 @RequestMapping("/test")
 public class TestController {
     private final StudentRepository studentRepository;
+    private final SubjectDataFetcherService subjectDataFetcherService;
     private final MiscellaniousServices miscellaniousServices;
     private final MasterTableServicesImpl masterTableServicesImpl;
-    private final MrDetailsRepository mrDetailsRepository;
     private final Logger logger = LoggerFactory.getLogger(TestController.class);
     private final FeeCollectionRepository feeCollectionRepository;
     private final StudentDashBoardsServiceImpl studentDashBoardsServiceImpl;
 
-    public TestController(StudentRepository studentRepository, MiscellaniousServices miscellaniousServices, MasterTableServicesImpl masterTableServicesImpl, MrDetailsRepository mrDetailsRepository, FeeCollectionRepository feeCollectionRepository, StudentDashBoardsServiceImpl studentDashBoardsServiceImpl) {
+    public TestController(StudentRepository studentRepository, SubjectDataFetcherService subjectDataFetcherService, MiscellaniousServices miscellaniousServices, MasterTableServicesImpl masterTableServicesImpl, FeeCollectionRepository feeCollectionRepository, StudentDashBoardsServiceImpl studentDashBoardsServiceImpl) {
         this.studentRepository = studentRepository;
+        this.subjectDataFetcherService = subjectDataFetcherService;
         this.miscellaniousServices = miscellaniousServices;
         this.masterTableServicesImpl = masterTableServicesImpl;
-        this.mrDetailsRepository = mrDetailsRepository;
+
         this.feeCollectionRepository = feeCollectionRepository;
         this.studentDashBoardsServiceImpl = studentDashBoardsServiceImpl;
     }
@@ -74,6 +78,11 @@ public class TestController {
     @GetMapping("/test-query/{regdNo}")
     public void testQuery(@PathVariable String regdNo){
         studentDashBoardsServiceImpl.testQueryForStudentDashboard(regdNo);
+    }
+
+    @PostMapping("/get-subject-details")
+    public ResponseEntity<List<SubjectInfo>> getSubjectDetails(@RequestBody StringRecordTemp table){
+        return ResponseEntity.ok(subjectDataFetcherService.parseSubjectData(table.htmlTable()));
     }
 }
 

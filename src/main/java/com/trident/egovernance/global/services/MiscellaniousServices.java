@@ -1,9 +1,6 @@
 package com.trident.egovernance.global.services;
 
-import com.trident.egovernance.dto.BasicFeeBatchDetails;
-import com.trident.egovernance.dto.MoneyDTO;
-import com.trident.egovernance.dto.StudentRequiredFieldsDTO;
-import com.trident.egovernance.dto.UserJobInformationDto;
+import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.permanentDB.Fees;
 
 import java.math.BigDecimal;
@@ -23,4 +20,5 @@ public interface MiscellaniousServices {
     boolean isRelevantFee(Fees fee, StudentRequiredFieldsDTO student, Boolean plPool, Boolean indusTraining);
     String getMoneyIntoWords(BigDecimal input);
     MoneyDTO convertMoneyToWords(BigDecimal input);
+    RoleDetails getMenuItems();
 }

@@ -1,6 +1,7 @@
 package com.trident.egovernance.global.services;
 
 import com.trident.egovernance.dto.BasicMSUserDto;
+import com.trident.egovernance.dto.MenuItem;
 import com.trident.egovernance.dto.ProfileDTO;
 import com.trident.egovernance.dto.UserJobInformationDto;
 import com.trident.egovernance.exceptions.UserNotLoggedInException;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -82,4 +84,6 @@ public class UserDataFetcherFromMS {
                 .bodyToMono(UserJobInformationDto.class)
                 .block();
     }
+
+
 }

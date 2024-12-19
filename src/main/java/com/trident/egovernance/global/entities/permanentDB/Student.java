@@ -3,6 +3,7 @@ package com.trident.egovernance.global.entities.permanentDB;
 import com.trident.egovernance.dto.StudentOnlyDTO;
 import com.trident.egovernance.global.entities.views.Attendance;
 import com.trident.egovernance.global.entities.views.Results;
+import com.trident.egovernance.global.entities.views.RollSheet;
 import com.trident.egovernance.global.helpers.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
@@ -123,6 +124,9 @@ public class Student {
     @OneToOne(mappedBy = "student", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @ToString.Exclude
     private Transport transport;
+    @OneToOne(mappedBy = "student", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ToString.Exclude
+    private RollSheet rollSheet;
     @OneToOne(mappedBy = "student") // Reference the Results entity
     private Results results;
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})

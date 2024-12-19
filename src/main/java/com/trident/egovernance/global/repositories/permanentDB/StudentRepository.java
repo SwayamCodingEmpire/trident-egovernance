@@ -25,6 +25,7 @@ public interface StudentRepository extends JpaRepository<Student, String> {
     @Query("SELECT s FROM STUDENT s " +
             "LEFT JOIN FETCH s.personalDetails " +
             "LEFT JOIN FETCH s.section " +
+            "LEFT JOIN FETCH s.rollSheet " +
             "WHERE s.regdNo = :regdNo")
     Student findStudentProfileData(String regdNo);
 
@@ -112,4 +113,8 @@ SELECT DISTINCT
 
     @Query("SELECT new com.trident.egovernance.dto.DuesDetailsInitiationDTO(s.regdNo, s.studentType, s.indortrng, s.plpoolm, s.studentAdmissionDetails.tfw, s.transport.transportOpted, s.hostel.hostelOption, s.hostel.hostelChoice, s.currentYear, s.course, s.batchId) FROM STUDENT s LEFT JOIN s.studentCareer LEFT JOIN s.studentAdmissionDetails LEFT JOIN s.transport LEFT JOIN s.hostel WHERE s.regdNo IN :regdNo")
     List<DuesDetailsInitiationDTO> findStudentByRegdNo(Set<String> regdNo);
+
+
+    @Query("SELECT COALESCE(COUNT(s.regdNo),0.00) FROM STUDENT s WHERE s.gender = :gender")
+    long countStudentByGender(Gender gender);
 }

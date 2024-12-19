@@ -1,14 +1,15 @@
 package com.trident.egovernance.domains.student.services;
 
-import com.trident.egovernance.dto.AttendanceSummaryDTO;
-import com.trident.egovernance.dto.SemesterResultData;
-import com.trident.egovernance.dto.StudentProfileDTO;
-import com.trident.egovernance.dto.UserJobInformationDto;
+import com.trident.egovernance.dto.*;
 
 import java.util.List;
+import java.util.Map;
 
 public interface StudentDashBoardsService {
     StudentProfileDTO getStudentProfile(UserJobInformationDto userJobInformationDto);
-    SemesterResultData getSemesterResults();
-    List<AttendanceSummaryDTO> getAttendanceSummary();
+    SemesterResultData getSemesterResultsSortedByCourse();
+    Map<Integer, List<AttendanceSummaryDTO>> getAttendanceSummary();
+    StudentSubjectWiseResults getResultsGroupedBySemester();
+    SemesterResultData getSemesterResultsSortedByBranch();
+    List<StudentCareerHistory> getStudentCareerDTO();
 }

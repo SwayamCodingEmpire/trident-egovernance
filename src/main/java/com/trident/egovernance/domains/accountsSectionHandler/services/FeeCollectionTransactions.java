@@ -112,7 +112,7 @@ public class FeeCollectionTransactions implements FeeCollectionTransactionServic
         tactF.sort(Comparator.comparingLong(MrDetailsDto::getSlNo));
         return new MoneyReceipt(
                 feeCollectionDetails.date(),
-                mrDetailsDtos.get(0).getMrNo(),
+                mrDetailsDtos.getFirst().getMrNo(),
                 tat,
                 tatMoney,
                 tactF,
