@@ -79,7 +79,7 @@ public class Student {
     @Column(name = "RELIGION")
     @Enumerated(EnumType.STRING)
     private Religion religion;
-//    @Column(name = "SECTIONID")
+    //    @Column(name = "SECTIONID")
 //    private Long sectionId;
 //    @Column(name = "SEMESTER")
 //    private Integer semester;

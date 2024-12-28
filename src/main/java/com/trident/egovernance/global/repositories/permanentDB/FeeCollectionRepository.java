@@ -46,7 +46,6 @@ public interface FeeCollectionRepository extends JpaRepository<FeeCollection,Lon
     @Query("UPDATE FEECOLLECTION f SET f.dueYear = :year, f.sessionId = :sessionId WHERE f.mrNo IN :mrNos")
     int updateFeeCollectionByMrForHostelRegistered(Integer year, String sessionId, Set<Long> mrNos);
 
-    Set<FeeCollection> findAllBySessionId(String sessionId);
 
     @Query("SELECT f FROM FEECOLLECTION f LEFT JOIN FETCH f.student LEFT JOIN FETCH f.mrDetails WHERE f.sessionId = :sessionId AND f.student.regdNo = :regdNo")
     Set<FeeCollection> findAllBySessionIdAndStudent_RegdNoWithAssociations(String sessionId, String regdNo);
@@ -64,5 +63,11 @@ public interface FeeCollectionRepository extends JpaRepository<FeeCollection,Lon
 
     @Query("SELECT f FROM FEECOLLECTION f LEFT JOIN FETCH f.mrDetails LEFT JOIN FETCH f.student WHERE f.mrNo = :mrNo")
     Optional<FeeCollection> findByMrNo(Long mrNo);
+
+//    @Query("SELECT f FROM FEECOLLECTION f LEFT JOIN FETCH f.mrDetails WHERE f.paymentDate = :paymentDate")
+    List<FeeCollection> findAllByPaymentDate(String paymentDate);
+
+//    @Query("SELECT f FROM FEECOLLECTION f LEFT JOIN FETCH f.mrDetails WHERE f.sessionId = :sessionId")
+    List<FeeCollection> findAllBySessionId(String sessionId);
 
 }

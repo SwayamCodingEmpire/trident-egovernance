@@ -12,7 +12,7 @@ public record CollectionSummary(
         PaymentMode paymentMode,
         String particulars,
         BigDecimal totalAmount,
-        int sem
+        Integer sem
 ) {
     public CollectionSummary(MrDetails mrDetails) {
         this(
@@ -30,7 +30,7 @@ public record CollectionSummary(
                 dailyCollectionSummary.getPaymentMode(),
                 dailyCollectionSummary.getParticulars(),
                 dailyCollectionSummary.getTotalAmount(),
-                dailyCollectionSummary.getSem()
+                dailyCollectionSummary.getSem() == null? -1 : dailyCollectionSummary.getSem()
         );
     }
 }

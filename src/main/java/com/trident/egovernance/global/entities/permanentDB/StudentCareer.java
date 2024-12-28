@@ -60,4 +60,3 @@ public class StudentCareer {
     @MapsId
     private Student student;  // One-to-One relationship with Student
 }
-

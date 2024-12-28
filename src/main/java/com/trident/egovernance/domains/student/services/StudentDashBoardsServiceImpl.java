@@ -58,6 +58,8 @@ public class StudentDashBoardsServiceImpl implements StudentDashBoardsService {
     public StudentProfileDTO getStudentProfile(UserJobInformationDto userJobInformationDto) {
         // Fetch user job information using the username from the claims
 
+
+        logger.info("Get student profile : {}", userJobInformationDto);
         // Fetch the student profile using employee ID
         Student student = studentRepository.findStudentProfileData(userJobInformationDto.employeeId());
         logger.info(student.toString());

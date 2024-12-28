@@ -39,8 +39,9 @@ public class AccountSectionServicesImpl implements AccountSectionService {
     private final Logger logger = LoggerFactory.getLogger(AccountSectionServicesImpl.class);
     private final CollectionReportRepository collectionReportRepository;
     private final FeeTypesRepository feeTypesRepository;
+    private final MrDetailsRepository mrDetailsRepository;
 
-    public AccountSectionServicesImpl(MiscellaniousServices miscellaniousServices, MapperService mapperService, OldDuesDetailsRepository oldDuesDetailsRepository, DuesDetailsRepository duesDetailsRepository, FeeCollectionRepository feeCollectionRepository, StudentRepository studentRepository, DailyCollectionSummaryRepository dailyCollectionSummaryRepository, CollectionReportRepository collectionReportRepository, FeeTypesRepository feeTypesRepository) {
+    public AccountSectionServicesImpl(MiscellaniousServices miscellaniousServices, MapperService mapperService, OldDuesDetailsRepository oldDuesDetailsRepository, DuesDetailsRepository duesDetailsRepository, FeeCollectionRepository feeCollectionRepository, StudentRepository studentRepository, DailyCollectionSummaryRepository dailyCollectionSummaryRepository, CollectionReportRepository collectionReportRepository, FeeTypesRepository feeTypesRepository, MrDetailsRepository mrDetailsRepository) {
         this.miscellaniousServices = miscellaniousServices;
         this.mapperService = mapperService;
         this.oldDuesDetailsRepository = oldDuesDetailsRepository;
@@ -50,6 +51,7 @@ public class AccountSectionServicesImpl implements AccountSectionService {
         this.dailyCollectionSummaryRepository = dailyCollectionSummaryRepository;
         this.collectionReportRepository = collectionReportRepository;
         this.feeTypesRepository = feeTypesRepository;
+        this.mrDetailsRepository = mrDetailsRepository;
     }
 
 
@@ -130,12 +132,15 @@ public class AccountSectionServicesImpl implements AccountSectionService {
 
     public List<CollectionSummary> getFeeCollectionsBySessionId(String sessionId) {
         try {
-            return feeCollectionRepository.findAllBySessionId(sessionId).stream()
+            logger.info(sessionId);
+            List<CollectionSummary> collectionSummaries =  feeCollectionRepository.findAllBySessionId(sessionId).stream()
                     .flatMap(feeCollection ->
                             feeCollection.getMrDetails().stream()
                                     .map(mrDetails -> new CollectionSummary(mrDetails))
                     )
                     .toList();
+            logger.info(collectionSummaries.toString());
+            return collectionSummaries;
         } catch (Exception e) {
             logger.error(e.getMessage());
             logger.error(e.toString());
@@ -144,7 +149,11 @@ public class AccountSectionServicesImpl implements AccountSectionService {
     }
 
     public Set<CollectionSummary> getAllDailyCollectionSummaryByPaymentDate(String paymentDate) {
-        return mapperService.convertToCollectionSummarySet(dailyCollectionSummaryRepository.findAllByPaymentDate(paymentDate));
+        logger.info(paymentDate);
+        Set<DailyCollectionSummary> dailyCollectionSummaries =  dailyCollectionSummaryRepository.findAllByPaymentDate(paymentDate);
+        logger.info(dailyCollectionSummaries.toString());
+        Set<CollectionSummary> collectionSummaries =  mapperService.convertToCollectionSummarySet(dailyCollectionSummaries);
+        return collectionSummaries;
     }
 
     @Override
@@ -175,6 +184,18 @@ public class AccountSectionServicesImpl implements AccountSectionService {
     public List<CollectionReportDTO> getCollectionReportBetweenDates(Date startDate, Date endDate) {
         List<Tuple> tuples = collectionReportRepository.findAllCollectionReportsWithMrDetailsByDateInBetween(startDate, endDate);
         return mapperService.convertFromTuplesToListOfCollectionReportDTO(tuples);
+    }
+
+    public List<FeeCollectionOnlyDTO> getFeeCollectionFilteredByPaymentDate(String paymentDate) {
+        return mapperService.convertToFeeCollectionOnlyDTOList(feeCollectionRepository.findAllByPaymentDate(paymentDate));
+    }
+
+    public List<FeeCollectionOnlyDTO> getFeeCollectionFilteredBySessionId(String sessionId) {
+        return mapperService.convertToFeeCollectionOnlyDTOList(feeCollectionRepository.findAllBySessionId(sessionId));
+    }
+
+    public List<MrDetailsDTO> fetchMrDetailsByMrNo(Long mrNo) {
+        return mrDetailsRepository.findAllByMrNo(mrNo);
     }
 
 }

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface MapperService {
-    NSRDto convertToNSRDtoList(NSR nsr);
+    NSRDto convertToNSRDto(NSR nsr);
     NSR convertToNSR(NSRDto nsrDto);
 
     PersonalDetails convertToPersonalDetails(NSR nsr);
@@ -26,7 +26,7 @@ public interface MapperService {
     List<DuesDetailsDto> convertToDuesDetailsDto(List<DuesDetails> duesDetailsList);
 
     List<DuesDetailsDto> convertToDuesDetailsDtoFromOldDuesDetails(List<OldDueDetails> duesDetailsList);
-    List<NSRDto> convertToNSRDtoList(List<NSR> nsrS);
+    List<NSRDto> convertToNSRDto(List<NSR> nsrS);
 
     List<CollectionReportDTO> convertFromTuplesToListOfCollectionReportDTO(List<Tuple> tuples);
     Set<NSRDto> convertToNSRDtoSet(Set<NSR> nsrS);
@@ -54,5 +54,7 @@ public interface MapperService {
     List<Subject_Details> convertToSubjectDetailsList(List<SubjectTempDTO> subjectList);
 
     List<SubjectResultData> convertToSubjectResultsData(List<SemesterResult> semesterResults);
+    List<FeeCollectionOnlyDTO> convertToFeeCollectionOnlyDTOList(List<FeeCollection> feeCollections);
+    List<MrDetailsDTO> convertToMrDetailsDTOList(List<MrDetails> mrDetailsList);
 //    Set<String> getListOfOtherFees();
 }

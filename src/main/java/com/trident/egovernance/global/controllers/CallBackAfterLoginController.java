@@ -15,31 +15,31 @@ import java.util.Map;
 @RequestMapping("/menu")
 public class CallBackAfterLoginController {
 
-    @Value("${spring.security.oauth2.client.registration.azure.client-id}")
-    private String clientId;
-
-    @Value("${spring.security.oauth2.client.registration.azure.client-secret}")
-    private String clientSecret;
-
-    @Value("${spring.security.oauth2.client.registration.azure.redirect-uri}")
-    private String redirectUri;
-
-    @Value("${spring.security.oauth2.client.provider.azure.token-uri}")
-    private String tokenUri;
-
-    private final Logger logger = LoggerFactory.getLogger(CallBackAfterLoginController.class);
-    private final UserDataFetcherFromMS userDataFetcherFromMS;
-    private final MenuBladeFetcherServiceImpl menuBladeFetcherServiceImpl;
-
-    public CallBackAfterLoginController(UserDataFetcherFromMS userDataFetcherFromMS, MenuBladeFetcherServiceImpl menuBladeFetcherServiceImpl) {
-        this.userDataFetcherFromMS = userDataFetcherFromMS;
-        this.menuBladeFetcherServiceImpl = menuBladeFetcherServiceImpl;
-    }
-
-    @GetMapping("/oauth2/authorization/azure")
-    public String testing(){
-        return "Working";
-    }
+//    @Value("${spring.security.oauth2.client.registration.azure.client-id}")
+//    private String clientId;
+//
+//    @Value("${spring.security.oauth2.client.registration.azure.client-secret}")
+//    private String clientSecret;
+//
+//    @Value("${spring.security.oauth2.client.registration.azure.redirect-uri}")
+//    private String redirectUri;
+//
+//    @Value("${spring.security.oauth2.client.provider.azure.token-uri}")
+//    private String tokenUri;
+//
+//    private final Logger logger = LoggerFactory.getLogger(CallBackAfterLoginController.class);
+//    private final UserDataFetcherFromMS userDataFetcherFromMS;
+//    private final MenuBladeFetcherServiceImpl menuBladeFetcherServiceImpl;
+//
+//    public CallBackAfterLoginController(UserDataFetcherFromMS userDataFetcherFromMS, MenuBladeFetcherServiceImpl menuBladeFetcherServiceImpl) {
+//        this.userDataFetcherFromMS = userDataFetcherFromMS;
+//        this.menuBladeFetcherServiceImpl = menuBladeFetcherServiceImpl;
+//    }
+//
+//    @GetMapping("/oauth2/authorization/azure")
+//    public String testing(){
+//        return "Working";
+//    }
 
 //    @GetMapping("/oauth2/callback")
 //    public ResponseEntity<String> handleOAuth2Callback(@RequestParam(name = "code") String code, @RequestParam(name = "state") String state , @RequestParam(name = "session_state",required = false) String sessionState )throws IOException {
@@ -84,10 +84,10 @@ public class CallBackAfterLoginController {
 //            return ResponseEntity.ok("Error");
 //        }
 //    }
-    @GetMapping("/test/myapi")
-    public ResponseEntity<Map<String,Object>> testmyapi(){
-        return ResponseEntity.ok(userDataFetcherFromMS.getClaims());
-    }
+//    @GetMapping("/test/myapi")
+//    public ResponseEntity<Map<String,Object>> testmyapi(){
+//        return ResponseEntity.ok(userDataFetcherFromMS.getClaims());
+//    }
 
 //    @GetMapping("/get-Menu_Blade")
 //    public ResponseEntity<MenuBladeDto> getMenuBlade(){

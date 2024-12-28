@@ -46,4 +46,6 @@ public interface StudentAdmissionDetailsRepository extends JpaRepository<Student
             String allotmentId,
             String regdNo
     );
+
+    StudentAdmissionDetails findByRegdNo(String regdNo);
 }

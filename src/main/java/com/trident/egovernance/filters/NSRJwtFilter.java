@@ -32,6 +32,7 @@ public class NSRJwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         final String authHeader = request.getHeader("NSR-Authorization");
         if(authHeader==null || !authHeader.startsWith("Bearer ")){
+            logger.info("NSR Authorization header is not present");
             filterChain.doFilter(request,response);
             return;
         }

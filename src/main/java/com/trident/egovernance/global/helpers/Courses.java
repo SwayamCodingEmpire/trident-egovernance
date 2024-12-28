@@ -16,6 +16,7 @@ public enum Courses implements Serializable {
     MBA("MBA");
     private final String displayName;
 
+
     public static Courses fromDisplayName(String displayName) {
         for (Courses course : Courses.values()) {
             if (course.getDisplayName().equals(displayName)) {

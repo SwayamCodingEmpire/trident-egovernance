@@ -2,10 +2,7 @@ package com.trident.egovernance.global.entities.views;
 
 import com.trident.egovernance.global.entities.permanentDB.Student;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.Immutable;
 
 import java.math.BigDecimal;
@@ -44,5 +41,6 @@ public class Results {
 
     @OneToOne
     @JoinColumn(name = "REGDNO", referencedColumnName = "REGDNO") // Map the REGDNO in Student
+    @ToString.Exclude
     private Student student;
 }

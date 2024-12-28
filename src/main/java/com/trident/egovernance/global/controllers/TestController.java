@@ -2,16 +2,15 @@ package com.trident.egovernance.global.controllers;
 
 import com.trident.egovernance.config.security.CustomUserDetails;
 import com.trident.egovernance.domains.student.services.StudentDashBoardsServiceImpl;
-import com.trident.egovernance.dto.FeeCollectionOnlyDTO;
-import com.trident.egovernance.dto.FeeTypesMrHead;
-import com.trident.egovernance.dto.MoneyDTO;
-import com.trident.egovernance.global.entities.permanentDB.FeeCollection;
-import com.trident.egovernance.global.entities.permanentDB.Student;
+import com.trident.egovernance.dto.*;
+import com.trident.egovernance.global.entities.permanentDB.*;
+import com.trident.egovernance.global.entities.views.Attendance;
+import com.trident.egovernance.global.entities.views.RollSheet;
+import com.trident.egovernance.global.helpers.BranchId;
 import com.trident.egovernance.global.helpers.StringRecordTemp;
 import com.trident.egovernance.global.helpers.SubjectInfo;
-import com.trident.egovernance.global.repositories.permanentDB.FeeCollectionRepository;
-import com.trident.egovernance.global.repositories.permanentDB.MrDetailsRepository;
-import com.trident.egovernance.global.repositories.permanentDB.StudentRepository;
+import com.trident.egovernance.global.repositories.permanentDB.*;
+import com.trident.egovernance.global.repositories.views.RollSheetRepository;
 import com.trident.egovernance.global.services.MasterTableServicesImpl;
 import com.trident.egovernance.global.services.MiscellaniousServices;
 import com.trident.egovernance.global.services.SubjectDataFetcherService;
@@ -23,27 +22,44 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @RestController
 @RequestMapping("/test")
 public class TestController {
     private final StudentRepository studentRepository;
+    private final SectionsRepository sectionsRepository;
+    private final PersonalDetailsRepository personalDetailsRepository;
+    private final RollSheetRepository rollSheetRepository;
     private final SubjectDataFetcherService subjectDataFetcherService;
     private final MiscellaniousServices miscellaniousServices;
     private final MasterTableServicesImpl masterTableServicesImpl;
     private final Logger logger = LoggerFactory.getLogger(TestController.class);
     private final FeeCollectionRepository feeCollectionRepository;
     private final StudentDashBoardsServiceImpl studentDashBoardsServiceImpl;
+    private final StudentAdmissionDetailsRepository studentAdmissionDetailsRepository;
+    private final StudentCareerRepository studentCareerRepository;
+    private final HostelRepository hostelRepository;
+    private final TransportRepository transportRepository;
+    private final BranchRepository branchRepository;
 
-    public TestController(StudentRepository studentRepository, SubjectDataFetcherService subjectDataFetcherService, MiscellaniousServices miscellaniousServices, MasterTableServicesImpl masterTableServicesImpl, FeeCollectionRepository feeCollectionRepository, StudentDashBoardsServiceImpl studentDashBoardsServiceImpl) {
+    public TestController(StudentRepository studentRepository, SectionsRepository sectionsRepository, PersonalDetailsRepository personalDetailsRepository, RollSheetRepository rollSheetRepository, SubjectDataFetcherService subjectDataFetcherService, MiscellaniousServices miscellaniousServices, MasterTableServicesImpl masterTableServicesImpl, FeeCollectionRepository feeCollectionRepository, StudentDashBoardsServiceImpl studentDashBoardsServiceImpl, StudentAdmissionDetailsRepository studentAdmissionDetailsRepository, StudentCareerRepository studentCareerRepository, HostelRepository hostelRepository, TransportRepository transportRepository, BranchRepository branchRepository) {
         this.studentRepository = studentRepository;
+        this.sectionsRepository = sectionsRepository;
+        this.personalDetailsRepository = personalDetailsRepository;
+        this.rollSheetRepository = rollSheetRepository;
         this.subjectDataFetcherService = subjectDataFetcherService;
         this.miscellaniousServices = miscellaniousServices;
         this.masterTableServicesImpl = masterTableServicesImpl;
 
         this.feeCollectionRepository = feeCollectionRepository;
         this.studentDashBoardsServiceImpl = studentDashBoardsServiceImpl;
+        this.studentAdmissionDetailsRepository = studentAdmissionDetailsRepository;
+        this.studentCareerRepository = studentCareerRepository;
+        this.hostelRepository = hostelRepository;
+        this.transportRepository = transportRepository;
+        this.branchRepository = branchRepository;
     }
 
     @GetMapping("/hello")
@@ -63,12 +79,12 @@ public class TestController {
     public List<FeeTypesMrHead> getFeeTypesMrHead(@RequestBody List<String> descriptions){
         return masterTableServicesImpl.getFeeTypesMrHeadByDescriptions(descriptions);
     }
-    @PostMapping("/test-FeeCollection/{sessionId}")
-    public ResponseEntity<List<FeeCollectionOnlyDTO>> testUpdate(@PathVariable("sessionId") String sessionId){
-        return ResponseEntity.ok(feeCollectionRepository.findAllBySessionId(sessionId).stream()
-                .map(feeCollection -> new FeeCollectionOnlyDTO(feeCollection))
-                .toList());
-    }
+//    @PostMapping("/test-FeeCollection/{sessionId}")
+//    public ResponseEntity<List<FeeCollectionOnlyDTO>> testUpdate(@PathVariable("sessionId") String sessionId){
+//        return ResponseEntity.ok(feeCollectionRepository.findAllBySessionId(sessionId).stream()
+//                .map(feeCollection -> new FeeCollectionOnlyDTO(feeCollection))
+//                .toList());
+//    }
 
     @PostMapping("/money-to-words")
     public ResponseEntity<String> convertMoneyToWords(@RequestBody MoneyDTO moneyDTO){
@@ -83,6 +99,72 @@ public class TestController {
     @PostMapping("/get-subject-details")
     public ResponseEntity<List<SubjectInfo>> getSubjectDetails(@RequestBody StringRecordTemp table){
         return ResponseEntity.ok(subjectDataFetcherService.parseSubjectData(table.htmlTable()));
+    }
+
+    @GetMapping("/student/{regdNo}")
+    public void getStudent(@PathVariable String regdNo){
+        Student student = studentRepository.findById(regdNo).orElseThrow(()->new RuntimeException("Student not found"));
+        logger.info(student.toString());
+    }
+
+    @GetMapping("/students/{regdNo}")
+    public void getStudents(@PathVariable String regdNo){
+
+        logger.info("Regdno is {}",studentRepository.findRegdNo(regdNo));
+    }
+
+    @GetMapping("/personal-details/{regdNo}")
+    public void getPersonalDetails(@PathVariable String regdNo){
+        PersonalDetails personalDetails = personalDetailsRepository.findById("2101289364").orElseThrow(()->new RuntimeException("Student not found"));
+        logger.info(personalDetails.toString());
+    }
+
+    @GetMapping("/sections/{id}")
+    public void getSections(@PathVariable Long id){
+        Sections sections = sectionsRepository.findById(id).orElseThrow(()->new RuntimeException("Student not found"));
+        logger.info(sections.toString());
+    }
+
+    @GetMapping("/rollsheet/{regdNo}")
+    public void getRollSheet(@PathVariable String regdNo){
+        RollSheet rollSheet = rollSheetRepository.findById(regdNo).orElseThrow(()->new RuntimeException("Student not found"));
+        logger.info(rollSheet.toString());
+    }
+
+    @GetMapping("/all/{regdNo}")
+    public void getAll(@PathVariable String regdNo){
+        StudentBasicDTO studentBasicDTO = studentRepository.findBasicStudentData(regdNo);
+        logger.info(studentBasicDTO.toString());
+        StudentWithEnumsDTO studentWithEnumsDTO = studentRepository.findStudentWithEnums(regdNo);
+        logger.info(studentWithEnumsDTO.toString());
+        StudentAdmissionDetails studentAdmissionDetails = studentAdmissionDetailsRepository.findByRegdNo(regdNo);
+        logger.info(studentAdmissionDetails.toString());
+        PersonalDetails personalDetails = personalDetailsRepository.findByRegdNo(regdNo);
+        logger.info(personalDetails.toString());
+        StudentCareerOnlyDTO studentCareer = studentCareerRepository.findByRegdNo(regdNo);
+        logger.info(studentCareer.toString());
+        Sections sections = sectionsRepository.findById(1L).orElseThrow(()->new RuntimeException("Student not found"));
+        logger.info(sections.toString());
+        Map<String, Object> ans =  sectionsRepository.findSectionRawById(1L);
+        logger.info(ans.toString());
+        Branch branch = branchRepository.findById(new BranchId("CST","B.TECH.")).orElseThrow(()-> new RuntimeException("Branch not found"));
+        logger.info(branch.toString());
+        Hostel hostel = hostelRepository.findById(regdNo).orElseThrow(()->new RuntimeException("Hostel not found"));
+        logger.info(hostel.toString());
+        Transport transport = transportRepository.findById(regdNo).orElseThrow(()->new RuntimeException("Transport not found"));
+        logger.info(transport.toString());
+        Student st = studentRepository.findStudentWithDetails(regdNo);
+        logger.info(st.toString());
+        Student st1 = studentRepository.findStudentWithRollAndSection(regdNo);
+        logger.info(st1.toString());
+        Student s = studentRepository.findById(regdNo).orElseThrow(()->new RuntimeException("Student not found"));
+        logger.info(s.toString());
+    }
+
+    @GetMapping("/diagnose/{regdNo}")
+    public void geTTest(@PathVariable String regdNo){
+        StudentDetailsDTO studentDetailsDTO = studentRepository.findStudentDetailsDiagnostic(regdNo);
+        logger.info(studentDetailsDTO.toString());
     }
 }
 

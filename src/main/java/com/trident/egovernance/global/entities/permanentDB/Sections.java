@@ -22,8 +22,8 @@ public class Sections {
     @Column(name = "ADMISSIONYEAR")
     private String admissionYear;
     @Column(name = "COURSE")
-    @Convert(converter = CourseConverter.class)
-    private Courses course;
+//    @Convert(converter = CourseConverter.class)
+    private String course;
     @Column(name = "BRANCHCODE", length = 15)
     private String branchCode;
 
@@ -43,7 +43,7 @@ public class Sections {
             @JoinColumn(name = "COURSE", referencedColumnName = "COURSE", insertable = false, updatable = false)
     })
     private Branch branch;
-    @OneToMany(mappedBy = "section")
+    @OneToMany(mappedBy = "section",fetch = FetchType.LAZY)
     @ToString.Exclude
     private List<Student> students;
 }

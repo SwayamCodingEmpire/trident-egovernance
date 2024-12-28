@@ -1,5 +1,6 @@
 package com.trident.egovernance.dto;
 
+import com.trident.egovernance.global.helpers.BooleanString;
 import com.trident.egovernance.global.helpers.Courses;
 
 public record StudentCollegeInformation(
@@ -8,6 +9,8 @@ public record StudentCollegeInformation(
         int semester,
         int labGroup,
         String section,
-        Courses course
+        Courses course,
+        BooleanString hostelAvailed,
+        BooleanString transportAvailed
 ) {
 }

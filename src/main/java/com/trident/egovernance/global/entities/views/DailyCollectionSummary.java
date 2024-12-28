@@ -33,5 +33,5 @@ public class DailyCollectionSummary {
     @Column(name = "TOTALAMOUNT")
     private BigDecimal totalAmount;
     @Column(name = "SEM")
-    private int sem;
+    private Integer sem;
 }

@@ -3,26 +3,26 @@
     "redirectUrl": "/student/dashboard",
     "allowedRoutes": [
       "/student/dashboard",
-      "/student/dashboard/1",
-      "/student/accountdetails"
+      "/student/accountdetails",
+      "/student/profile"
+
     ],
     "urls": [
       {
         "title": "Dashboard",
         "url": "/student/dashboard",
-        "logo": "logo",
-        "children": [
-          {
-            "title": "Dashboard",
-            "url": "/student/dashboard/1",
-            "logo": "logo",
-            "children": null
-          }
-        ]
+        "logo": "PiStudentBold",
+        "children": null
       },
       {
         "title": "Account Details",
         "url": "/student/accountdetails",
+        "logo": "logo",
+        "children": null
+      },
+      {
+        "title": "Profile",
+        "url": "/student/profile",
         "logo": "logo",
         "children": null
       }
@@ -33,7 +33,7 @@
     "allowedRoutes": [
       "/newstudentreporting",
       "/office/dashboard",
-      "/office/studentreport"
+      "/office/reports/studentreport"
     ],
     "urls": [
       {
@@ -50,7 +50,31 @@
       },
       {
         "title": "Student Reports",
-        "url": "/office/studentreport",
+        "url": "/office/reports/studentreport",
+        "logo": "logo",
+        "children": null
+      },
+      {
+        "title": "Admission Reports",
+        "url": "/office/reports/admissionreport",
+        "logo": "logo",
+        "children": null
+      },
+      {
+        "title": "Continuing Student Reports",
+        "url": "/office/reports/continuingstudentreport",
+        "logo": "logo",
+        "children": null
+      },
+      {
+        "title": "Passed Out Reports",
+        "url": "/office/reports/passedoutstudentreport",
+        "logo": "logo",
+        "children": null
+      },
+      {
+        "title": "Total Admission Reports",
+        "url": "/office/reports/totaladmissionsreport",
         "logo": "logo",
         "children": null
       }

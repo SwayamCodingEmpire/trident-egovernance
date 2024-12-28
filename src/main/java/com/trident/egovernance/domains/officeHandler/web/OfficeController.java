@@ -6,6 +6,8 @@ import com.trident.egovernance.dto.*;
 import com.trident.egovernance.exceptions.InvalidInputsException;
 import com.trident.egovernance.global.entities.permanentDB.Student;
 import com.trident.egovernance.global.entities.permanentDB.StudentCareer;
+import com.trident.egovernance.global.helpers.Courses;
+import com.trident.egovernance.global.helpers.StudentStatus;
 import com.trident.egovernance.global.repositories.permanentDB.CourseRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,5 +101,20 @@ public class OfficeController {
     public void testConstraintsOn(){
         courseRepository.enableAllConstraints();
         logger.info("Constraints-on");
+    }
+
+    @GetMapping("/get-admission-data-year-wise-reports/{admissionYear}")
+    public ResponseEntity<List<AdmissionData>> getAdmissionDataYearwiseReports(@PathVariable("admissionYear") String admissionYear){
+        return ResponseEntity.ok(officeServices.getAdmissionData(admissionYear));
+    }
+
+    @GetMapping("/get-total-admission-data-reports")
+    public ResponseEntity<List<TotalAdmissionData>>  getAdmissionDataYearwiseReports(@RequestParam Courses course, @RequestParam String branch){
+        return ResponseEntity.ok(officeServices.getTotalAdmissionData(course, branch));
+    }
+
+    @GetMapping("/get-session-wise-reports")
+    public ResponseEntity<List<SessionWiseRecords>> getAdmissionDataYearwiseReports(@RequestParam StudentStatus status){
+        return ResponseEntity.ok(officeServices.getSessionWiseRecords(status));
     }
 }

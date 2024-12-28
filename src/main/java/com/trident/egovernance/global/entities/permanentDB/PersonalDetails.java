@@ -64,8 +64,9 @@ public class PersonalDetails {
         this.district = dto.district();
     }
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REGDNO")
     @MapsId
+    @ToString.Exclude
     private Student student; // VARCHAR2(100)
 }

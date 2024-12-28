@@ -38,4 +38,6 @@ public interface PersonalDetailsRepository extends JpaRepository<PersonalDetails
             String district,
             String regdNo
     );
+
+    PersonalDetails findByRegdNo(String regdNo);
 }

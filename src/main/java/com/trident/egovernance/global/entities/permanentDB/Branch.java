@@ -1,6 +1,8 @@
 package com.trident.egovernance.global.entities.permanentDB;
 
 import com.trident.egovernance.global.helpers.BranchId;
+import com.trident.egovernance.global.helpers.CourseConverter;
+import com.trident.egovernance.global.helpers.Courses;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,12 +24,16 @@ public class Branch {
     private String branchCode;
     @Column(name = "BRANCH")
     private String branch;
-    @Column(name = "COURSE")
     @Id
+    @Column(name = "COURSE")
+//    @Convert(converter = CourseConverter.class)
     private String course;
     @Column(name = "COURSEINPROGRESS")
     private Integer courseInProgress;
     @OneToMany(mappedBy = "branch")
     @ToString.Exclude
     private List<Sections> sections;
+
+//    @OneToMany(mappedBy = "branch", fetch = FetchType.LAZY)
+//    private List<Student> students;
 }

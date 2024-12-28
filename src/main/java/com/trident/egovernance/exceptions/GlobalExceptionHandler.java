@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.trident.egovernance.global.entities.redisEntities.NSR;
 import com.trident.egovernance.global.helpers.TFWType;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,6 +73,11 @@ public class GlobalExceptionHandler {
             problemDetail.setProperty("description","The record not found");
             return problemDetail;
         }
+        if(exception instanceof MessagingException){
+            problemDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(404),exception.getMessage());
+            problemDetail.setProperty("description","The record not found");
+            return problemDetail;
+        }
         if(exception instanceof InvalidInputsException){
             String[] errors = exception.getMessage().split("\\s*,\\s*");
             problemDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(422),exception.getMessage());
@@ -115,6 +121,12 @@ public class GlobalExceptionHandler {
 
             problemDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(400),enumValues);
             problemDetail.setProperty("description",shortClassName);
+            return problemDetail;
+        }
+
+        if(exception instanceof IOException){
+            problemDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(404),exception.getMessage());
+            problemDetail.setProperty("description","The record not found");
             return problemDetail;
         }
 

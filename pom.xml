@@ -35,6 +35,11 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+        <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
             <artifactId>ojdbc11</artifactId>
             <scope>runtime</scope>
@@ -204,6 +209,36 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
+
+<!--            <dependency>-->
+<!--                &lt;!&ndash; Include the sdk as a dependency &ndash;&gt;-->
+<!--                <groupId>com.microsoft.graph</groupId>-->
+<!--                <artifactId>microsoft-graph</artifactId>-->
+<!--                &lt;!&ndash;x-release-please-start-version&ndash;&gt;-->
+<!--                <version>6.24.0</version>-->
+<!--                &lt;!&ndash;x-release-please-end&ndash;&gt;-->
+<!--            </dependency>-->
+<!--            <dependency>-->
+<!--                &lt;!&ndash; This dependency is only needed if you are using a TokenCredential object for authentication &ndash;&gt;-->
+<!--                <groupId>com.azure</groupId>-->
+<!--                <artifactId>azure-identity</artifactId>-->
+<!--                <version>1.12.2</version>-->
+<!--            </dependency>-->
+
+<!--        &lt;!&ndash; https://mvnrepository.com/artifact/com.microsoft.graph/microsoft-graph-core &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>com.microsoft.graph</groupId>-->
+<!--            <artifactId>microsoft-graph-core</artifactId>-->
+<!--            <version>3.4.0</version>-->
+<!--        </dependency>-->
+
+        <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/s3 -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>2.29.39</version>
+        </dependency>
+
 
     </dependencies>
 

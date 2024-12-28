@@ -79,7 +79,8 @@ public class StudentAdmissionDetails {
         this.allotmentId = dto.allotmentId();
     }
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
+    @ToString.Exclude
     @JoinColumn(name = "REGDNO")
     @MapsId
     private Student student;

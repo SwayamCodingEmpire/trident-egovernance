@@ -4,13 +4,17 @@ import java.io.Serializable;
 
 public enum StudentType implements Serializable {
     REGULAR,
-    LE;
+    LE,
+    NA;
     public String getEnumName(){
         if(this.equals(REGULAR)){
             return "REGULAR";
         }
-        else{
+        else if(this.equals(LE)){
             return "LE";
+        }
+        else {
+            return "NA";
         }
     }
 }

@@ -1,36 +1,47 @@
 package com.trident.egovernance.domains.accountsSectionHandler.web;
 
 import com.trident.egovernance.domains.accountsSectionHandler.AccountSectionService;
-import com.trident.egovernance.dto.MoneyReceipt;
-import com.trident.egovernance.dto.MrDetailsDto;
-import com.trident.egovernance.dto.OtherFeesPayment;
+import com.trident.egovernance.domains.nsrHandler.services.EmailSenderServiceImpl;
+import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.permanentDB.Adjustments;
 import com.trident.egovernance.global.entities.permanentDB.Discount;
 import com.trident.egovernance.global.entities.permanentDB.FeeCollection;
 import com.trident.egovernance.domains.accountsSectionHandler.DiscountAndAdjustmentService;
 import com.trident.egovernance.domains.accountsSectionHandler.PaymentProcessingServices;
 import com.trident.egovernance.global.helpers.FeeProcessingMode;
+import com.trident.egovernance.global.repositories.permanentDB.StudentRepository;
+import com.trident.egovernance.global.services.PDFGenerationService;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Comparator;
 
 @RestController
 @RequestMapping("/accounts-section/payment")
 public class PaymentController {
+    private final PDFGenerationService pdfGeneration;
     private final PaymentProcessingServices paymentProcessingService;
     private final Logger logger = LoggerFactory.getLogger(PaymentController.class);
     private final DiscountAndAdjustmentService discountAndAdjustmentService;
     private final AccountSectionService accountSectionService;
+    private final StudentRepository studentRepository;
+    private final EmailSenderServiceImpl emailSenderServiceImpl;
 
-    public PaymentController(PaymentProcessingServices paymentProcessingService, DiscountAndAdjustmentService discountAndAdjustmentService, AccountSectionService accountSectionService) {
+    public PaymentController(PDFGenerationService pdfGeneration, PaymentProcessingServices paymentProcessingService, DiscountAndAdjustmentService discountAndAdjustmentService, AccountSectionService accountSectionService, StudentRepository studentRepository, EmailSenderServiceImpl emailSenderServiceImpl) {
+        this.pdfGeneration = pdfGeneration;
         this.paymentProcessingService = paymentProcessingService;
         this.discountAndAdjustmentService = discountAndAdjustmentService;
         this.accountSectionService = accountSectionService;
+        this.studentRepository = studentRepository;
+        this.emailSenderServiceImpl = emailSenderServiceImpl;
     }
 
 
@@ -51,19 +62,7 @@ public class PaymentController {
     @PostMapping("/fees-payment/{regdNo}")
     public ResponseEntity<MoneyReceipt> feesPayment(@RequestBody FeeCollection feeCollection, @PathVariable("regdNo") String regdNo){
         logger.info("feesPayment");
-        MoneyReceipt moneyReceipt = new MoneyReceipt();
-        if(feeCollection.getFeeProcessingMode().equals(FeeProcessingMode.AUTO)){
-            moneyReceipt = paymentProcessingService.processPaymentAutoMode(feeCollection,regdNo,false);
-        }
-        else{
-            moneyReceipt = paymentProcessingService.processPaymentNonAutoModes(feeCollection,regdNo,false);
-        }
-
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .buildAndExpand(moneyReceipt.getMrNo())
-                .toUri();
-        return ResponseEntity.created(location).body(moneyReceipt);
+        return ResponseEntity.ok(paymentProcessingService.processPaymentInterface(feeCollection,regdNo,false));
     }
 
 //    @GetMapping("/fees-payment/{mrNo}")
@@ -71,11 +70,11 @@ public class PaymentController {
 //        return ResponseEntity.ok(accountSectionService.getFeeCollectionBeMrNo(mrNo));
 //    }
 
-    @PutMapping("/update-fee-collection")
-    public ResponseEntity<MoneyReceipt> updateFeeCollection(@RequestBody FeeCollection feeCollection){
-        logger.info("updateFeeCollection");
-        return ResponseEntity.ok(paymentProcessingService.updateFeesCollection(feeCollection));// Process the payment
-    }
+//    @PutMapping("/update-fee-collection")
+//    public ResponseEntity<MoneyReceipt> updateFeeCollection(@RequestBody FeeCollection feeCollection){
+//        logger.info("updateFeeCollection");
+//        return ResponseEntity.ok(paymentProcessingService.updateFeesCollection(feeCollection));// Process the payment
+//    }
 
     @DeleteMapping("/delete-fee-collection/{mrNo}")
     public ResponseEntity<Void> deleteFeeCollection(@PathVariable("mrNo") Long mrNo){

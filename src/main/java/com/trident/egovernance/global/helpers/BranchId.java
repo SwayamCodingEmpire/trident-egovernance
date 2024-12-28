@@ -14,21 +14,23 @@ import java.util.Objects;
 
 public class BranchId {
     private String branchCode;
-    private String course;
+    private String course;  // Changed from Courses to String
+
     @Override
-    public boolean equals(Object o){
-        if(this==o){
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
         }
-        if(o == null || getClass()!=o.getClass()){
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
         BranchId branchId = (BranchId) o;
-        return Objects.equals(branchCode, branchId.getBranchCode()) && Objects.equals(course, branchId.getCourse());
+        return Objects.equals(branchCode, branchId.getBranchCode()) &&
+                Objects.equals(course, branchId.getCourse());
     }
 
     @Override
-    public int hashCode(){
+    public int hashCode() {
         return Objects.hash(branchCode, course);
     }
 }

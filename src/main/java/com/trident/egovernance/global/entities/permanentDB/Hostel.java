@@ -11,6 +11,7 @@ import lombok.*;
 @Entity(name = "HOSTEL")
 @Table(name = "HOSTEL")
 public final class Hostel extends BaseHostel {
+    @ToString.Exclude
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REGDNO")
     private Student student; // VARCHAR2(100)

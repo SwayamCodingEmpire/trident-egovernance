@@ -1,6 +1,7 @@
 package com.trident.egovernance.domains.accountsSectionHandler;
 
 import com.trident.egovernance.dto.*;
+import com.trident.egovernance.global.entities.permanentDB.FeeCollection;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
 import com.trident.egovernance.global.helpers.FeeTypesType;
 
@@ -20,6 +21,9 @@ public interface AccountSectionService {
     Set<DailyCollectionSummary> collectionSummaryByTimePeriod(String unit, int timePeriod);
     Set<CollectionSummary> getAllDailyCollectionSummaryByPaymentDate(String paymentDate);
 
+    List<FeeCollectionOnlyDTO> getFeeCollectionFilteredByPaymentDate(String paymentDate);
+    List<FeeCollectionOnlyDTO> getFeeCollectionFilteredBySessionId(String sessionId);
     List<FeeTypesOnly> getFines();
+    List<MrDetailsDTO> fetchMrDetailsByMrNo(Long mrNo);
 //    FeeCollectionAndMrDetails getFeeCollectionBeMrNo(Long mrNo);
 }

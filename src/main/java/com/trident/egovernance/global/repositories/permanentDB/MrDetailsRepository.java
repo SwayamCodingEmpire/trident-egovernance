@@ -1,5 +1,6 @@
 package com.trident.egovernance.global.repositories.permanentDB;
 
+import com.trident.egovernance.dto.MrDetailsDTO;
 import com.trident.egovernance.global.entities.permanentDB.MrDetails;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -26,4 +27,7 @@ public interface MrDetailsRepository extends JpaRepository<MrDetails,Long> {
 
     @Query("UPDATE MRDETAILS m SET m.particulars = :description WHERE m.feeCollection.mrNo IN :mrNos")
     int updateMrDetailsByMrNoForHostelRegistered(String description, Set<Long> mrNos);
+
+    @Query("SELECT new com.trident.egovernance.dto.MrDetailsDTO(m.slNo, m.particulars, m.amount) FROM MRDETAILS m LEFT JOIN m.feeCollection WHERE m.feeCollection.mrNo = :mrNo")
+    List<MrDetailsDTO> findAllByMrNo(Long mrNo);
 }

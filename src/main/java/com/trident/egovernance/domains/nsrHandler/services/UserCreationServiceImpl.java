@@ -2,23 +2,28 @@ package com.trident.egovernance.domains.nsrHandler.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trident.egovernance.global.services.AppBearerTokenService;
+import com.trident.egovernance.global.services.S3ServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class UserCreationServiceImpl implements UserCreationService {
     private final WebClient webClientGraph;
+    private final S3ServiceImpl s3Service;
     private final AppBearerTokenService appBearerTokenService;
     private final Logger logger = LoggerFactory.getLogger(UserCreationServiceImpl.class);
 
-    public UserCreationServiceImpl(AppBearerTokenService appBearerTokenService) {
+    public UserCreationServiceImpl(S3ServiceImpl s3Service, AppBearerTokenService appBearerTokenService) {
+        this.s3Service = s3Service;
         this.appBearerTokenService = appBearerTokenService;
         this.webClientGraph = WebClient.builder()
                 .baseUrl("https://graph.microsoft.com/v1.0/users")
@@ -28,7 +33,7 @@ public class UserCreationServiceImpl implements UserCreationService {
 
 
     @Override
-    public String createUser(String displayName, String jobTitle, String department, String employeeId, String password, String email, int yop) {
+    public String createUser(String displayName, String jobTitle, String department, String employeeId, String password, String email, long yop) {
         String appToken = appBearerTokenService.getAppBearerToken("defaultKey");
 
         String userPrincipalName = generateUserPrincipalName(displayName,department, yop);
@@ -77,7 +82,7 @@ public class UserCreationServiceImpl implements UserCreationService {
         }
     }
 
-    private String generateUserPrincipalName(String fullName, String branch, int yearOfPassing) {
+    private String generateUserPrincipalName(String fullName, String branch, long yearOfPassing) {
         if (fullName == null || fullName.trim().isEmpty()) {
             throw new IllegalArgumentException("Full name cannot be null or empty");
         }
@@ -101,5 +106,33 @@ public class UserCreationServiceImpl implements UserCreationService {
                 lastName,
                 branch.toLowerCase(),
                 yearOfPassing);
+    }
+
+    @Async
+    public CompletableFuture<Void> setProfilePicture(String regdNo, String userId) {
+        String appToken = appBearerTokenService.getAppBearerToken("defaultKey");
+        try {
+            String key = regdNo + "/" + regdNo + "-Passport-Photo";
+            byte[] profilePicture = s3Service.getFileAsBytes("nsrdocbucket",key);
+            logger.info("Profile Picture: " + profilePicture);
+            webClientGraph.put()
+                    .uri("/{userId}/photo/$value", userId)
+                    .header("Authorization", "Bearer " + appToken)
+                    .header("Content-Type", "image/jpeg")
+                    .bodyValue(profilePicture)
+                    .retrieve()
+                    .onStatus(HttpStatusCode::isError, response -> response.bodyToMono(String.class).flatMap(body -> {
+                        logger.error("Error setting profile picture: {}", body);
+                        return Mono.error(new RuntimeException("Failed to set profile picture"));
+                    }))
+                    .toBodilessEntity()
+                    .block();
+
+            logger.info("Profile picture set successfully for user ID: {}", userId);
+            return CompletableFuture.completedFuture(null);
+        } catch (Exception e) {
+            logger.error("Error setting profile picture for user ID: {}", userId, e);
+            throw new IllegalStateException("Error setting profile picture for user ID: " + userId, e);
+        }
     }
 }

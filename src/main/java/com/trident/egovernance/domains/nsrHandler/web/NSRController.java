@@ -90,7 +90,7 @@ class NSRController {
         try
         {
             CustomUserDetails customUserDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            NSRDto nsrDto1 = mapperService.convertToNSRDtoList(customUserDetails.getNsr());
+            NSRDto nsrDto1 = mapperService.convertToNSRDto(customUserDetails.getNsr());
             logger.info("After mapperservie success");
             logger.info(nsrDto1.toString());
             logger.info(nsr.toString());
@@ -142,11 +142,11 @@ class NSRController {
 
     @PostMapping("/postByStudent/{jeeApplicationNo}")
     public ResponseEntity<Boolean> finalSubmit(@PathVariable("jeeApplicationNo") String jeeApplicationNo){
-//        CustomUserDetails customUserDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        NSRDto nsrDto1 = mapperService.convertToNSRDto(customUserDetails.getNsr());
-//        if(nsrDto1.getJeeApplicationNo().compareTo(jeeApplicationNo)!=0){
-//            throw new AccessDeniedException("You are not allowed to post data for this application number");
-//        }
+        CustomUserDetails customUserDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        NSRDto nsrDto1 = mapperService.convertToNSRDto(customUserDetails.getNsr());
+        if(nsrDto1.getJeeApplicationNo().compareTo(jeeApplicationNo)!=0){
+            throw new AccessDeniedException("You are not allowed to post data for this application number");
+        }
         return ResponseEntity.ok(nsrService.saveToPermanentDatabase(jeeApplicationNo));
     }
 

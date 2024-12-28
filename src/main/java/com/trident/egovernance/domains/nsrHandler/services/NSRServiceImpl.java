@@ -2,6 +2,7 @@ package com.trident.egovernance.domains.nsrHandler.services;
 
 import com.trident.egovernance.dto.DuesDetailsInitiationDTO;
 import com.trident.egovernance.dto.NSRDto;
+import com.trident.egovernance.exceptions.RecordAlreadyExistsException;
 import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.global.entities.redisEntities.NSR;
 import com.trident.egovernance.exceptions.RecordNotFoundException;
@@ -18,10 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.security.SecureRandom;
 import java.sql.Date;
@@ -62,7 +60,7 @@ class NSRServiceImpl implements NSRService {
 
     @Override
     public NSRDto postNSRData(NSR nsr){
-//        if(!nsrRepository.existsById(nsr.getJeeApplicationNo())){
+        if(!nsrRepository.existsById(nsr.getJeeApplicationNo())){
         if(nsr.getRankType().equals(RankType.JEE)){
             nsr.setAieeeRank(nsr.getRank().toString());
         }
@@ -70,10 +68,10 @@ class NSRServiceImpl implements NSRService {
             nsr.setOjeeRank(nsr.getRank().toString());
         }
         nsr.setAdmissionDate(Date.valueOf(LocalDate.now()));
-            return mapperService.convertToNSRDtoList(nsrRepository.save(nsr));
-//        }else {
-//            throw new RecordAlreadyExistsException("Record already exists");
-//        }
+            return mapperService.convertToNSRDto(nsrRepository.save(nsr));
+        }else {
+            throw new RecordAlreadyExistsException("Record already exists");
+        }
     }
 
     @Override
@@ -84,14 +82,14 @@ class NSRServiceImpl implements NSRService {
     @Override
     public NSRDto postNSRDataByStudent(NSR nsr){
         logger.info("Posting NSR data for student "+nsr.getJeeApplicationNo());
-        return mapperService.convertToNSRDtoList(nsrRepository.save(nsr));
+        return mapperService.convertToNSRDto(nsrRepository.save(nsr));
     }
 
     @Override
     @Cacheable(value = "nsr", key = "#rollNo")
     public NSRDto getNSRDataByRollNo(String rollNo) {
         logger.info("Fetching NSR data for roll no. "+rollNo);
-        return mapperService.convertToNSRDtoList(nsrRepository.findById(rollNo).orElseThrow(() -> new RecordNotFoundException("Record not found")));
+        return mapperService.convertToNSRDto(nsrRepository.findById(rollNo).orElseThrow(() -> new RecordNotFoundException("Record not found")));
     }
     
 
@@ -99,13 +97,13 @@ class NSRServiceImpl implements NSRService {
     public List<NSRDto> getAllNSRData() {
         List<NSR> nsr = StreamSupport.stream(nsrRepository.findAll().spliterator(), false).toList();
         List<NSRDto> nsrDtos = new ArrayList<>();
-        nsr.forEach(nsr1 -> nsrDtos.add(mapperService.convertToNSRDtoList(nsr1)));
+        nsr.forEach(nsr1 -> nsrDtos.add(mapperService.convertToNSRDto(nsr1)));
         return nsrDtos;
     }
 
     @Override
     public NSRDto getNSRDataByJeeApplicationNo(String jeeApplicationNo) {
-        return mapperService.convertToNSRDtoList(nsrRepository.findById(jeeApplicationNo).orElseThrow(() -> new RecordNotFoundException("Record not found")));
+        return mapperService.convertToNSRDto(nsrRepository.findById(jeeApplicationNo).orElseThrow(() -> new RecordNotFoundException("Record not found")));
     }
 
     @Transactional
@@ -121,9 +119,8 @@ class NSRServiceImpl implements NSRService {
         try{
             logger.info("Fetching from Redis");
             Student student = mapperService.convertToStudent(nsr);
-            student.setHostelier(BooleanString.NO);
-            student.setHostelier(BooleanString.NO);
-            student.setTransportAvailed(BooleanString.NO);
+            student.setHostelier(nsr.getHostelOption());
+            student.setTransportAvailed(nsr.getTransportOpted());
 
             logger.info("NSR object : {}",nsr);
             StudentAdmissionDetails studentAdmissionDetails = mapperService.convertToStudentAdmissionDetails(nsr);
@@ -191,6 +188,7 @@ class NSRServiceImpl implements NSRService {
                         student.getEmail(),
                         student.getDegreeYop());
                 logger.info("Response for Microsoft : {}",response);
+                userCreationService.setProfilePicture(nsr.getRegdNo(), response);
                 emailSenderServiceImpl.sendTridentCredentialsEmail(response,password);
             }catch (Exception e){
                 e.printStackTrace();

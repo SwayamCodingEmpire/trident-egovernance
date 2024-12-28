@@ -1,23 +1,39 @@
 package com.trident.egovernance.domains.nsrHandler.services;
 
+import com.trident.egovernance.dto.PDFObject;
+import com.trident.egovernance.global.services.MoneyReceiptPDFGenerator;
+import com.trident.egovernance.global.services.PDFGenerationService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalTime;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class EmailSenderServiceImpl {
+    private final MoneyReceiptPDFGenerator moneyReceiptPDFGenerator;
+    private final Logger logger = LoggerFactory.getLogger(EmailSenderServiceImpl.class);
     private final JavaMailSender mailSender;
+    private final PDFGenerationService pdfGenerationService;
 
-    public EmailSenderServiceImpl(JavaMailSender mailSender) {
+    public EmailSenderServiceImpl(MoneyReceiptPDFGenerator moneyReceiptPDFGenerator, JavaMailSender mailSender, PDFGenerationService pdfGenerationService) {
+        this.moneyReceiptPDFGenerator = moneyReceiptPDFGenerator;
         this.mailSender = mailSender;
+        this.pdfGenerationService = pdfGenerationService;
     }
 
-    public void sendTridentCredentialsEmail(String microsoftMail, String password) throws MessagingException, IOException {
+    @Async
+    public CompletableFuture<Void> sendTridentCredentialsEmail(String microsoftMail, String password) throws MessagingException, IOException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
@@ -71,5 +87,88 @@ public class EmailSenderServiceImpl {
 
         // Send the microsoftMail
         mailSender.send(message);
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Async
+    public CompletableFuture<Void> sendPaymentReceiptEmail(
+            String recipientEmail, Long mrNumber, String name, BigDecimal amountPaid, String supportPhoneNumber, PDFObject pdfObject)
+            throws MessagingException, IOException {
+
+        byte[] receiptPdfBytes = pdfGenerationService.generatePdf(pdfObject);
+//        byte[] receiptPdfBytes = moneyReceiptPDFGenerator.generatePDF(pdfObject.personalDetails(), pdfObject.mrDetails());
+
+        logger.info("Generated receipt pdf bytes");
+        logger.info("receiptPdfBytes: " + receiptPdfBytes);
+        logger.info("Generated PDF : {}", LocalTime.now());
+        // Create a MIME message
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+        // Set sender and recipient
+        helper.setFrom("mohantyswayam2001@gmail.com");
+        helper.setTo("elitecracker25@gmail.com");
+        helper.setSubject("Payment Receipt");
+
+        // Email HTML content with dynamic data
+        String emailContent = "<!DOCTYPE html>" +
+                "<html>" +
+                "<head>" +
+                "<title>Payment Receipt</title>" +
+                "<style>" +
+                "body {font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #121212; color: #ffffff;}" +
+                ".email-container {max-width: 35rem; margin: 5rem auto; background-color: #1e1e1e; border: 0.3rem solid #333333; padding: 1rem; border-radius: 8px;}" +
+                ".logo-container {text-align: center; margin-bottom: 1rem;}" +
+                ".logo-container img {width: 7rem; height: 2.5rem; object-fit: cover; border-radius: 0.5rem;}" +
+                "h2 {color: #00aaff; text-align: center;}" +
+                "p {font-size: 1rem; color: #cccccc;}" +
+                "table {width: 100%; border-collapse: collapse; margin: 1rem 0;}" +
+                "th, td {padding: 1rem; border: 0.1rem solid #444444; text-align: left;}" +
+                "th {background-color: #333333; color: #00aaff;}" +
+                "td {background-color: #1e1e1e; color: #cccccc;}" +
+                "a {color: #00aaff; text-decoration: none;}" +
+                "a:hover {text-decoration: underline;}" +
+                "@media only screen and (max-width: 600px) {" +
+                ".email-container {padding: 0.5rem; margin: 2rem auto;}" +
+                "table {font-size: 0.9rem;}" +
+                "th, td {padding: 0.8rem;}" +
+                ".logo-container img {width: 6rem; height: 2rem;}" +
+                "h2 {font-size: 1.5rem;}" +
+                "p {font-size: 0.9rem;}" +
+                "}" +
+                "</style>" +
+                "</head>" +
+                "<body>" +
+                "<div class='email-container'>" +
+                "<div class='logo-container'>" +
+                "<img src="+"https://tridentpublicdata.s3.ap-south-1.amazonaws.com/logos/tat-logo.jpg"+" alt='Logo'>" +
+                "</div>" +
+                "<h2>Payment Receipt</h2>" +
+                "<p>Dear " + name + ",</p>" +
+                "<p>Thank you for your fee payment. Below are the details of your transaction:</p>" +
+                "<table>" +
+                "<tr><th>Details</th><th>Information</th></tr>" +
+                "<tr><td>MR Number</td><td>" + mrNumber + "</td></tr>" +
+                "<tr><td>Name</td><td>" + name + "</td></tr>" +
+                "<tr><td>Amount Paid</td><td>₹" + amountPaid + "</td></tr>" +
+                "</table>" +
+                "<p>Your payment receipt is attached for your reference.</p>" +
+                "<p>If you have any questions or concerns, feel free to contact our support team at <a href='tel:" + supportPhoneNumber + "'>" + supportPhoneNumber + "</a>.</p>" +
+                "<p>Best Regards,<br>Accounts Department<br>Trident Group of Institutions</p>" +
+                "</div>" +
+                "</body>" +
+                "</html>";
+
+
+        // Set the email content
+        helper.setText(emailContent, true);
+
+        // Attach the PDF receipt
+        helper.addAttachment("Payment_Receipt.pdf", new ByteArrayResource(receiptPdfBytes));
+
+        // Send the email
+        mailSender.send(message);
+
+        return CompletableFuture.completedFuture(null);
     }
 }

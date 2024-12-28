@@ -3,7 +3,9 @@ package com.trident.egovernance.domains.accountsSectionHandler.web;
 import com.trident.egovernance.domains.accountsSectionHandler.AccountSectionService;
 import com.trident.egovernance.domains.accountsSectionHandler.services.FeeCollectionTransactions;
 import com.trident.egovernance.dto.*;
+import com.trident.egovernance.global.entities.permanentDB.FeeCollection;
 import com.trident.egovernance.global.entities.permanentDB.Fees;
+import com.trident.egovernance.global.entities.permanentDB.MrDetails;
 import com.trident.egovernance.global.entities.permanentDB.PaymentMode;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
 import com.trident.egovernance.global.helpers.FeeTypesType;
@@ -56,17 +58,14 @@ public class AccountSectionController {
     }
 
     @GetMapping("/get-fee-collection/{input}")
-    public ResponseEntity<Collection<CollectionSummary>> getFeeCollectionBySessionId(@PathVariable("input") String input) {
+    public ResponseEntity<List<FeeCollectionOnlyDTO>> getFeeCollectionBySessionId(@PathVariable("input") String input) {
         logger.info("get-fee-collection-by-sessionId/{}", input);
         int formatIndex = miscellaniousServices.checkFormat(input);
-        switch (formatIndex) {
-            case 1:
-                return ResponseEntity.ok(accountSectionService.getAllDailyCollectionSummaryByPaymentDate(input));
-            case 2:
-                return ResponseEntity.ok(accountSectionService.getFeeCollectionsBySessionId(input));
-            default:
-                throw new RuntimeException("Should be unreachable");
-        }
+        return switch (formatIndex) {
+            case 1 -> ResponseEntity.ok(accountSectionService.getFeeCollectionFilteredByPaymentDate(input));
+            case 2 -> ResponseEntity.ok(accountSectionService.getFeeCollectionFilteredBySessionId(input));
+            default -> throw new RuntimeException("Should be unreachable");
+        };
     }
 
     @GetMapping("/get-list-of-headers")
@@ -131,7 +130,7 @@ public class AccountSectionController {
             case 1 -> ResponseEntity.ok(accountSectionService.getCollectionReportByDate(input));
             case 3 -> {
                 Date[] dates = miscellaniousServices.convertToDates(input);
-                logger.info(dates.toString());
+                logger.info(Arrays.toString(dates));
                 yield ResponseEntity.ok(accountSectionService.getCollectionReportBetweenDates(dates[0], dates[1]));
             }
             default -> throw new RuntimeException("Should be unreachable");
@@ -166,6 +165,11 @@ public class AccountSectionController {
     @GetMapping("/get-money-receipt/{mrNo}")
     public ResponseEntity<MoneyReceipt> getMoneyReceipt(@PathVariable("mrNo") Long mrNo){
         return ResponseEntity.ok(feeCollectionTransactions.getMoneyReceiptByMrNo(mrNo));
+    }
+
+    @GetMapping("/get-mrDetails-mrNo/{mrNo}")
+    public ResponseEntity<List<MrDetailsDTO>> getMrDetails(@PathVariable("mrNo") Long mrNo){
+        return ResponseEntity.ok(accountSectionService.fetchMrDetailsByMrNo(mrNo));
     }
 
     @GetMapping("/get-fines-list")

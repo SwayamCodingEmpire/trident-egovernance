@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import javax.security.auth.Subject;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,7 +31,7 @@ public class MapperServiceImpl implements MapperService {
         this.feeTypesRepository = feeTypesRepository;
     }
     @Override
-    public NSRDto convertToNSRDtoList(NSR nsr) {
+    public NSRDto convertToNSRDto(NSR nsr) {
         return modelMapper.map(nsr,NSRDto.class);
     }
 
@@ -87,16 +86,16 @@ public class MapperServiceImpl implements MapperService {
                 .collect(Collectors.toList());
     }
 
-    public List<NSRDto> convertToNSRDtoList(List<NSR> nsrS){
+    public List<NSRDto> convertToNSRDto(List<NSR> nsrS){
         return nsrS.stream()
-                .map(nsr -> convertToNSRDtoList(nsr))
+                .map(nsr -> convertToNSRDto(nsr))
                 .toList();
     }
 
     @Override
     public Set<NSRDto> convertToNSRDtoSet(Set<NSR> nsrS) {
         return nsrS.stream()
-                .map(nsr -> convertToNSRDtoList(nsr))
+                .map(nsr -> convertToNSRDto(nsr))
                 .collect(Collectors.toSet());
     }
 
@@ -221,6 +220,18 @@ public class MapperServiceImpl implements MapperService {
     public List<SubjectResultData> convertToSubjectResultsData(List<SemesterResult> semesterResults) {
         return semesterResults.stream()
                 .map(SubjectResultData::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<FeeCollectionOnlyDTO> convertToFeeCollectionOnlyDTOList(List<FeeCollection> feeCollections) {
+        return feeCollections.stream()
+                .map(FeeCollectionOnlyDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<MrDetailsDTO> convertToMrDetailsDTOList(List<MrDetails> mrDetailsList) {
+        return mrDetailsList.stream()
+                .map(MrDetailsDTO::new)
                 .collect(Collectors.toList());
     }
 }

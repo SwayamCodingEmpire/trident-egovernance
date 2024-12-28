@@ -4,5 +4,7 @@ import java.io.Serializable;
 
 public enum StudentStatus implements Serializable {
     CONTINUING,
-    ALUMNI
+    ALUMNI,
+    DISCONTINUED,
+    CLCTAKEN
 }

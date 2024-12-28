@@ -4,10 +4,7 @@ import com.trident.egovernance.dto.*;
 import com.trident.egovernance.exceptions.InvalidInputsException;
 import com.trident.egovernance.exceptions.RecordNotFoundException;
 import com.trident.egovernance.global.entities.permanentDB.*;
-import com.trident.egovernance.global.helpers.BooleanString;
-import com.trident.egovernance.global.helpers.Courses;
-import com.trident.egovernance.global.helpers.StudentStatus;
-import com.trident.egovernance.global.helpers.StudentType;
+import com.trident.egovernance.global.helpers.*;
 import com.trident.egovernance.global.repositories.permanentDB.*;
 import com.trident.egovernance.global.services.MapperService;
 import jakarta.persistence.EntityManager;
@@ -34,10 +31,12 @@ public class OfficeServicesImpl {
     private final StudentCareerRepository studentCareerRepository;
     private final StudentDocsRepository studentDocsRepository;
     private EntityManager entityManager;
+    private final BranchRepository branchRepository;
+    private final SessionsRepository sessionsRepository;
 
 
     public OfficeServicesImpl(StudentRepository studentRepository, MapperService mapperService, PersonalDetailsRepository personalDetailsRepository, TransportRepository transportRepository, HostelRepository hostelRepository, StudentAdmissionDetailsRepository studentAdmissionDetailsRepository, StudentCareerRepository studentCareerRepository, StudentDocsRepository studentDocsRepository,
-                              SectionsRepository sectionsRepository) {
+                              SectionsRepository sectionsRepository, BranchRepository branchRepository, SessionsRepository sessionsRepository) {
         this.studentRepository = studentRepository;
         this.mapperService = mapperService;
         this.personalDetailsRepository = personalDetailsRepository;
@@ -46,6 +45,8 @@ public class OfficeServicesImpl {
         this.studentAdmissionDetailsRepository = studentAdmissionDetailsRepository;
         this.studentCareerRepository = studentCareerRepository;
         this.studentDocsRepository = studentDocsRepository;
+        this.branchRepository = branchRepository;
+        this.sessionsRepository = sessionsRepository;
     }
 
     @PersistenceContext
@@ -53,24 +54,24 @@ public class OfficeServicesImpl {
         this.entityManager = entityManager;
     }
 
-    public List<StudentOfficeDTO> getAllContinuingStudents(){
+    public List<StudentOfficeDTO> getAllContinuingStudents() {
         return studentRepository.findAllByStatusAlongWithParentContact(StudentStatus.CONTINUING);
     }
 
-    public List<StudentOfficeDTO> getAllAlumniStudents(){
+    public List<StudentOfficeDTO> getAllAlumniStudents() {
         return studentRepository.findAllByStatusAlongWithParentContact(StudentStatus.ALUMNI);
     }
 
-    public Long countAllContinuingStudents(){
+    public Long countAllContinuingStudents() {
         return studentRepository.countAllByStatus(StudentStatus.CONTINUING);
     }
 
-    public Long countAllAlumningStudents(){
+    public Long countAllAlumningStudents() {
         return studentRepository.countAllByStatus(StudentStatus.ALUMNI);
     }
 
-    public List<CourseStudentCountDTO> getGroupedStudentsCount(String status){
-        List<Object[]> rawCounts = studentRepository.findRawStudentCountsGroupedByCourseAndBranch(StudentType.REGULAR.name(),status);
+    public List<CourseStudentCountDTO> getGroupedStudentsCount(String status) {
+        List<Object[]> rawCounts = studentRepository.findRawStudentCountsGroupedByCourseAndBranch(StudentType.REGULAR.name(), status);
         Map<Courses, List<BranchCountDTO>> courseBranchMap = new HashMap<>();
         Map<Courses, Long> courseStudentCountMap = new HashMap<>();
 
@@ -135,9 +136,9 @@ public class OfficeServicesImpl {
 
     @Transactional
     public Boolean updateStudentTableOnly(StudentOnlyDTO updatedStudent, String regdNo) {
-        try{
+        try {
             logger.info(regdNo);
-            if(studentRepository.updateStudent(
+            if (studentRepository.updateStudent(
                     updatedStudent.studentName(),
                     updatedStudent.gender(),
                     updatedStudent.dob(),
@@ -160,15 +161,15 @@ public class OfficeServicesImpl {
                     updatedStudent.religion(),
 //                    updatedStudent.section(),
                     regdNo
-            ) == 1){
-                 return true;
+            ) == 1) {
+                return true;
             }
             return false;
-        }catch (Exception e){
-            if(e instanceof DataIntegrityViolationException || e instanceof ConstraintViolationException || e instanceof SQLException) {
+        } catch (Exception e) {
+            if (e instanceof DataIntegrityViolationException || e instanceof ConstraintViolationException || e instanceof SQLException) {
                 logger.error(e.getMessage());
                 throw new InvalidInputsException("Invalid data Inputs");
-            }else{
+            } else {
                 throw new RuntimeException("Unexpected Error Occured");
             }
         }
@@ -176,7 +177,7 @@ public class OfficeServicesImpl {
 
     @Transactional
     public Boolean updateStudentCareerTable(StudentCareerOnlyDTO studentCareerOnlyDTO, String regdNo) {
-        try{
+        try {
             if (studentCareerRepository.updateStudentCareer(
                     studentCareerOnlyDTO.tenthPercentage(),
                     studentCareerOnlyDTO.tenthYOP(),
@@ -200,7 +201,7 @@ public class OfficeServicesImpl {
 
     @Transactional
     public Boolean updatePersonalDetailsTable(PersonalDetailsOnlyDTO dto, String regdNo) {
-        try{
+        try {
             if (personalDetailsRepository.updatePersonalDetails(
                     dto.fname(),
                     dto.mname(),
@@ -227,7 +228,7 @@ public class OfficeServicesImpl {
 
     @Transactional
     public Boolean updateStudentAdmissionDetailsTable(StudentAdmissionDetailsOnlyDTO studentAdmissionDetailsDTO, String regdNo) {
-        try{
+        try {
             if (studentAdmissionDetailsRepository.updateStudentAdmissionDetails(
                     studentAdmissionDetailsDTO.admissionDate(),
                     studentAdmissionDetailsDTO.ojeeCounsellingFeePaid(),
@@ -256,8 +257,7 @@ public class OfficeServicesImpl {
 
     @Transactional
     public Boolean updateHostelTable(HostelOnlyDTO studentHostelDetailsDTO, String regdNo) {
-        try
-        {
+        try {
             if (hostelRepository.updateStudentHostelDetails(
                     studentHostelDetailsDTO.hostelier(),
                     studentHostelDetailsDTO.hostelOption(),
@@ -275,10 +275,10 @@ public class OfficeServicesImpl {
             throw new InvalidInputsException("Invalid data Inputs");
         }
     }
+
     @Transactional
     public Boolean updateTransportTable(TransportOnlyDTO transportOnlyDTO, String regdNo) {
-        try
-        {
+        try {
             if (transportRepository.updateTransportDetails(
                     transportOnlyDTO.transportAvailed(),
                     transportOnlyDTO.transportOpted(),
@@ -300,21 +300,22 @@ public class OfficeServicesImpl {
 //    @Transactional
 //    public Boolean updateStudentDocsTable(List<StudentDocsOnlyDTO> updates, String regdNo) {
 //        logger.info(updates.toString());
-////        List<StudentDocs> studentDocs = new ArrayList<>();
-////        for (StudentDocsOnlyDTO dto : studentDocsOnlyDTO) {
-////            StudentDocs entity = new StudentDocs(dto);
-////            studentDocs.add(entity);
-////        }
-////
-////        // Merge entities and collect the merged results
-////        List<StudentDocs> mergedDocs = new ArrayList<>();
-////        for (StudentDocs doc : studentDocs) {
-////            mergedDocs.add(entityManager.merge(doc));
-////        }
-////        // Convert merged entities back to DTOs and return
-////        return mergedDocs.stream()
-////                .map(StudentDocsOnlyDTO::new)
-////                .toList();
+
+    /// /        List<StudentDocs> studentDocs = new ArrayList<>();
+    /// /        for (StudentDocsOnlyDTO dto : studentDocsOnlyDTO) {
+    /// /            StudentDocs entity = new StudentDocs(dto);
+    /// /            studentDocs.add(entity);
+    /// /        }
+    /// /
+    /// /        // Merge entities and collect the merged results
+    /// /        List<StudentDocs> mergedDocs = new ArrayList<>();
+    /// /        for (StudentDocs doc : studentDocs) {
+    /// /            mergedDocs.add(entityManager.merge(doc));
+    /// /        }
+    /// /        // Convert merged entities back to DTOs and return
+    /// /        return mergedDocs.stream()
+    /// /                .map(StudentDocsOnlyDTO::new)
+    /// /                .toList();
 //
 //        if (updates == null || updates.isEmpty()) {
 //            return false;
@@ -358,28 +359,26 @@ public class OfficeServicesImpl {
 //            throw new InvalidInputsException("Invalid Inputs");
 //        }
 //    }
-
-@Transactional
-    public Boolean updateStudentDocsTable(List<StudentDocsOnlyDTO> updates, String regdNo){
-        try{
+    @Transactional
+    public Boolean updateStudentDocsTable(List<StudentDocsOnlyDTO> updates, String regdNo) {
+        try {
             List<StudentDocs> studentDocs = new ArrayList<>();
             for (StudentDocsOnlyDTO dto : updates) {
                 StudentDocs studentDoc = new StudentDocs(dto);
-                studentDoc.setStudent(entityManager.getReference(Student.class,regdNo));
+                studentDoc.setStudent(entityManager.getReference(Student.class, regdNo));
                 studentDocs.add(studentDoc);
             }
             studentDocsRepository.saveAll(studentDocs);
             return true;
         } catch (Exception e) {
-                throw new RuntimeException(e);
+            throw new RuntimeException(e);
         }
     }
 
     @Transactional
-    public Boolean addDocsToStudentDocsTable(List<StudentDocsOnlyDTO> updates, String regdNo){
+    public Boolean addDocsToStudentDocsTable(List<StudentDocsOnlyDTO> updates, String regdNo) {
         logger.info(updates.toString());
-        try
-        {
+        try {
             Set<StudentDocs> studentDocsSet = new HashSet<>();
             if (studentRepository.existsById(regdNo)) {
                 for (StudentDocsOnlyDTO studentDocsOnlyDTO : updates) {
@@ -391,10 +390,22 @@ public class OfficeServicesImpl {
                 return true;
             }
             throw new RecordNotFoundException("Student Not Found");
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error(e.getMessage());
             return false;
         }
+    }
+
+    public List<AdmissionData> getAdmissionData(String admissionYear) {
+        return studentRepository.getStudentSummary(Gender.MALE, Gender.FEMALE, Religion.HINDU, TFWType.TFW, TFWType.NTFW, admissionYear);
+    }
+
+    public List<TotalAdmissionData> getTotalAdmissionData(Courses course, String branch) {
+        return studentRepository.getAdmissionSummaryByCourseAndBranch(course, branch);
+    }
+
+    public List<SessionWiseRecords> getSessionWiseRecords(StudentStatus status) {
+        return studentRepository.fetchSessionWiseStatistics(status);
     }
 
 //    public boolean createSection(Sections sections){

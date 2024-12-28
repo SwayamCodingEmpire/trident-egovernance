@@ -2,10 +2,7 @@ package com.trident.egovernance.global.entities.views;
 
 import com.trident.egovernance.global.entities.permanentDB.Student;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.Immutable;
 
 @Entity(name = "ROLLSHEET")
@@ -15,6 +12,7 @@ import org.hibernate.annotations.Immutable;
 @Immutable
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class RollSheet {
     @Id
     @Column(name = "REGDNO", length = 20)
@@ -36,5 +34,6 @@ public class RollSheet {
     private String sessionId;
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REGDNO")
+    @ToString.Exclude
     private Student student;
 }

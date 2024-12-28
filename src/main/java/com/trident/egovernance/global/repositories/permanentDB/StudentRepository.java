@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -22,6 +21,8 @@ public interface StudentRepository extends JpaRepository<Student, String> {
 //    List<StudentOfficeDTO> findAllByStatus(StudentStatus status);
     @Query("SELECT new com.trident.egovernance.dto.StudentOfficeDTO(s.regdNo, s.studentName, s.course, s.branchCode, s.phNo, s.email, s.studentType, s.currentYear, p.parentContact) FROM STUDENT s LEFT JOIN s.personalDetails p WHERE s.status=:status")
     List<StudentOfficeDTO> findAllByStatusAlongWithParentContact(@Param("status") StudentStatus status);
+
+
     @Query("SELECT s FROM STUDENT s " +
             "LEFT JOIN FETCH s.personalDetails " +
             "LEFT JOIN FETCH s.section " +
@@ -117,4 +118,116 @@ SELECT DISTINCT
 
     @Query("SELECT COALESCE(COUNT(s.regdNo),0.00) FROM STUDENT s WHERE s.gender = :gender")
     long countStudentByGender(Gender gender);
+
+    @Query("""
+    SELECT new com.trident.egovernance.dto.AdmissionData(
+        s.course,
+        s.branchCode,
+        s.studentType,
+        COUNT(CASE WHEN s.gender = :male AND sa.caste = 'GENERAL' THEN 1 ELSE NULL END),
+        COUNT(CASE WHEN s.gender = :female AND sa.caste = 'GENERAL' THEN 1 ELSE NULL END),
+        COUNT(CASE WHEN s.gender = :male AND sa.caste = 'OBC' THEN 1 ELSE NULL END),
+        COUNT(CASE WHEN s.gender = :female AND sa.caste = 'OBC' THEN 1 ELSE NULL END),
+        COUNT(CASE WHEN s.gender = :male AND sa.caste = 'SC' THEN 1 ELSE NULL END),
+        COUNT(CASE WHEN s.gender = :female AND sa.caste = 'SC' THEN 1 ELSE NULL END),
+        COUNT(CASE WHEN s.gender = :male AND sa.caste = 'ST' THEN 1 ELSE NULL END),
+        COUNT(CASE WHEN s.gender = :female AND sa.caste = 'ST' THEN 1 ELSE NULL END),
+        COUNT(CASE WHEN s.gender = :male AND s.religion != :hindu THEN 1 ELSE NULL END),
+        COUNT(CASE WHEN s.gender = :female AND s.religion != :hindu THEN 1 ELSE NULL END),
+        COUNT(CASE WHEN s.gender = :male AND sa.tfw = :tfw THEN 1 ELSE NULL END),
+        COUNT(CASE WHEN s.gender = :female AND sa.tfw = :tfw  THEN 1 ELSE NULL END),
+        COUNT(CASE WHEN s.gender = :male AND sa.tfw = :ntfw THEN 1 ELSE NULL END),
+        COUNT(CASE WHEN s.gender = :female AND sa.tfw = :ntfw  THEN 1 ELSE NULL END),
+        COUNT(CASE WHEN s.gender = :male THEN 1 ELSE NULL END),
+        COUNT(CASE WHEN s.gender = :female THEN 1 ELSE NULL END),
+        COUNT(s)
+    )
+    FROM STUDENT s
+    LEFT JOIN s.studentAdmissionDetails sa
+    WHERE s.admissionYear = :admissionYear
+    GROUP BY s.course, s.branchCode, s.studentType
+""")
+    List<AdmissionData> getStudentSummary(Gender male, Gender female, Religion hindu, TFWType tfw, TFWType ntfw, String admissionYear);
+
+
+    @Query("""
+    SELECT new com.trident.egovernance.dto.TotalAdmissionData(
+        s.admissionYear,
+        s.course,
+        s.branchCode,
+        s.studentType,
+        COUNT(s)
+    )
+    FROM STUDENT s
+    JOIN s.studentAdmissionDetails sa
+    WHERE s.course = :course
+      AND s.branchCode = :branch
+    GROUP BY s.admissionYear, s.course, s.branchCode, s.studentType
+""")
+    List<TotalAdmissionData> getAdmissionSummaryByCourseAndBranch(Courses course, String branch);
+
+
+    @Query("SELECT new com.trident.egovernance.dto.SessionWiseRecords(" +
+            "se.sessionId, " +
+            "se.course, " +
+            "br.branch, " +
+            "se.studentType, " +
+            "se.regdYear, " +
+            "COUNT(CASE WHEN s.gender = 'MALE' THEN 1 ELSE NULL END), " +
+            "COUNT(CASE WHEN s.gender = 'FEMALE' THEN 1 ELSE NULL END), " +
+            "COUNT(s)) " +
+            "FROM STUDENT s " +
+            "JOIN BRANCH br ON s.branchCode = br.branchCode AND s.course = br.course " +
+            "JOIN SESSIONS se ON s.course = se.course AND CAST(s.admissionYear AS int) = CAST(se.admissionYear AS int) " +
+            "AND s.studentType = se.studentType " +
+            "AND s.currentYear = se.regdYear WHERE s.status = :status "+
+            "GROUP BY se.sessionId, se.course, br.branch, se.studentType, se.regdYear")
+    List<SessionWiseRecords> fetchSessionWiseStatistics(StudentStatus status);
+
+    @Query("SELECT s.regdNo FROM STUDENT s WHERE s.regdNo = :regdNo")
+    long findRegdNo(String regdNo);
+
+    @Query("SELECT NEW com.trident.egovernance.dto.StudentBasicDTO(" +
+            "s.regdNo, s.studentName, s.gender, s.branchCode, " +
+            "s.admissionYear, s.currentYear, s.email) " +
+            "FROM STUDENT s WHERE s.regdNo = :regdNo")
+    StudentBasicDTO findBasicStudentData(String regdNo);
+
+    // 2. Add enum fields one by one
+    @Query("SELECT NEW com.trident.egovernance.dto.StudentWithEnumsDTO(" +
+            "s.regdNo, s.studentName, s.gender, s.studentType, " +
+            "s.hostelier, s.transportAvailed, s.status) " +
+            "FROM STUDENT s WHERE s.regdNo = :regdNo")
+    StudentWithEnumsDTO findStudentWithEnums(String regdNo);
+
+    // 3. If both above work, try with joins
+    @Query("SELECT s FROM STUDENT s " +
+            "LEFT JOIN FETCH s.personalDetails " +
+            "LEFT JOIN FETCH s.studentAdmissionDetails " +
+            "LEFT JOIN FETCH s.studentCareer " +
+            "WHERE s.regdNo = :regdNo")
+    Student findStudentWithDetails(String regdNo);
+
+    // 4. Finally, try with RollSheet and Section (since these worked before)
+    @Query("SELECT s FROM STUDENT s " +
+            "LEFT JOIN FETCH s.rollSheet " +
+            "LEFT JOIN FETCH s.section " +
+            "WHERE s.regdNo = :regdNo")
+    Student findStudentWithRollAndSection(String regdNo);
+
+    @Query("SELECT NEW com.trident.egovernance.dto.StudentDetailsDTO(" +
+            "s.regdNo, " +
+            "pd.parentContact, " +      // Add fields one by one from PersonalDetails
+            "pd.parentEmailId, " +
+            "pd.permanentAddress, " +
+            "pd.permanentCity, " +
+            "pd.permanentPincode, " +
+            "pd.lgName " +     // From StudentAdmissionDetails
+            ") " +
+            "FROM STUDENT s " +
+            "LEFT JOIN s.personalDetails pd " +
+            "LEFT JOIN s.studentAdmissionDetails sad " +
+            "WHERE s.regdNo = :regdNo")
+    StudentDetailsDTO findStudentDetailsDiagnostic(String regdNo);
 }
+

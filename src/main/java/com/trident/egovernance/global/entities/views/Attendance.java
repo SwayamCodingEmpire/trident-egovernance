@@ -5,10 +5,7 @@ import com.trident.egovernance.global.helpers.AttendanceId;
 import com.trident.egovernance.global.helpers.CourseConverter;
 import com.trident.egovernance.global.helpers.Courses;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.Immutable;
 
 @Entity(name = "ATTENDANCE")
@@ -59,7 +56,8 @@ public class Attendance {
     @Column(name = "TOTALATTENDED")
     private Integer totalAttended;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REGDNO", insertable = false, updatable = false)
+    @ToString.Exclude
     private Student student;
 }

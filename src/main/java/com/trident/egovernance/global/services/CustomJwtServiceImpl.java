@@ -44,9 +44,19 @@ public class CustomJwtServiceImpl implements CustomJwtService {
         List<String> roles = customUserDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
-        roles.add("ROLE_NSR");
-        extractClaims.put("roles",roles);
-        return buildToken(extractClaims,customUserDetails,jwtExpiration);
+
+        // Ensure all roles have the "ROLE_" prefix
+        roles = roles.stream()
+                .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
+                .collect(Collectors.toList());
+
+        // Optionally, add "ROLE_NSR" if it's not already present
+        if (!roles.contains("ROLE_NSR")) {
+            roles.add("ROLE_NSR");
+        }
+
+        extractClaims.put("roles", roles);
+        return buildToken(extractClaims, customUserDetails, jwtExpiration);
     }
     private String buildToken(Map<String,Object> extractClaims, CustomUserDetails customUserDetails, long jwtExpiration){
         return Jwts.builder()

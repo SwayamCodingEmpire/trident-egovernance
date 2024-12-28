@@ -81,6 +81,7 @@ public class NSRDto implements Serializable {
     private Long categoryRank;  // NUMBER(10,0)
     private String allotmentId;
 
+    private String dob;
     private List<StudentDocData> studentDocsData;
 
     private BooleanString transportOpted;
