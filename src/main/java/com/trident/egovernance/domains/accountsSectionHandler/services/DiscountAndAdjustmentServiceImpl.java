@@ -89,6 +89,7 @@ class DiscountAndAdjustmentServiceImpl implements DiscountAndAdjustmentService {
             discount.setRegdYear(discount.getCurrentYear());
             discount.setSessionId(currentSession.getSessionId());
             logger.info(currentSession.toString());
+            discount.setId(-1L);
             discountRepository.save(discount);
             return true;
         }

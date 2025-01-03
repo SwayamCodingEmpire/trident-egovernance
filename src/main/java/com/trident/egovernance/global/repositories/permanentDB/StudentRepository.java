@@ -1,6 +1,8 @@
 package com.trident.egovernance.global.repositories.permanentDB;
 
 import com.trident.egovernance.dto.*;
+import com.trident.egovernance.global.entities.permanentDB.Branch;
+import com.trident.egovernance.global.entities.permanentDB.Course;
 import com.trident.egovernance.global.entities.permanentDB.Student;
 import com.trident.egovernance.global.helpers.*;
 import org.hibernate.exception.ConstraintViolationException;
@@ -10,6 +12,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -229,5 +232,27 @@ SELECT DISTINCT
             "LEFT JOIN s.studentAdmissionDetails sad " +
             "WHERE s.regdNo = :regdNo")
     StudentDetailsDTO findStudentDetailsDiagnostic(String regdNo);
+
+    @Query("SELECT new com.trident.egovernance.dto.DueStatusReport(" +
+            "s.regdNo, s.currentYear, s.studentName, s.course, s.branchCode, " +
+            "COALESCE((SELECT d2.amountDue FROM DUESDETAIL d2 WHERE d2.regdNo = s.regdNo AND d2.description = 'PREVIOUS DUE'), 0), " +  // arrearsDue with COALESCE
+            "COALESCE(SUM(CASE WHEN d.description != 'PREVIOUS DUE' THEN d.amountDue ELSE 0 END), 0), " +  // currentDues
+            "COALESCE(SUM(d.amountDue), 0), " +  // totalDues
+            "COALESCE(SUM(CASE WHEN d.description = 'PREVIOUS DUE' THEN d.amountPaid ELSE 0 END), 0), " +  // arrearsPaid
+            "COALESCE(SUM(CASE WHEN d.description != 'PREVIOUS DUE' THEN d.amountPaid ELSE 0 END), 0), " +  // currentDuesPaid
+            "COALESCE(SUM(d.amountPaid), 0), " +  // totalPaid
+            "COALESCE(SUM(d.amountDue), 0), " +  // amountDue
+            "COALESCE(s.phNo, ''), " +  // phNo
+            "COALESCE(p.parentContact, '') " +  // parentContact
+            ") " +
+            "FROM STUDENT s " +
+            "LEFT JOIN DUESDETAIL d ON s.regdNo = d.regdNo " +
+            "LEFT JOIN s.personalDetails p " +
+            "WHERE s.course = :course AND s.branchCode = :branch AND s.currentYear = :dueYear " +
+            "GROUP BY s.regdNo, s.currentYear, s.studentName, s.course, s.branchCode, s.phNo, p.parentContact")
+    List<DueStatusReport> findAllByCourseAndBranchAndRegdYear(Courses course, String branch, Integer dueYear);
+
+
+
 }
 

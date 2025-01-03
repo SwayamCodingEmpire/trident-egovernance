@@ -27,6 +27,7 @@ import org.springframework.web.context.request.WebRequest;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -46,6 +47,11 @@ public class GlobalExceptionHandler {
         if(exception instanceof BadCredentialsException){
             problemDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(401),exception.getMessage());
             problemDetail.setProperty("description","The Username or Password is incorrect");
+            return problemDetail;
+        }
+        if(exception instanceof UnsupportedEncodingException){
+            problemDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500),exception.getMessage());
+            problemDetail.setProperty("description","Unable to fetch the data");
             return problemDetail;
         }
         if(exception instanceof AccountStatusException){

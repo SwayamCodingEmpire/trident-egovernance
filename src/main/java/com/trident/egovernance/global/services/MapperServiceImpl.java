@@ -155,24 +155,24 @@ public class MapperServiceImpl implements MapperService {
 //        feeTypesRepository.
 //    }
 
-    public List<CollectionReportDTO> convertFromTuplesToListOfCollectionReportDTO(List<Tuple> tuples){
-        Map<CollectionReport, List<MrDetailsDTO>> reportToDetailsMap = tuples.stream().collect(
-                Collectors.groupingBy(
-                        tuple -> tuple.get(0, CollectionReport.class), // Get the CollectionReport (first column in the tuple)
-                        Collectors.mapping(tuple -> {
-                            // Map each Tuple to MrDetailsDTO
-                            long slNo = tuple.get(1, Long.class); // Get the slNo (second column)
-                            String particulars = tuple.get(2, String.class); // Get the particulars (third column)
-                            BigDecimal amount = tuple.get(3, BigDecimal.class); // Get the amount (fourth column)
-                            return new MrDetailsDTO(slNo, particulars, amount);
-                        }, Collectors.toList())
-                )
-        );
-        // Convert the map entries to a list of CollectionReportDTO
-        return reportToDetailsMap.entrySet().stream()
-                .map(entry -> new CollectionReportDTO(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
-    }
+//    public List<CollectionReportDTO> convertFromTuplesToListOfCollectionReportDTO(List<Tuple> tuples){
+//        Map<CollectionReport, List<MrDetailsDTO>> reportToDetailsMap = tuples.stream().collect(
+//                Collectors.groupingBy(
+//                        tuple -> tuple.get(0, CollectionReport.class), // Get the CollectionReport (first column in the tuple)
+//                        Collectors.mapping(tuple -> {
+//                            // Map each Tuple to MrDetailsDTO
+//                            long slNo = tuple.get(1, Long.class); // Get the slNo (second column)
+//                            String particulars = tuple.get(2, String.class); // Get the particulars (third column)
+//                            BigDecimal amount = tuple.get(3, BigDecimal.class); // Get the amount (fourth column)
+//                            return new MrDetailsDTO(slNo, particulars, amount);
+//                        }, Collectors.toList())
+//                )
+//        );
+//        // Convert the map entries to a list of CollectionReportDTO
+//        return reportToDetailsMap.entrySet().stream()
+//                .map(entry -> new CollectionReportDTO(entry.getKey(), entry.getValue()))
+//                .collect(Collectors.toList());
+//    }
 
     public Set<MrDetailsDTO> convertToMrDetailsDTOSet(Set<MrDetails> mrDetailsSet) {
         return mrDetailsSet.stream()

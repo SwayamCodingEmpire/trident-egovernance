@@ -1,5 +1,6 @@
 package com.trident.egovernance.global.entities.permanentDB;
 
+import com.trident.egovernance.global.entities.views.FeeCollectionView;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,6 +29,11 @@ public class PaymentDuesDetails {
     @MapsId
     @JoinColumn(name = "MRNO")
     private FeeCollection feeCollection;
+
+    @ToString.Exclude
+    @OneToOne
+    @JoinColumn(name = "MRNO", insertable = false, updatable = false)
+    private FeeCollectionView feeCollectionView;
 
     public PaymentDuesDetails(com.trident.egovernance.dto.PaymentDuesDetails paymentDuesDetails) {
         this.arrears = paymentDuesDetails.arrears();

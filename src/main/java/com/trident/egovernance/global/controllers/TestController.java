@@ -79,9 +79,9 @@ public class TestController {
     public List<FeeTypesMrHead> getFeeTypesMrHead(@RequestBody List<String> descriptions){
         return masterTableServicesImpl.getFeeTypesMrHeadByDescriptions(descriptions);
     }
-//    @PostMapping("/test-FeeCollection/{sessionId}")
-//    public ResponseEntity<List<FeeCollectionOnlyDTO>> testUpdate(@PathVariable("sessionId") String sessionId){
-//        return ResponseEntity.ok(feeCollectionRepository.findAllBySessionId(sessionId).stream()
+//    @PostMapping("/test-FeeCollection/{session}")
+//    public ResponseEntity<List<FeeCollectionOnlyDTO>> testUpdate(@PathVariable("session") String session){
+//        return ResponseEntity.ok(feeCollectionRepository.findAllBySessionId(session).stream()
 //                .map(feeCollection -> new FeeCollectionOnlyDTO(feeCollection))
 //                .toList());
 //    }

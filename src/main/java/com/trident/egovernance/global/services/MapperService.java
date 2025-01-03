@@ -28,7 +28,7 @@ public interface MapperService {
     List<DuesDetailsDto> convertToDuesDetailsDtoFromOldDuesDetails(List<OldDueDetails> duesDetailsList);
     List<NSRDto> convertToNSRDto(List<NSR> nsrS);
 
-    List<CollectionReportDTO> convertFromTuplesToListOfCollectionReportDTO(List<Tuple> tuples);
+//    List<CollectionReportDTO> convertFromTuplesToListOfCollectionReportDTO(List<Tuple> tuples);
     Set<NSRDto> convertToNSRDtoSet(Set<NSR> nsrS);
     Student convertToStudentFromStudentOnlyDTO(StudentOnlyDTO studentOnlyDTO);
 

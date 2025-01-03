@@ -15,6 +15,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -22,7 +24,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 
 @RestController
 @RequestMapping("/accounts-section/payment")
@@ -47,10 +51,14 @@ public class PaymentController {
 
     @PostMapping("/insert-Discount-Data")
     public ResponseEntity<Boolean> insertDiscountData(@RequestBody Discount discount){
+        List<GrantedAuthority> newAuthorities = (List<GrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+        discount.setStaffId(newAuthorities.get(2).toString());
         return ResponseEntity.ok(discountAndAdjustmentService.insertDiscountData(discount));
     }
     @PostMapping("/apply-Adjustment")
     public ResponseEntity<Adjustments> applyAdjustment(@RequestBody Adjustments adjustments){
+        List<GrantedAuthority> newAuthorities = (List<GrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+        adjustments.setStaffId(newAuthorities.get(2).toString());
         return ResponseEntity.ok(discountAndAdjustmentService.addAdjustment(adjustments));
     }
 
@@ -89,6 +97,8 @@ public class PaymentController {
     public ResponseEntity<MoneyReceipt> otherFeesPayment(@RequestBody OtherFeesPayment otherFeesPayment, @PathVariable("regdNo") String regdNo){
         logger.info("otherFeesPayment");
         logger.info(otherFeesPayment.toString());
-        return ResponseEntity.ok(paymentProcessingService.processOtherFeesPayment(otherFeesPayment,regdNo, false));
+        return ResponseEntity.ok(paymentProcessingService.processOtherFessPaymentInterface(otherFeesPayment,regdNo, false));
     }
+
+
 }

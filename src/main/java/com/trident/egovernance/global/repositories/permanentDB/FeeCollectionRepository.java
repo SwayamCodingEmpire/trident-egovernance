@@ -67,7 +67,7 @@ public interface FeeCollectionRepository extends JpaRepository<FeeCollection,Lon
 //    @Query("SELECT f FROM FEECOLLECTION f LEFT JOIN FETCH f.mrDetails WHERE f.paymentDate = :paymentDate")
     List<FeeCollection> findAllByPaymentDate(String paymentDate);
 
-//    @Query("SELECT f FROM FEECOLLECTION f LEFT JOIN FETCH f.mrDetails WHERE f.sessionId = :sessionId")
+//    @Query("SELECT f FROM FEECOLLECTION f LEFT JOIN FETCH f.mrDetails WHERE f.session = :session")
     List<FeeCollection> findAllBySessionId(String sessionId);
 
 }

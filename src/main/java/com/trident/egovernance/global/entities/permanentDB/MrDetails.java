@@ -2,6 +2,7 @@ package com.trident.egovernance.global.entities.permanentDB;
 
 import com.trident.egovernance.dto.MrDetailsDTO;
 import com.trident.egovernance.dto.OtherMrDetails;
+import com.trident.egovernance.global.entities.views.FeeCollectionView;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -34,8 +35,15 @@ public class MrDetails {
     private FeeCollection feeCollection;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "MRNO", insertable = false, updatable = false)
+    @ToString.Exclude
+    private FeeCollectionView feeCollectionView;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "PARTICULARS", referencedColumnName = "DESCRIPTION", insertable = false, updatable = false)
     private FeeTypes feeType;
+
+
 
     public MrDetails(MrDetailsDTO otherMrDetails, FeeCollection feeCollection) {
         this.slNo = otherMrDetails.slNo();

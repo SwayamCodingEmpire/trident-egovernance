@@ -70,7 +70,7 @@ public class SecurityConfig {
 //            "/office/**",
 //            "/subjects/**",
             "/actuator/**",
-//            "/accounts-section/**"
+            "/accounts-section/**"
     };
 
     @Bean
@@ -79,7 +79,7 @@ public class SecurityConfig {
 //            authorize.requestMatchers("/NSR/post").hasAnyRole("OFFICE", "ADMIN");
             authorize.requestMatchers("/student-portal/**").hasAnyRole("STUDENT", "ADMIN");
             authorize.requestMatchers("/office/**").hasAnyRole("OFFICE", "ADMIN");
-            authorize.requestMatchers("/accounts-section/**").hasAnyRole("ACCOUNTS", "ADMIN");
+//            authorize.requestMatchers("/accounts-section/**").hasAnyRole("ACCOUNTS", "ADMIN");
             authorize.requestMatchers(PUBLIC_URLS).permitAll();
             authorize.requestMatchers("/test/hello").hasAnyRole("NSR", "ADMIN");
             authorize.requestMatchers("/NSR/post").hasAnyRole("OFFICE","ADMIN");

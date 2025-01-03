@@ -1,6 +1,7 @@
 package com.trident.egovernance.global.controllers;
 
 import com.trident.egovernance.config.security.CustomUserDetails;
+import com.trident.egovernance.domains.accountsSectionHandler.services.FeeCollectionTransactions;
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.permanentDB.BaseDuesDetails;
 import com.trident.egovernance.global.entities.permanentDB.Branch;
@@ -9,10 +10,7 @@ import com.trident.egovernance.global.repositories.permanentDB.BranchRepository;
 import com.trident.egovernance.global.repositories.permanentDB.DuesDetailsRepository;
 import com.trident.egovernance.global.repositories.permanentDB.FeesRepository;
 import com.trident.egovernance.global.repositories.permanentDB.StudentRepository;
-import com.trident.egovernance.global.services.AppBearerTokenService;
-import com.trident.egovernance.global.services.AuthenticationServiceImpl;
-import com.trident.egovernance.global.services.CustomJwtServiceImpl;
-import com.trident.egovernance.global.services.S3ServiceImpl;
+import com.trident.egovernance.global.services.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
@@ -22,6 +20,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -46,9 +45,11 @@ public class PublicController {
     private final Logger logger = LoggerFactory.getLogger(PublicController.class);
     private final FeesRepository feesRepository;
     private final BranchRepository branchRepository;
+    private final URLService urlService;
+    private final FeeCollectionTransactions feeCollectionTransactions;
 
     public PublicController(S3ServiceImpl s3Service, DuesDetailsRepository duesDetailsRepository, AppBearerTokenService appBearerTokenService, AuthenticationServiceImpl authenticationService, EntityManager entityManager, StudentRepository studentRepository, CustomJwtServiceImpl customJwtService,
-                            FeesRepository feesRepository, BranchRepository branchRepository) {
+                            FeesRepository feesRepository, BranchRepository branchRepository, URLService urlService, FeeCollectionTransactions feeCollectionTransactions) {
         this.s3Service = s3Service;
         this.duesDetailsRepository = duesDetailsRepository;
         this.appBearerTokenService = appBearerTokenService;
@@ -58,6 +59,8 @@ public class PublicController {
         this.customJwtService = customJwtService;
         this.feesRepository = feesRepository;
         this.branchRepository = branchRepository;
+        this.urlService = urlService;
+        this.feeCollectionTransactions = feeCollectionTransactions;
         this.webClientGraph = WebClient.builder()
                 .baseUrl("https://graph.microsoft.com/v1.0/users")
                 .build();
@@ -145,5 +148,13 @@ public class PublicController {
             logger.error("Error setting profile picture for user ID: {}", userId, e);
             throw new IllegalStateException("Error setting profile picture for user ID: " + userId, e);
         }
+    }
+
+    @PostMapping("/resource")
+    public ResponseEntity<MoneyReceipt> uploadFile(@RequestBody LoginResponse key) {
+        logger.info(key.token());
+        return ResponseEntity.ok(
+                feeCollectionTransactions.getMoneyReceiptByMrNo(urlService.getNumberFromUrl(key.token()))
+        );
     }
 }

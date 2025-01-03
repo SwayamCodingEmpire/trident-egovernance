@@ -17,4 +17,5 @@ public class MoneyReceipt {
     private MoneyDTO tactFTotalAmount;
     private FeeCollectionDetails feeCollectionDetails;
     private PaymentDuesDetails paymentDuesDetails;
+//    private byte[] moneyReceiptPDF;
 }

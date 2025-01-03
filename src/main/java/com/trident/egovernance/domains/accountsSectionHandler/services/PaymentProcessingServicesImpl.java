@@ -14,10 +14,7 @@ import com.trident.egovernance.global.repositories.permanentDB.DuesDetailsReposi
 import com.trident.egovernance.global.repositories.permanentDB.FeeCollectionRepository;
 import com.trident.egovernance.global.repositories.permanentDB.StudentRepository;
 import com.trident.egovernance.global.repositories.views.CurrentSessionRepository;
-import com.trident.egovernance.global.services.CurrentSessionFetcherServices;
-import com.trident.egovernance.global.services.MapperServiceImpl;
-import com.trident.egovernance.global.services.MasterTableServices;
-import com.trident.egovernance.global.services.PDFGenerationService;
+import com.trident.egovernance.global.services.*;
 import jakarta.persistence.EntityManager;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -46,8 +43,10 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
     private final CurrentSessionRepository currentSessionRepository;
     private final MapperServiceImpl mapperServiceImpl;
     private final EmailSenderServiceImpl emailSenderServiceImpl;
+    private final PDFGenerationService pdfGenerationService;
+    private final URLService urlService;
 
-    public PaymentProcessingServicesImpl(PDFGenerationService pdfGeneration, FeeCollectionTransactionServices feeCollectionTransactionServices, StudentRepository studentRepository, MasterTableServices masterTableServicesImpl, CurrentSessionFetcherServices currentSessionFetchingService, DuesDetailsRepository duesDetailsRepository, EntityManager entityManager, FeeCollectionRepository feeCollectionRepository, FeeCollectionTransactions saveFeeCollection, CurrentSessionRepository currentSessionRepository, MapperServiceImpl mapperServiceImpl, EmailSenderServiceImpl emailSenderServiceImpl) {
+    public PaymentProcessingServicesImpl(PDFGenerationService pdfGeneration, FeeCollectionTransactionServices feeCollectionTransactionServices, StudentRepository studentRepository, MasterTableServices masterTableServicesImpl, CurrentSessionFetcherServices currentSessionFetchingService, DuesDetailsRepository duesDetailsRepository, EntityManager entityManager, FeeCollectionRepository feeCollectionRepository, FeeCollectionTransactions saveFeeCollection, CurrentSessionRepository currentSessionRepository, MapperServiceImpl mapperServiceImpl, EmailSenderServiceImpl emailSenderServiceImpl, PDFGenerationService pdfGenerationService, MoneyReceiptTokenGeneratorService moneyReceiptTokenGeneratorService, URLService urlService) {
         this.pdfGeneration = pdfGeneration;
         this.feeCollectionTransactionServices = feeCollectionTransactionServices;
         this.currentSessionFetchingService = currentSessionFetchingService;
@@ -60,6 +59,8 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
         this.currentSessionRepository = currentSessionRepository;
         this.mapperServiceImpl = mapperServiceImpl;
         this.emailSenderServiceImpl = emailSenderServiceImpl;
+        this.pdfGenerationService = pdfGenerationService;
+        this.urlService = urlService;
     }
 
 
@@ -85,7 +86,7 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
         Set<MrDetails> processedMrDetails = processedData.mrDetails();
         if (processedData.collectedFees().compareTo(BigDecimal.ZERO) > 0) {
             DuesDetails duesDetail = createExcessDues(regdNo, processedData);
-            processedMrDetails.add(createMrDetails(duesDetail, BigDecimal.ZERO, processedData.slNo(), processedFeeCollection));
+            processedMrDetails.add(createMrDetails(duesDetail, processedData.collectedFees(), processedData.slNo(), processedFeeCollection));
             processedDuesDetails.add(duesDetail);
         }
         logger.info(processedDuesDetails.toString());
@@ -146,7 +147,10 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
                 processedPayment = processPaymentNonAutoModes(feeCollection, regdNo, false);
                 moneyReceipt = processedPayment.getLeft();
             }
+            String url = urlService.generateUrl(processedPayment.getLeft().getMrNo());
 
+            logger.info("The url is: " + url);
+            logger.info("Sending email");
 //            byte[] pdfResponse = pdfGeneration.generatePdf();
             emailSenderServiceImpl.sendPaymentReceiptEmail(
                     processedPayment.getRight().email(),
@@ -154,7 +158,7 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
                     processedPayment.getRight().studentName(),
                     processedPayment.getLeft().getPaymentDuesDetails().totalPaid(),
                     "8888888888",
-                    new PDFObject(studentRepository.findBasicStudentData(regdNo), moneyReceipt));
+                    new PDFObject(studentRepository.findBasicStudentData(regdNo), moneyReceipt,url));
             return moneyReceipt;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -195,8 +199,33 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
     }
 
     @Override
-    public MoneyReceipt processOtherFeesPayment(OtherFeesPayment otherFeesPayment, String regdNo, boolean isUpdate) {
+    public MoneyReceipt processOtherFessPaymentInterface(OtherFeesPayment otherFeesPayment, String regdNo, boolean isUpdate) {
+        try{
+            MoneyReceipt moneyReceipt = new MoneyReceipt();
+            Pair<MoneyReceipt, StudentBasicDTO> processedPayment;
+                processedPayment = processOtherFeesPayment(otherFeesPayment, regdNo, false);
+                moneyReceipt = processedPayment.getLeft();
+            String url = urlService.generateUrl(processedPayment.getLeft().getMrNo());
+
+            logger.info("The url is: " + url);
+            logger.info("Sending email");
+//            byte[] pdfResponse = pdfGeneration.generatePdf();
+            emailSenderServiceImpl.sendPaymentReceiptEmail(
+                    processedPayment.getRight().email(),
+                    processedPayment.getLeft().getMrNo(),
+                    processedPayment.getRight().studentName(),
+                    processedPayment.getLeft().getPaymentDuesDetails().totalPaid(),
+                    "8888888888",
+                    new PDFObject(studentRepository.findBasicStudentData(regdNo), moneyReceipt,url));
+            return moneyReceipt;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    @Override
+    public Pair<MoneyReceipt,StudentBasicDTO> processOtherFeesPayment(OtherFeesPayment otherFeesPayment, String regdNo, boolean isUpdate) {
         logger.info(otherFeesPayment.toString());
+        Student student = studentRepository.findById(regdNo).orElseThrow(() -> new InvalidStudentException("Invalid Registration Number"));
         Long mrNo = 0L;
         if (isUpdate) {
             mrNo = otherFeesPayment.mrNo();
@@ -232,7 +261,7 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
                         null
                 );
         logger.info(moneyReceipt.toString());
-        return moneyReceipt;
+        return Pair.of(moneyReceipt,new StudentBasicDTO(student));
     }
 
     @Override
@@ -271,7 +300,7 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
         if (collectedFees.compareTo(BigDecimal.ZERO) == 0) {
             mrDetails.setAmount((duesDetails.getBalanceAmount()));
         } else if (duesDetails.getDescription().compareTo("EXCESS FEE") == 0) {
-            mrDetails.setAmount((duesDetails.getBalanceAmount().subtract(collectedFees)).multiply(BigDecimal.valueOf(-1)));
+            mrDetails.setAmount(collectedFees);
         } else if (collectedFees.compareTo(duesDetails.getBalanceAmount()) < 0) {
             mrDetails.setAmount(collectedFees);
         } else {

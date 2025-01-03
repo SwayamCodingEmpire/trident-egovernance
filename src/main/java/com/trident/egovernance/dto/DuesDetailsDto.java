@@ -13,7 +13,9 @@ public record DuesDetailsDto(
         BigDecimal amountPaidToJee,
         BigDecimal balanceAmount,
         Integer dueYear,
-        Integer sem
+        Integer sem,
+        BigDecimal discount,
+        BigDecimal adjustment
 ) {
     public DuesDetailsDto(DuesDetails duesDetails) {
         this(
@@ -23,7 +25,9 @@ public record DuesDetailsDto(
                 duesDetails.getAmountPaidToJee(),
                 duesDetails.getBalanceAmount(),
                 duesDetails.getDueYear(),
-                duesDetails.getFeeType().getSemester()==null ? -1 : duesDetails.getFeeType().getSemester()
+                duesDetails.getFeeType().getSemester()==null ? -1 : duesDetails.getFeeType().getSemester(),
+                duesDetails.getDiscount(),
+                duesDetails.getAdjustment()
         );
     }
 
@@ -35,7 +39,9 @@ public record DuesDetailsDto(
                 duesDetails.getAmountPaidToJee(),
                 duesDetails.getBalanceAmount(),
                 duesDetails.getDueYear(),
-                duesDetails.getFeeType().getSemester()==null ? -1 : duesDetails.getFeeType().getSemester()
+                duesDetails.getFeeType().getSemester()==null ? -1 : duesDetails.getFeeType().getSemester(),
+                duesDetails.getDiscount(),
+                duesDetails.getAdjustment()
         );
     }
 }

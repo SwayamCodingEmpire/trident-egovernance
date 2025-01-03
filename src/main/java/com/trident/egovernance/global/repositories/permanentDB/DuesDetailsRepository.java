@@ -1,7 +1,10 @@
 package com.trident.egovernance.global.repositories.permanentDB;
 
+import com.trident.egovernance.dto.DueStatusReport;
 import com.trident.egovernance.dto.DuesDetailsDto;
 import com.trident.egovernance.dto.DuesSummaryDTO;
+import com.trident.egovernance.global.entities.permanentDB.Branch;
+import com.trident.egovernance.global.entities.permanentDB.Course;
 import com.trident.egovernance.global.entities.permanentDB.DuesDetails;
 import com.trident.egovernance.dto.PaymentDuesDetails;
 import com.trident.egovernance.global.helpers.DuesDetailsId;

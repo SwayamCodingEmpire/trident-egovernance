@@ -18,4 +18,5 @@ public abstract class BaseAdjustments {
     private String approvedBy;
     private String sessionId;
     private int regdYear;
+    private String staffId;
 }

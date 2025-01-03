@@ -12,11 +12,15 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalTime;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -94,9 +98,11 @@ public class EmailSenderServiceImpl {
     public CompletableFuture<Void> sendPaymentReceiptEmail(
             String recipientEmail, Long mrNumber, String name, BigDecimal amountPaid, String supportPhoneNumber, PDFObject pdfObject)
             throws MessagingException, IOException {
-
+//        JwtAuthenticationToken authentication = (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+//        Jwt jwt = authentication.getToken();
+//        Jwt jwts = (Jwt)(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+//        Map<String,Object> claims = jwts.getClaims();
         byte[] receiptPdfBytes = pdfGenerationService.generatePdf(pdfObject);
-//        byte[] receiptPdfBytes = moneyReceiptPDFGenerator.generatePDF(pdfObject.personalDetails(), pdfObject.mrDetails());
 
         logger.info("Generated receipt pdf bytes");
         logger.info("receiptPdfBytes: " + receiptPdfBytes);

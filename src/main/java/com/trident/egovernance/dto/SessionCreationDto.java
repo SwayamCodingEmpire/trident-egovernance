@@ -30,9 +30,9 @@ public record SessionCreationDto(
             Integer admissionYear,
             StudentType studentType
     ) {
-        // Validate sessionId format
+        // Validate session format
         if ((!sessionId.matches("\\d{4}-\\d{4}")) || (!prevSessionId.matches("\\d{4}-\\d{4}"))) {
-            throw new IllegalArgumentException("sessionId and prevSessionId must be in yyyy-yyyy format.");
+            throw new IllegalArgumentException("session and prevSessionId must be in yyyy-yyyy format.");
         }
 
         // Validate regdYear is a single-digit integer

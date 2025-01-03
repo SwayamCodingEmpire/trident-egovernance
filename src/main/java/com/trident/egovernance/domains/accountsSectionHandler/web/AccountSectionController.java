@@ -3,11 +3,11 @@ package com.trident.egovernance.domains.accountsSectionHandler.web;
 import com.trident.egovernance.domains.accountsSectionHandler.AccountSectionService;
 import com.trident.egovernance.domains.accountsSectionHandler.services.FeeCollectionTransactions;
 import com.trident.egovernance.dto.*;
-import com.trident.egovernance.global.entities.permanentDB.FeeCollection;
+import com.trident.egovernance.exceptions.InvalidInputsException;
 import com.trident.egovernance.global.entities.permanentDB.Fees;
-import com.trident.egovernance.global.entities.permanentDB.MrDetails;
 import com.trident.egovernance.global.entities.permanentDB.PaymentMode;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
+import com.trident.egovernance.global.helpers.Courses;
 import com.trident.egovernance.global.helpers.FeeTypesType;
 import com.trident.egovernance.global.repositories.permanentDB.FeeCollectionRepository;
 import com.trident.egovernance.global.services.MasterTableServicesImpl;
@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.Date;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -59,7 +58,7 @@ public class AccountSectionController {
 
     @GetMapping("/get-fee-collection/{input}")
     public ResponseEntity<List<FeeCollectionOnlyDTO>> getFeeCollectionBySessionId(@PathVariable("input") String input) {
-        logger.info("get-fee-collection-by-sessionId/{}", input);
+        logger.info("get-fee-collection-by-session/{}", input);
         int formatIndex = miscellaniousServices.checkFormat(input);
         return switch (formatIndex) {
             case 1 -> ResponseEntity.ok(accountSectionService.getFeeCollectionFilteredByPaymentDate(input));
@@ -122,19 +121,18 @@ public class AccountSectionController {
         return ResponseEntity.ok(accountSectionService.collectionSummaryByTimePeriod(unit, number));
     }
 
-    @GetMapping("/get-collection-report-by-date/{input}")
-    public ResponseEntity<List<CollectionReportDTO>> fetchCollectionReportsByDate(@PathVariable("input") String input) {
-        logger.info("get-collection-report-by-date/{}", input);
-        int formatIndex = miscellaniousServices.checkFormat(input);
-        return switch (formatIndex) {
-            case 1 -> ResponseEntity.ok(accountSectionService.getCollectionReportByDate(input));
-            case 3 -> {
-                Date[] dates = miscellaniousServices.convertToDates(input);
-                logger.info(Arrays.toString(dates));
-                yield ResponseEntity.ok(accountSectionService.getCollectionReportBetweenDates(dates[0], dates[1]));
-            }
-            default -> throw new RuntimeException("Should be unreachable");
-        };
+    @PostMapping("/get-collection-report")
+    public ResponseEntity<CollectionReportDTO> fetchCollectionReportsByDate(@RequestBody CollectionReportInputDTO collectionReportInputDTO) {
+        logger.info("get-collection-report-by-date");
+        if(collectionReportInputDTO.fromDate() != null){
+            return ResponseEntity.ok(accountSectionService.getCollectionReportBetweenDates(collectionReportInputDTO.fromDate(), collectionReportInputDTO.toDate()));
+        }
+        else if(collectionReportInputDTO.session() != null){
+            return ResponseEntity.ok(accountSectionService.getCollectionReportBySessionId(collectionReportInputDTO.session()));
+        }
+        else {
+            throw new InvalidInputsException("Should be unreachable");
+        }
     }
 
     @GetMapping("/get-other-fees")
@@ -175,6 +173,11 @@ public class AccountSectionController {
     @GetMapping("/get-fines-list")
     public ResponseEntity<List<FeeTypesOnly>> getFines(){
         return ResponseEntity.ok(accountSectionService.getFines());
+    }
+
+    @GetMapping("get-due-status-report")
+    public ResponseEntity<List<DueStatusReport>> getDueStatusReport(@RequestParam("course")Courses course, @RequestParam("branch") String branch, @RequestParam("regdYear") Integer regdYear){
+        return ResponseEntity.ok(accountSectionService.fetchDueStatusReport(course, branch, regdYear));
     }
 //
 //    public ResponseEntity<Boolean> addFeeTypes(@RequestBody Set<FeeTypesOnly> feeTypes){

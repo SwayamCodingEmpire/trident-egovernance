@@ -19,7 +19,7 @@ public final class DuesDetails extends BaseDuesDetails {
     @Column(name = "DESCRIPTION",length = 15)
     private String description;
 
-    @Id
+//    @Id
 //    @Column(name = "ID")
 //    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "dues_detail_seq_gen")
 //    @SequenceGenerator(name = "dues_detail_seq_gen", sequenceName = "dues_detail_seq", allocationSize = 1)

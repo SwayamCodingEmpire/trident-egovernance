@@ -30,6 +30,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -53,7 +54,24 @@ public class MiscellaniousServicesImpl implements MiscellaniousServices {
         batchId.append(basicFeeBatchDetails.studentType().getEnumName());
         return batchId.toString();
     }
-    private static final Pattern DATE_PATTERN = Pattern.compile("^(\\d{2}-\\d{2}-\\d{4})(?:_(\\d{2}-\\d{2}-\\d{4}))?$|^\\d{4}-\\d{4}$");
+//    private static final Pattern DATE_PATTERN = Pattern.compile("^(\\d{2}-\\d{2}-\\d{4})(?:_(\\d{2}-\\d{2}-\\d{4}))?$|^\\d{4}-\\d{4}$");
+
+//    private static final Pattern DATE_PATTERN = Pattern.compile(
+//        "(?:" +
+//                // Format 1: yyyy-mm-dd
+//                "\\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])" +
+//                "|" +
+//                // Format 2: yyyy-yyyy
+//                "\\d{4}-\\d{4}" +
+//                "|" +
+//                // Format 3: Fyyyy-mm-ddTyyyy-mm-dd
+//                "F\\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])T\\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])" +
+//                ")");
+
+    private static final String PATTERN_1 = "\\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])";
+    private static final String PATTERN_2 = "\\d{4}-\\d{4}";
+    private static final String PATTERN_3 = "F\\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])T\\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])";
+    private static final String DATE_PATTERN = "(?:" + PATTERN_1 + "|" + PATTERN_2 + "|" + PATTERN_3 + ")";
     @Override
     public List<String> getLastNumberOfDays(int days) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
@@ -95,56 +113,34 @@ public class MiscellaniousServicesImpl implements MiscellaniousServices {
             throw new InvalidInputsException("Invalid Inputs format");
         }
     }
-    @Override
-    public Date[] convertToDates(String inputs){
-        String[] parts = inputs.split("_");
-        // Now you can use Date.valueOf() with the yyyy-MM-dd formatted strings
-        return new Date[]{convertFromStringToDate(parts[0]), convertFromStringToDate(parts[1])};
 
+    @Override
+    public Date[] convertToDates(String inputs) {
+        try {
+            String[] dates = inputs.substring(1).split("T");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+            Date[] sqlDates = new Date[2];
+            sqlDates[0] = new Date(sdf.parse(dates[0]).getTime());
+            sqlDates[1] = new Date(sdf.parse(dates[1]).getTime());
+            return sqlDates;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+
+    public static boolean isValidDate(String dateString) {
+        Pattern pattern = Pattern.compile(DATE_PATTERN);
+        Matcher matcher = pattern.matcher(dateString);
+        return matcher.matches();
     }
     @Override
     public int checkFormat(String input) {
-        if (input == null || !DATE_PATTERN.matcher(input).matches()) {
-            throw new IllegalArgumentException("Input cannot be null");
-        }
-        if (input.contains("_")) {
-            String[] parts = input.split("_");
-            logger.info(Arrays.toString(parts));
-            logger.info(parts[0]);
-            logger.info(parts[1]);
-            Date startDate = convertFromStringToDate(parts[0]);
-            Date endDate = convertFromStringToDate(parts[1]);
-            if (startDate.after(endDate)) {
-                throw new IllegalArgumentException("Start date cannot be after end date");
-            } else if (startDate.equals(endDate)) {
-                throw new IllegalArgumentException("Start date cannot be equals to end date");
-            }
-            else{
-                return 3;
-            }
-        }
-        else if (input.contains("-") && input.indexOf("-") != input.lastIndexOf("-")) {
-            // dd-MM-yyyy format validation
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-            dateFormat.setLenient(false); // Strict parsing
-            try {
-                dateFormat.parse(input);
-                return 1;
-            } catch (ParseException e) {
-                throw new IllegalArgumentException("Invalid date format");
-            }
-        }
-        else {
-            // yyyy-yyyy format validation
-            String[] parts = input.split("-");
-            int startYear = Integer.parseInt(parts[0]);
-            int endYear = Integer.parseInt(parts[1]);
-            if (endYear == startYear + 1) {
-                return 2;
-            } else {
-                throw new InvalidInputsException("Invalid Session Format");
-            }
-        }
+        if (Pattern.compile(PATTERN_1).matcher(input).matches()) return 1;
+        if (Pattern.compile(PATTERN_2).matcher(input).matches()) return 2;
+        if (Pattern.compile(PATTERN_3).matcher(input).matches()) return 3;
+        return -1;  // Invalid format
     }
 
     @Override

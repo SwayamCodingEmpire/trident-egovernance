@@ -33,7 +33,7 @@ public interface SessionsRepository extends JpaRepository<Sessions, SessionIdId>
 
 //    @Query("""
 //    SELECT new com.trident.egovernance.dto.SessionWiseRecords(
-//        se.sessionId,
+//        se.session,
 //        se.course,
 //        br.branch,
 //        se.studentType,
@@ -52,7 +52,7 @@ public interface SessionsRepository extends JpaRepository<Sessions, SessionIdId>
 //      AND s.studentType = se.studentType
 //      AND s.currentYear = se.regdYear
 //      AND s.status = :status
-//    GROUP BY se.sessionId, se.course, br.branch, se.studentType, se.regdYear
+//    GROUP BY se.session, se.course, br.branch, se.studentType, se.regdYear
 //""")
 //    List<SessionWiseRecords> fetchSessionWiseStatistics(StudentStatus status);
 

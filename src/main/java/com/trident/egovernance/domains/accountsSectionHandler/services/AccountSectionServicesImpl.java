@@ -6,10 +6,13 @@ import com.trident.egovernance.exceptions.DatabaseException;
 import com.trident.egovernance.global.entities.permanentDB.FeeCollection;
 import com.trident.egovernance.global.entities.permanentDB.MrDetails;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
+import com.trident.egovernance.global.entities.views.FeeCollectionView;
+import com.trident.egovernance.global.helpers.Courses;
 import com.trident.egovernance.global.helpers.FeeTypesType;
 import com.trident.egovernance.global.repositories.permanentDB.*;
 import com.trident.egovernance.global.repositories.views.CollectionReportRepository;
 import com.trident.egovernance.global.repositories.views.DailyCollectionSummaryRepository;
+import com.trident.egovernance.global.repositories.views.FeeCollectionViewRepository;
 import com.trident.egovernance.global.services.DateConverterServices;
 import com.trident.egovernance.global.services.MapperService;
 import com.trident.egovernance.global.services.MiscellaniousServices;
@@ -19,11 +22,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 
+import java.math.BigDecimal;
 import java.sql.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,8 +41,9 @@ public class AccountSectionServicesImpl implements AccountSectionService {
     private final CollectionReportRepository collectionReportRepository;
     private final FeeTypesRepository feeTypesRepository;
     private final MrDetailsRepository mrDetailsRepository;
+    private final FeeCollectionViewRepository feeCollectionViewRepository;
 
-    public AccountSectionServicesImpl(MiscellaniousServices miscellaniousServices, MapperService mapperService, OldDuesDetailsRepository oldDuesDetailsRepository, DuesDetailsRepository duesDetailsRepository, FeeCollectionRepository feeCollectionRepository, StudentRepository studentRepository, DailyCollectionSummaryRepository dailyCollectionSummaryRepository, CollectionReportRepository collectionReportRepository, FeeTypesRepository feeTypesRepository, MrDetailsRepository mrDetailsRepository) {
+    public AccountSectionServicesImpl(MiscellaniousServices miscellaniousServices, MapperService mapperService, OldDuesDetailsRepository oldDuesDetailsRepository, DuesDetailsRepository duesDetailsRepository, FeeCollectionRepository feeCollectionRepository, StudentRepository studentRepository, DailyCollectionSummaryRepository dailyCollectionSummaryRepository, CollectionReportRepository collectionReportRepository, FeeTypesRepository feeTypesRepository, MrDetailsRepository mrDetailsRepository, FeeCollectionViewRepository feeCollectionViewRepository) {
         this.miscellaniousServices = miscellaniousServices;
         this.mapperService = mapperService;
         this.oldDuesDetailsRepository = oldDuesDetailsRepository;
@@ -52,6 +54,7 @@ public class AccountSectionServicesImpl implements AccountSectionService {
         this.collectionReportRepository = collectionReportRepository;
         this.feeTypesRepository = feeTypesRepository;
         this.mrDetailsRepository = mrDetailsRepository;
+        this.feeCollectionViewRepository = feeCollectionViewRepository;
     }
 
 
@@ -176,14 +179,62 @@ public class AccountSectionServicesImpl implements AccountSectionService {
         return dailyCollectionSummaryRepository.findAllByPaymentDateIn(dates);
     }
 
-    public List<CollectionReportDTO> getCollectionReportByDate(String paymentDate) {
-        List<Tuple> tuples = collectionReportRepository.findAllCollectionReportsWithMrDetailsByDate(paymentDate);
-        return mapperService.convertFromTuplesToListOfCollectionReportDTO(tuples);
+    public CollectionReportDTO getCollectionReportByDate(String paymentDate) {
+//        List<Tuple> tuples = collectionReportRepository.findAllCollectionReportsWithMrDetailsByDate(paymentDate);
+//        return mapperService.convertFromTuplesToListOfCollectionReportDTO(tuples);
+        List<FeeCollectionView> feeCollectionViews = feeCollectionViewRepository.findAllCollectionReportsWithMrDetailsByDate(Date.valueOf(paymentDate));
+        Map<String, BigDecimal> descSum = new HashMap<>();
+        for(FeeCollectionView feeCollectionView : feeCollectionViews) {
+            feeCollectionView.getMrDetails().stream()
+                    .forEach(mrDetails -> {
+                        if(descSum.containsKey(mrDetails.getParticulars())) {
+                            descSum.get(mrDetails.getParticulars()).add(mrDetails.getAmount());
+                        }
+                        else {
+                            descSum.put(mrDetails.getParticulars(), mrDetails.getAmount());
+                        }
+                    });
+            feeCollectionView.setMrDetailsDTOSet(mapperService.convertToMrDetailsDTOSet(feeCollectionView.getMrDetails()));
+        }
+        return new CollectionReportDTO(feeCollectionViews,descSum);
     }
 
-    public List<CollectionReportDTO> getCollectionReportBetweenDates(Date startDate, Date endDate) {
-        List<Tuple> tuples = collectionReportRepository.findAllCollectionReportsWithMrDetailsByDateInBetween(startDate, endDate);
-        return mapperService.convertFromTuplesToListOfCollectionReportDTO(tuples);
+    public CollectionReportDTO getCollectionReportBetweenDates(Date startDate, Date endDate) {
+//        List<Tuple> tuples = collectionReportRepository.findAllCollectionReportsWithMrDetailsByDateInBetween(startDate, endDate);
+//        return mapperService.convertFromTuplesToListOfCollectionReportDTO(tuples);
+        List<FeeCollectionView> feeCollectionViews = feeCollectionViewRepository.findAllCollectionReportsWithMrDetailsBetweenDate(startDate,endDate);
+        logger.info(feeCollectionViews.toString());
+        Map<String, BigDecimal> descSum = new HashMap<>();
+        for (FeeCollectionView feeCollectionView : feeCollectionViews) {
+            feeCollectionView.getMrDetails().forEach(mrDetails -> {
+                descSum.put(mrDetails.getParticulars(),
+                        descSum.getOrDefault(mrDetails.getParticulars(), BigDecimal.ZERO)
+                                .add(mrDetails.getAmount()));
+            });
+            feeCollectionView.setMrDetailsDTOSet(mapperService.convertToMrDetailsDTOSet(feeCollectionView.getMrDetails()));
+        }
+        return new CollectionReportDTO(feeCollectionViews,descSum);
+    }
+
+    public CollectionReportDTO getCollectionReportBySessionId(String sessionId) {
+//        List<Tuple> tuples = collectionReportRepository.findAllCollectionReportsWithMrDetailsByDateInBetween(startDate, endDate);
+//        return mapperService.convertFromTuplesToListOfCollectionReportDTO(tuples);
+        List<FeeCollectionView> feeCollectionViews = feeCollectionViewRepository.findFeeCollectionViewBySessionId(sessionId);
+        logger.info(feeCollectionViews.toString());
+        Map<String, BigDecimal> descSum = new HashMap<>();
+        for(FeeCollectionView feeCollectionView : feeCollectionViews) {
+            feeCollectionView.getMrDetails().stream()
+                    .forEach(mrDetails -> {
+                        if(descSum.containsKey(mrDetails.getParticulars())) {
+                            descSum.get(mrDetails.getParticulars()).add(mrDetails.getAmount());
+                        }
+                        else {
+                            descSum.put(mrDetails.getParticulars(), mrDetails.getAmount());
+                        }
+                    });
+            feeCollectionView.setMrDetailsDTOSet(mapperService.convertToMrDetailsDTOSet(feeCollectionView.getMrDetails()));
+        }
+        return new CollectionReportDTO(feeCollectionViews,descSum);
     }
 
     public List<FeeCollectionOnlyDTO> getFeeCollectionFilteredByPaymentDate(String paymentDate) {
@@ -196,6 +247,11 @@ public class AccountSectionServicesImpl implements AccountSectionService {
 
     public List<MrDetailsDTO> fetchMrDetailsByMrNo(Long mrNo) {
         return mrDetailsRepository.findAllByMrNo(mrNo);
+    }
+
+    @Override
+    public List<DueStatusReport> fetchDueStatusReport(Courses course, String branch, Integer regdYear) {
+        return studentRepository.findAllByCourseAndBranchAndRegdYear(course, branch, regdYear);
     }
 
 }

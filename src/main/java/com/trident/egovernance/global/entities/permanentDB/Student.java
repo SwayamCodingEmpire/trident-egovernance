@@ -2,6 +2,7 @@ package com.trident.egovernance.global.entities.permanentDB;
 
 import com.trident.egovernance.dto.StudentOnlyDTO;
 import com.trident.egovernance.global.entities.views.Attendance;
+import com.trident.egovernance.global.entities.views.FeeCollectionView;
 import com.trident.egovernance.global.entities.views.Results;
 import com.trident.egovernance.global.entities.views.RollSheet;
 import com.trident.egovernance.global.helpers.*;
@@ -109,6 +110,8 @@ public class Student {
     }
 
 
+//    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
+//    private List<DuesDetails> duesDetailsList;
     @OneToOne(mappedBy = "student", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @ToString.Exclude
     private StudentCareer studentCareer;
@@ -132,6 +135,11 @@ public class Student {
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @ToString.Exclude
     private List<FeeCollection> feeCollection;
+
+    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ToString.Exclude
+    private List<FeeCollectionView> feeCollectionViews;
+
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY,cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @ToString.Exclude
     private List<StudentDocs> studentDocs;
