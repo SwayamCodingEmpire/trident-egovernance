@@ -19,6 +19,7 @@ import jakarta.persistence.EntityManager;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,8 +46,9 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
     private final EmailSenderServiceImpl emailSenderServiceImpl;
     private final PDFGenerationService pdfGenerationService;
     private final URLService urlService;
+    private final MiscellaniousServices miscellaniousServices;
 
-    public PaymentProcessingServicesImpl(PDFGenerationService pdfGeneration, FeeCollectionTransactionServices feeCollectionTransactionServices, StudentRepository studentRepository, MasterTableServices masterTableServicesImpl, CurrentSessionFetcherServices currentSessionFetchingService, DuesDetailsRepository duesDetailsRepository, EntityManager entityManager, FeeCollectionRepository feeCollectionRepository, FeeCollectionTransactions saveFeeCollection, CurrentSessionRepository currentSessionRepository, MapperServiceImpl mapperServiceImpl, EmailSenderServiceImpl emailSenderServiceImpl, PDFGenerationService pdfGenerationService, MoneyReceiptTokenGeneratorService moneyReceiptTokenGeneratorService, URLService urlService) {
+    public PaymentProcessingServicesImpl(PDFGenerationService pdfGeneration, FeeCollectionTransactionServices feeCollectionTransactionServices, StudentRepository studentRepository, MasterTableServices masterTableServicesImpl, CurrentSessionFetcherServices currentSessionFetchingService, DuesDetailsRepository duesDetailsRepository, EntityManager entityManager, FeeCollectionRepository feeCollectionRepository, FeeCollectionTransactions saveFeeCollection, CurrentSessionRepository currentSessionRepository, MapperServiceImpl mapperServiceImpl, EmailSenderServiceImpl emailSenderServiceImpl, PDFGenerationService pdfGenerationService, MoneyReceiptTokenGeneratorService moneyReceiptTokenGeneratorService, URLService urlService, MiscellaniousServices miscellaniousServices) {
         this.pdfGeneration = pdfGeneration;
         this.feeCollectionTransactionServices = feeCollectionTransactionServices;
         this.currentSessionFetchingService = currentSessionFetchingService;
@@ -61,6 +63,7 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
         this.emailSenderServiceImpl = emailSenderServiceImpl;
         this.pdfGenerationService = pdfGenerationService;
         this.urlService = urlService;
+        this.miscellaniousServices = miscellaniousServices;
     }
 
 
@@ -138,6 +141,8 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
     @Override
     public MoneyReceipt processPaymentInterface(FeeCollection feeCollection, String regdNo, boolean isUpdate) {
         try{
+            String paymentReceiver = miscellaniousServices.getUserJobInformation().name();
+            feeCollection.setPaymentReceiver(paymentReceiver);
             MoneyReceipt moneyReceipt = new MoneyReceipt();
             Pair<MoneyReceipt, StudentBasicDTO> processedPayment;
             if (feeCollection.getFeeProcessingMode().equals(FeeProcessingMode.AUTO)) {
@@ -147,7 +152,8 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
                 processedPayment = processPaymentNonAutoModes(feeCollection, regdNo, false);
                 moneyReceipt = processedPayment.getLeft();
             }
-            String url = urlService.generateUrl(processedPayment.getLeft().getMrNo());
+
+            String url = urlService.generateUrl(processedPayment.getLeft().getMrNo(), paymentReceiver);
 
             logger.info("The url is: " + url);
             logger.info("Sending email");
@@ -158,7 +164,7 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
                     processedPayment.getRight().studentName(),
                     processedPayment.getLeft().getPaymentDuesDetails().totalPaid(),
                     "8888888888",
-                    new PDFObject(studentRepository.findBasicStudentData(regdNo), moneyReceipt,url));
+                    new PDFObject(studentRepository.findBasicStudentData(regdNo), moneyReceipt,url,paymentReceiver));
             return moneyReceipt;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -201,11 +207,14 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
     @Override
     public MoneyReceipt processOtherFessPaymentInterface(OtherFeesPayment otherFeesPayment, String regdNo, boolean isUpdate) {
         try{
+            BigDecimal amountPaid = otherFeesPayment.feeCollection().collectedFee();
+            String paymentReceiver = miscellaniousServices.getUserJobInformation().name();
             MoneyReceipt moneyReceipt = new MoneyReceipt();
             Pair<MoneyReceipt, StudentBasicDTO> processedPayment;
-                processedPayment = processOtherFeesPayment(otherFeesPayment, regdNo, false);
+                processedPayment = processOtherFeesPayment(otherFeesPayment, regdNo, false, paymentReceiver);
                 moneyReceipt = processedPayment.getLeft();
-            String url = urlService.generateUrl(processedPayment.getLeft().getMrNo());
+
+            String url = urlService.generateUrl(processedPayment.getLeft().getMrNo(),paymentReceiver);
 
             logger.info("The url is: " + url);
             logger.info("Sending email");
@@ -214,16 +223,16 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
                     processedPayment.getRight().email(),
                     processedPayment.getLeft().getMrNo(),
                     processedPayment.getRight().studentName(),
-                    processedPayment.getLeft().getPaymentDuesDetails().totalPaid(),
+                    amountPaid,
                     "8888888888",
-                    new PDFObject(studentRepository.findBasicStudentData(regdNo), moneyReceipt,url));
+                    new PDFObject(studentRepository.findBasicStudentData(regdNo), moneyReceipt,url,miscellaniousServices.getUserJobInformation().name()));
             return moneyReceipt;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
     @Override
-    public Pair<MoneyReceipt,StudentBasicDTO> processOtherFeesPayment(OtherFeesPayment otherFeesPayment, String regdNo, boolean isUpdate) {
+    public Pair<MoneyReceipt,StudentBasicDTO> processOtherFeesPayment(OtherFeesPayment otherFeesPayment, String regdNo, boolean isUpdate, String paymentReceiver) {
         logger.info(otherFeesPayment.toString());
         Student student = studentRepository.findById(regdNo).orElseThrow(() -> new InvalidStudentException("Invalid Registration Number"));
         Long mrNo = 0L;
@@ -234,6 +243,7 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
         }
         FeeCollection feeCollection = new FeeCollection(otherFeesPayment.feeCollection());
         feeCollection.setPaymentDate(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+        feeCollection.setPaymentReceiver(paymentReceiver);
         feeCollection.setMrNo(mrNo);
         CurrentSession currentSession = currentSessionRepository.findById(regdNo).orElseThrow(() -> new InvalidStudentException("Invalid Registration Number"));
         feeCollection.setDueYear(currentSession.getCurrentYear());

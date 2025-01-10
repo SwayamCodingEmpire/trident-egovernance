@@ -1,20 +1,19 @@
 package com.trident.egovernance.global.repositories.permanentDB;
 
-import com.trident.egovernance.dto.DueStatusReport;
-import com.trident.egovernance.dto.DuesDetailsDto;
-import com.trident.egovernance.dto.DuesSummaryDTO;
+import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.permanentDB.Branch;
 import com.trident.egovernance.global.entities.permanentDB.Course;
 import com.trident.egovernance.global.entities.permanentDB.DuesDetails;
-import com.trident.egovernance.dto.PaymentDuesDetails;
 import com.trident.egovernance.global.helpers.DuesDetailsId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Repository
@@ -48,4 +47,26 @@ public interface DuesDetailsRepository extends JpaRepository<DuesDetails, DuesDe
 
     @Query("SELECT new com.trident.egovernance.dto.DuesDetailsDto(d) FROM DUESDETAIL d WHERE d.regdNo = :regdNo")
     Set<DuesDetailsDto> findAllByRegdNo(String regdNo);
+
+    @Query("SELECT new com.trident.egovernance.dto.ExcessFeeStudentData(" +
+            "s.regdNo, "+
+            "s.studentName, " +
+            "s.branchCode, " +
+            "s.admissionYear, " +
+            "s.currentYear, " +
+            "d.sessionId, " +
+            "CAST(COALESCE(SUM(d.amountDue), 0) AS bigdecimal ), " +
+            "CAST(COALESCE(SUM(d.amountPaid), 0) AS bigdecimal), " +
+            "CAST(COALESCE(SUM(d.amountPaidToJee), 0) AS bigdecimal), " +
+            "CAST(ABS(COALESCE(SUM(d.balanceAmount), 0)) AS bigdecimal)) " +
+            "FROM DUESDETAIL d LEFT JOIN STUDENT s ON d.regdNo = s.regdNo " +
+            "WHERE d.regdNo = :regdNo " +
+            "GROUP BY s.studentName, s.branchCode, s.admissionYear, s.currentYear, d.sessionId, s.regdNo " +
+            "HAVING SUM(d.balanceAmount) < 0")
+    Optional<ExcessFeeStudentData> findStudentsWithExcessFee(@Param("regdNo") String regdNo);
+
+
+    @Modifying
+    @Query("UPDATE DUESDETAIL d SET d.amountDue = d.amountDue + :refundAmount, d.balanceAmount = d.balanceAmount + :refundAmount WHERE d.regdNo = :regdNo AND d.description = :description")
+    void updateById(String regdNo, String description, BigDecimal refundAmount);
 }

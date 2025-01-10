@@ -5,7 +5,6 @@
       "/student/dashboard",
       "/student/accountdetails",
       "/student/profile"
-
     ],
     "urls": [
       {
@@ -33,7 +32,12 @@
     "allowedRoutes": [
       "/newstudentreporting",
       "/office/dashboard",
-      "/office/reports/studentreport"
+      "/office/reports/studentreport",
+      "/office/reports/studentreport/:path*",
+      "/office/reports/admissionreport",
+      "/office/reports/continuingstudentreport",
+      "/office/reports/passedoutstudentreport",
+      "/office/reports/totaladmissionsreport"
     ],
     "urls": [
       {
@@ -86,7 +90,8 @@
       "/feecollection/feecollectiondetails",
       "/feecollection/dashboard",
       "/feecollection/otherfeecollection",
-      "/feecollection/studentfeecollection"
+      "/feecollection/studentfeecollection",
+      "/feecollection/duestatusreport"
     ],
     "urls": [
       {
@@ -110,6 +115,12 @@
       {
         "title": "Student Fees Collection",
         "url": "/feecollection/studentfeecollection",
+        "logo": "logo",
+        "children": null
+      },
+      {
+        "title": "Due Status Report",
+        "url": "/feecollection/duestatusreport",
         "logo": "logo",
         "children": null
       }

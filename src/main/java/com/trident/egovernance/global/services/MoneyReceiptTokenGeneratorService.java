@@ -13,11 +13,11 @@ public class MoneyReceiptTokenGeneratorService {
     private String SECRET_KEY;// Replace with a strong secret
 
     // Method to generate the JWT token
-    public String generateToken(long number) {
+    public String generateToken(long number, String paymentReceiver) {
         return Jwts.builder()
                 .claim("number", number)
+                .claim("paymentReceiver", paymentReceiver)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 3600000)) // 1 hour expiry
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }
@@ -29,5 +29,13 @@ public class MoneyReceiptTokenGeneratorService {
                 .parseClaimsJws(token)
                 .getBody()
                 .get("number", Long.class);
+    }
+
+    public String extractPaymentReceiver(String token) {
+        return Jwts.parser()
+                .setSigningKey(SECRET_KEY)
+                .parseClaimsJws(token)
+                .getBody()
+                .get("paymentReceiver", String.class);  // Extracts the 'paymentReceiver' claim
     }
 }

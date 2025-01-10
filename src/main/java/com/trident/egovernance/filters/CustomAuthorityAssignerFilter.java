@@ -46,7 +46,8 @@ public class CustomAuthorityAssignerFilter extends OncePerRequestFilter {
             Collection<GrantedAuthority> newAuthorities = List.of(
                     new SimpleGrantedAuthority(roleJobTitle),
                     new SimpleGrantedAuthority(userJobInformationDto.department()),
-                    new SimpleGrantedAuthority(userJobInformationDto.employeeId())
+                    new SimpleGrantedAuthority(userJobInformationDto.employeeId()),
+                    new SimpleGrantedAuthority(claims.get("name").toString())
             );
             JwtAuthenticationToken newAuth = new JwtAuthenticationToken(jwt,newAuthorities);
             SecurityContextHolder.getContext().setAuthentication(newAuth);

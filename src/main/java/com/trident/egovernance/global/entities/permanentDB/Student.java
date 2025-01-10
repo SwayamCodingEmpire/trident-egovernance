@@ -80,6 +80,8 @@ public class Student {
     @Column(name = "RELIGION")
     @Enumerated(EnumType.STRING)
     private Religion religion;
+    @Column(name = "MSUSERPRINCIPALNAME", unique = true)
+    private String msUserPrincipalName;
     //    @Column(name = "SECTIONID")
 //    private Long sectionId;
 //    @Column(name = "SEMESTER")
@@ -107,6 +109,7 @@ public class Student {
         this.plpoolm = studentOnlyDTO.plpoolm();
         this.cfPayMode = studentOnlyDTO.cfPayMode();
         this.religion = studentOnlyDTO.religion();
+        this.msUserPrincipalName = (studentOnlyDTO.msUserPrincipalName() == null ? "N/A" : studentOnlyDTO.msUserPrincipalName());
     }
 
 

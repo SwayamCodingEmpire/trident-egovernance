@@ -180,9 +180,9 @@ class NSRServiceImpl implements NSRService {
             try{
                 logger.info("Inside try block to process user creation");
                 String response = userCreationService.createUser(
-                        student.getStudentName(),
+                        student.getStudentName() + "(" + nsr.getJeeApplicationNo() + ")",
                         "student",
-                        student.getBranchCode(),
+                        student.getBranchCode() + nsr.getAdmissionYear(),
                         student.getRegdNo(),
                         password,
                         student.getEmail(),

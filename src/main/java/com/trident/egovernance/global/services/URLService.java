@@ -1,6 +1,8 @@
 package com.trident.egovernance.global.services;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
@@ -15,9 +17,9 @@ public class URLService {
         this.tokenGeneratorService = tokenGeneratorService;
     }
 
-    public String generateUrl(long number) throws UnsupportedEncodingException {
+    public String generateUrl(long number, String paymentReceiver) throws UnsupportedEncodingException {
         // Generate the JWT token
-        String token = tokenGeneratorService.generateToken(number);
+        String token = tokenGeneratorService.generateToken(number, paymentReceiver);
 
         // URL encode the JWT token to make it URL-safe
         String encodedToken = URLEncoder.encode(token, "UTF-8");
@@ -40,7 +42,7 @@ public class URLService {
     }
 
     // Method to extract the long number from the token in the URL
-    public long getNumberFromUrl(String token){
+    public Pair<Long, String> getNumberFromUrl(String token){
         // URL decode the token
         String decodedToken;
         try {
@@ -50,6 +52,8 @@ public class URLService {
         }
 
         // Extract and return the original long number from the decoded token
-        return tokenGeneratorService.extractNumber(decodedToken);
+        long mrNo =  tokenGeneratorService.extractNumber(decodedToken);
+        String paymentReceiver = tokenGeneratorService.extractPaymentReceiver(decodedToken);
+        return Pair.of(mrNo, paymentReceiver);
     }
 }

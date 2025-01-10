@@ -43,6 +43,8 @@ public class FeeCollection {
     private int dueYear;
     @Column(name = "SESSIONID")
     private String sessionId;
+    @Column(name = "PAYMENTRECEIVER")
+    private String paymentReceiver;
     @Enumerated(EnumType.STRING)
     private FeeProcessingMode feeProcessingMode;
     @Transient

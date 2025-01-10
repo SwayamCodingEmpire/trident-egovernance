@@ -16,7 +16,7 @@ public class PDFGenerationService {
     private final WebClient webClient;
 
     public PDFGenerationService(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("http://172.16.9.202:3000").build();
+        this.webClient = webClientBuilder.baseUrl("http://172.16.12.97:3000").build();
     }
 
     public byte[] generatePdf(PDFObject requestBody) {

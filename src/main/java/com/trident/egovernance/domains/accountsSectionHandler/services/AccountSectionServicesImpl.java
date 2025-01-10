@@ -3,11 +3,14 @@ package com.trident.egovernance.domains.accountsSectionHandler.services;
 import com.trident.egovernance.domains.accountsSectionHandler.AccountSectionService;
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.exceptions.DatabaseException;
-import com.trident.egovernance.global.entities.permanentDB.FeeCollection;
-import com.trident.egovernance.global.entities.permanentDB.MrDetails;
+import com.trident.egovernance.exceptions.InvalidInputsException;
+import com.trident.egovernance.exceptions.RecordNotFoundException;
+import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
 import com.trident.egovernance.global.entities.views.FeeCollectionView;
 import com.trident.egovernance.global.helpers.Courses;
+import com.trident.egovernance.global.helpers.DuesDetailsId;
+import com.trident.egovernance.global.helpers.ExcessRefundID;
 import com.trident.egovernance.global.helpers.FeeTypesType;
 import com.trident.egovernance.global.repositories.permanentDB.*;
 import com.trident.egovernance.global.repositories.views.CollectionReportRepository;
@@ -20,10 +23,13 @@ import jakarta.persistence.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -42,8 +48,11 @@ public class AccountSectionServicesImpl implements AccountSectionService {
     private final FeeTypesRepository feeTypesRepository;
     private final MrDetailsRepository mrDetailsRepository;
     private final FeeCollectionViewRepository feeCollectionViewRepository;
+    private final AlterFeeCollectionRepository alterFeeCollectionRepository;
+    private final ExcessRefundRepository excessRefundRepository;
+    private final StandardDeductionFormatRepository standardDeductionFormatRepository;
 
-    public AccountSectionServicesImpl(MiscellaniousServices miscellaniousServices, MapperService mapperService, OldDuesDetailsRepository oldDuesDetailsRepository, DuesDetailsRepository duesDetailsRepository, FeeCollectionRepository feeCollectionRepository, StudentRepository studentRepository, DailyCollectionSummaryRepository dailyCollectionSummaryRepository, CollectionReportRepository collectionReportRepository, FeeTypesRepository feeTypesRepository, MrDetailsRepository mrDetailsRepository, FeeCollectionViewRepository feeCollectionViewRepository) {
+    public AccountSectionServicesImpl(MiscellaniousServices miscellaniousServices, MapperService mapperService, OldDuesDetailsRepository oldDuesDetailsRepository, DuesDetailsRepository duesDetailsRepository, FeeCollectionRepository feeCollectionRepository, StudentRepository studentRepository, DailyCollectionSummaryRepository dailyCollectionSummaryRepository, CollectionReportRepository collectionReportRepository, FeeTypesRepository feeTypesRepository, MrDetailsRepository mrDetailsRepository, FeeCollectionViewRepository feeCollectionViewRepository, AlterFeeCollectionRepository alterFeeCollectionRepository, ExcessRefundRepository excessRefundRepository, StandardDeductionFormatRepository standardDeductionFormatRepository) {
         this.miscellaniousServices = miscellaniousServices;
         this.mapperService = mapperService;
         this.oldDuesDetailsRepository = oldDuesDetailsRepository;
@@ -55,6 +64,9 @@ public class AccountSectionServicesImpl implements AccountSectionService {
         this.feeTypesRepository = feeTypesRepository;
         this.mrDetailsRepository = mrDetailsRepository;
         this.feeCollectionViewRepository = feeCollectionViewRepository;
+        this.alterFeeCollectionRepository = alterFeeCollectionRepository;
+        this.excessRefundRepository = excessRefundRepository;
+        this.standardDeductionFormatRepository = standardDeductionFormatRepository;
     }
 
 
@@ -71,8 +83,8 @@ public class AccountSectionServicesImpl implements AccountSectionService {
     }
 
     @Override
-    public BasicStudentDto getBasicStudentDetails(String regdNo) {
-        return studentRepository.findByRegdNo(regdNo);
+    public StudentBasicDTO getBasicStudentDetails(String regdNo) {
+        return studentRepository.findBasicStudentData(regdNo);
     }
 
     @Override
@@ -213,6 +225,9 @@ public class AccountSectionServicesImpl implements AccountSectionService {
             });
             feeCollectionView.setMrDetailsDTOSet(mapperService.convertToMrDetailsDTOSet(feeCollectionView.getMrDetails()));
         }
+        logger.info(feeCollectionViews.toString());
+        logger.info(descSum.toString());
+        logger.info(new CollectionReportDTO(feeCollectionViews,descSum).toString());
         return new CollectionReportDTO(feeCollectionViews,descSum);
     }
 
@@ -250,8 +265,47 @@ public class AccountSectionServicesImpl implements AccountSectionService {
     }
 
     @Override
-    public List<DueStatusReport> fetchDueStatusReport(Courses course, String branch, Integer regdYear) {
-        return studentRepository.findAllByCourseAndBranchAndRegdYear(course, branch, regdYear);
+    public List<DueStatusReport> fetchDueStatusReport(Optional<Courses> course, Optional<String> branch, Optional<Integer> regdYear) {
+        return studentRepository.findAllByCourseAndBranchAndRegdYear(course.orElse(null), branch.orElse(null), regdYear.orElse(null));
     }
 
+    @Override
+    public Boolean addToAlterQueue(AlterFeeCollection feeCollection) {
+        try{
+            alterFeeCollectionRepository.save(feeCollection);
+            return true;
+        }catch(Exception e){
+            return false;
+        }
+    }
+
+    @Override
+    public ExcessFeeStudentData findStudentsWithExcessFee(String regdNo) {
+        return duesDetailsRepository.findStudentsWithExcessFee(regdNo).orElseThrow(()->new RecordNotFoundException("Student has no pending Excess Fees"));
+    }
+
+    @Transactional
+    public void insertRefundData(ExcessRefund excessRefund){
+//        String paymentReceiver = miscellaniousServices.getUserJobInformation().name();
+        String paymentReceiver = "DemoReciever";
+        ExcessFeeStudentData excessFeeStudentData = duesDetailsRepository.findStudentsWithExcessFee(excessRefund.getRegdNo()).orElseThrow(()->new RecordNotFoundException("Student has no pending Excess Fees"));
+        if(excessRefundRepository.existsById(new ExcessRefundID(excessRefund.getRegdNo(), excessRefund.getVoucherNo()))){
+            throw new InvalidInputsException("Current Voucher number already used with this regdNo.");
+        }
+        excessRefund.setVoucherDate(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+        excessRefund.setExcessFeePaid(excessFeeStudentData.excessFeePaid());
+        excessRefund.setRegdYear(String.valueOf(excessFeeStudentData.regdyear()));
+        excessRefund.setSessionId(excessFeeStudentData.sessionId());
+        excessRefund.setPayer(paymentReceiver);
+        excessRefundRepository.save(excessRefund);
+        StandardDeductionFormat standardDeductionFormat = standardDeductionFormatRepository.findById("EXCESS FEE REFUND").orElse(null);
+        assert standardDeductionFormat != null;
+        if(!duesDetailsRepository.existsById(new DuesDetailsId(excessFeeStudentData.regdNo(), standardDeductionFormat.getDescription()))){
+            DuesDetails details = new DuesDetails(excessRefund, excessFeeStudentData, standardDeductionFormat);
+            duesDetailsRepository.save(details);
+        }
+        else{
+            duesDetailsRepository.updateById(excessFeeStudentData.regdNo(), standardDeductionFormat.getDescription(), excessRefund.getRefundAmount());
+        }
+    }
 }

@@ -14,8 +14,10 @@ import com.trident.egovernance.global.services.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
@@ -47,9 +49,10 @@ public class PublicController {
     private final BranchRepository branchRepository;
     private final URLService urlService;
     private final FeeCollectionTransactions feeCollectionTransactions;
+    private final MicrosoftGraphService microsoftGraphService;
 
     public PublicController(S3ServiceImpl s3Service, DuesDetailsRepository duesDetailsRepository, AppBearerTokenService appBearerTokenService, AuthenticationServiceImpl authenticationService, EntityManager entityManager, StudentRepository studentRepository, CustomJwtServiceImpl customJwtService,
-                            FeesRepository feesRepository, BranchRepository branchRepository, URLService urlService, FeeCollectionTransactions feeCollectionTransactions) {
+                            FeesRepository feesRepository, BranchRepository branchRepository, URLService urlService, FeeCollectionTransactions feeCollectionTransactions, MicrosoftGraphService microsoftGraphService) {
         this.s3Service = s3Service;
         this.duesDetailsRepository = duesDetailsRepository;
         this.appBearerTokenService = appBearerTokenService;
@@ -64,6 +67,7 @@ public class PublicController {
         this.webClientGraph = WebClient.builder()
                 .baseUrl("https://graph.microsoft.com/v1.0/users")
                 .build();
+        this.microsoftGraphService = microsoftGraphService;
     }
 
     @PostMapping("/login")
@@ -87,27 +91,6 @@ public class PublicController {
         return query.getResultList().isEmpty() ? ResponseEntity.ok(null) : ResponseEntity.ok(query.getResultList());
     }
 
-    @GetMapping("/getDuesDetails")
-    public ResponseEntity<List<DuesDetails>> getDuesDetails(){
-        DuesDetails duesDetails = new DuesDetails();
-        duesDetails.setRegdNo("12345");
-        duesDetails.setDueYear(1);
-        duesDetails.setDeductionOrder(1);
-        duesDetails.setDueDate(new java.sql.Date(System.currentTimeMillis()));
-        duesDetails.setAmountDue(BigDecimal.valueOf(1000));
-        duesDetails.setAmountPaid(BigDecimal.ZERO);
-        duesDetails.setBalanceAmount(BigDecimal.ONE);
-        duesDetails.setSessionId("2022-2023");
-        duesDetails.setAmountPaidToJee(BigDecimal.ZERO);
-        duesDetails.setDescription("DEMO");
-        duesDetailsRepository.save(duesDetails);
-        List<DuesDetails> testDueDetails = duesDetailsRepository.findAllByRegdNoAndBalanceAmountNotOrderByDeductionOrder("12345", BigDecimal.ZERO);
-        logger.info(testDueDetails.toString());
-        BaseDuesDetails baseDuesDetails = testDueDetails.getFirst();
-        logger.info(baseDuesDetails.toString());
-        return ResponseEntity.ok(testDueDetails);
-    }
-
     @GetMapping("/branches")
     public ResponseEntity<List<BranchGroup>> getAllBranches(){
         List<BranchRecord> branches = branchRepository.findAllNow();
@@ -118,6 +101,7 @@ public class PublicController {
         List<BranchGroup> branchGroups = groupedBranches.entrySet().stream()
                 .map(entry -> new BranchGroup(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
+        logger.info(branchGroups.toString());
         return branchGroups.isEmpty() ? ResponseEntity.ok(null) : ResponseEntity.ok(branchGroups);
     }
 
@@ -153,8 +137,21 @@ public class PublicController {
     @PostMapping("/resource")
     public ResponseEntity<MoneyReceipt> uploadFile(@RequestBody LoginResponse key) {
         logger.info(key.token());
-        return ResponseEntity.ok(
-                feeCollectionTransactions.getMoneyReceiptByMrNo(urlService.getNumberFromUrl(key.token()))
-        );
+        HttpHeaders headers = new HttpHeaders();
+        Pair<Long,String> decodedValue = urlService.getNumberFromUrl(key.token());
+        headers.add("Payment-Receiver", decodedValue.getRight());
+        headers.add("Access-Control-Expose-Headers", "Payment-Receiver");
+        return ResponseEntity.ok().headers(headers).body(feeCollectionTransactions.getMoneyReceiptByMrNo(decodedValue.getLeft()));
+
+    }
+
+    @GetMapping("/photo-upload/{regd1}/{regd2}")
+    public void uploadPhoto(@PathVariable("regd1") String regd1, @PathVariable("regd2") String regd2) {
+        microsoftGraphService.startOperation(regd1, regd2);
+    }
+//
+    @GetMapping("/testOne")
+    public void doOne(){
+        microsoftGraphService.callServer("210310224669");
     }
 }

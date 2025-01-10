@@ -25,6 +25,8 @@ public interface StudentRepository extends JpaRepository<Student, String> {
     @Query("SELECT new com.trident.egovernance.dto.StudentOfficeDTO(s.regdNo, s.studentName, s.course, s.branchCode, s.phNo, s.email, s.studentType, s.currentYear, p.parentContact) FROM STUDENT s LEFT JOIN s.personalDetails p WHERE s.status=:status")
     List<StudentOfficeDTO> findAllByStatusAlongWithParentContact(@Param("status") StudentStatus status);
 
+    @Query("SELECT s FROM STUDENT s LEFT JOIN FETCH s.studentAdmissionDetails sa WHERE s.batchId = :batchId")
+    List<Student> findAllByBatchId(String batchId);
 
     @Query("SELECT s FROM STUDENT s " +
             "LEFT JOIN FETCH s.personalDetails " +
@@ -33,7 +35,6 @@ public interface StudentRepository extends JpaRepository<Student, String> {
             "WHERE s.regdNo = :regdNo")
     Student findStudentProfileData(String regdNo);
 
-    BasicStudentDto findByRegdNo(String regdNo);
     @Query("SELECT s FROM STUDENT s LEFT JOIN FETCH STUDENT_ADMISSION_DETAILS LEFT JOIN FETCH HOSTEL LEFT JOIN FETCH TRANSPORT WHERE s.regdNo IN :regdNo")
     List<DuesDetailsInitiationDTO> findByRegdNoIn(Set<String> regdNo);
 
@@ -191,7 +192,7 @@ SELECT DISTINCT
     long findRegdNo(String regdNo);
 
     @Query("SELECT NEW com.trident.egovernance.dto.StudentBasicDTO(" +
-            "s.regdNo, s.studentName, s.gender, s.branchCode, " +
+            "s.regdNo, s.course, s.studentName, s.gender, s.branchCode, " +
             "s.admissionYear, s.currentYear, s.email) " +
             "FROM STUDENT s WHERE s.regdNo = :regdNo")
     StudentBasicDTO findBasicStudentData(String regdNo);
@@ -241,6 +242,31 @@ SELECT DISTINCT
             "COALESCE(SUM(CASE WHEN d.description = 'PREVIOUS DUE' THEN d.amountPaid ELSE 0 END), 0), " +  // arrearsPaid
             "COALESCE(SUM(CASE WHEN d.description != 'PREVIOUS DUE' THEN d.amountPaid ELSE 0 END), 0), " +  // currentDuesPaid
             "COALESCE(SUM(d.amountPaid), 0), " +  // totalPaid
+            "COALESCE(SUM(d.balanceAmount), 0), " +  // amountDue
+            "COALESCE(s.phNo, ''), " +  // phNo
+            "COALESCE(p.parentContact, '') " +  // parentContact
+            ") " +
+            "FROM STUDENT s " +
+            "LEFT JOIN DUESDETAIL d ON s.regdNo = d.regdNo " +
+            "LEFT JOIN s.personalDetails p " +
+            "WHERE (:course IS NULL OR s.course = :course) " +  // If course is null, include all courses
+            "AND (:branch IS NULL OR s.branchCode = :branch) " +  // If branch is null, include all branches
+            "AND (:dueYear IS NULL OR s.currentYear = :dueYear) " +  // If dueYear is null, include all years
+            "GROUP BY s.regdNo, s.currentYear, s.studentName, s.course, s.branchCode, s.phNo, p.parentContact " +
+            "HAVING COALESCE(SUM(d.balanceAmount), 0) > 0")
+    List<DueStatusReport> findAllByCourseAndBranchAndRegdYear(
+            @Param("course") Courses course,
+            @Param("branch") String branch,
+            @Param("dueYear") Integer dueYear);
+
+    @Query("SELECT new com.trident.egovernance.dto.DueStatusReport(" +
+            "s.regdNo, s.currentYear, s.studentName, s.course, s.branchCode, " +
+            "COALESCE((SELECT d2.amountDue FROM DUESDETAIL d2 WHERE d2.regdNo = s.regdNo AND d2.description = 'PREVIOUS DUE'), 0), " +  // arrearsDue with COALESCE
+            "COALESCE(SUM(CASE WHEN d.description != 'PREVIOUS DUE' THEN d.amountDue ELSE 0 END), 0), " +  // currentDues
+            "COALESCE(SUM(d.amountDue), 0), " +  // totalDues
+            "COALESCE(SUM(CASE WHEN d.description = 'PREVIOUS DUE' THEN d.amountPaid ELSE 0 END), 0), " +  // arrearsPaid
+            "COALESCE(SUM(CASE WHEN d.description != 'PREVIOUS DUE' THEN d.amountPaid ELSE 0 END), 0), " +  // currentDuesPaid
+            "COALESCE(SUM(d.amountPaid), 0), " +  // totalPaid
             "COALESCE(SUM(d.amountDue), 0), " +  // amountDue
             "COALESCE(s.phNo, ''), " +  // phNo
             "COALESCE(p.parentContact, '') " +  // parentContact
@@ -248,11 +274,10 @@ SELECT DISTINCT
             "FROM STUDENT s " +
             "LEFT JOIN DUESDETAIL d ON s.regdNo = d.regdNo " +
             "LEFT JOIN s.personalDetails p " +
-            "WHERE s.course = :course AND s.branchCode = :branch AND s.currentYear = :dueYear " +
             "GROUP BY s.regdNo, s.currentYear, s.studentName, s.course, s.branchCode, s.phNo, p.parentContact")
-    List<DueStatusReport> findAllByCourseAndBranchAndRegdYear(Courses course, String branch, Integer dueYear);
+    List<DueStatusReport> findAllByCourseAndBranchAndRegdYear();
 
-
-
+    @Query("SELECT s FROM STUDENT s LEFT JOIN FETCH s.studentAdmissionDetails sa WHERE s.regdNo IN :regdNoList")
+    List<Student> findByRegdNoList(List<String> regdNoList);
 }
 

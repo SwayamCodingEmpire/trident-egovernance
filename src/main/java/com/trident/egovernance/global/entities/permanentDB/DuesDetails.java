@@ -1,8 +1,13 @@
 package com.trident.egovernance.global.entities.permanentDB;
 
+import com.trident.egovernance.dto.ExcessFeeStudentData;
 import com.trident.egovernance.global.helpers.DuesDetailsId;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.math.BigDecimal;
+import java.sql.Date;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -28,5 +33,21 @@ public final class DuesDetails extends BaseDuesDetails {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "DESCRIPTION", referencedColumnName = "DESCRIPTION", insertable = false, updatable = false)
     private FeeTypes feeType;
+
+    public DuesDetails(ExcessRefund excessRefund, ExcessFeeStudentData excessFeeStudentData, StandardDeductionFormat standardDeductionFormat) {
+        this.regdNo = excessFeeStudentData.regdNo();
+        this.description = standardDeductionFormat.getDescription();
+        this.id = -1L;
+        setAmountDue(excessRefund.getRefundAmount());
+        setAmountPaid(BigDecimal.ZERO);
+        setBalanceAmount(excessRefund.getRefundAmount());
+        setDeductionOrder(standardDeductionFormat.getDeductionOrder());
+        setDueYear(excessFeeStudentData.regdyear());
+        setSessionId(excessFeeStudentData.sessionId());
+        setAmountPaidToJee(BigDecimal.ZERO);
+        setDueDate(Date.valueOf(LocalDate.now()));
+        setDiscount(BigDecimal.ZERO);
+        setAdjustment(BigDecimal.ZERO);
+    }
 
 }

@@ -9,7 +9,8 @@ public record UserJobInformationDto(
         String displayName,
         String jobTitle,
         String department,
-        String employeeId
+        String employeeId,
+        String name
 ) implements Serializable{
 
 }

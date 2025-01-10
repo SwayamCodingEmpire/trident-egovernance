@@ -4,6 +4,8 @@ import com.trident.egovernance.domains.accountsSectionHandler.AccountSectionServ
 import com.trident.egovernance.domains.accountsSectionHandler.services.FeeCollectionTransactions;
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.exceptions.InvalidInputsException;
+import com.trident.egovernance.global.entities.permanentDB.AlterFeeCollection;
+import com.trident.egovernance.global.entities.permanentDB.ExcessRefund;
 import com.trident.egovernance.global.entities.permanentDB.Fees;
 import com.trident.egovernance.global.entities.permanentDB.PaymentMode;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
@@ -47,7 +49,7 @@ public class AccountSectionController {
     }
 
     @GetMapping("/get-basic-student-details/{regdNo}")
-    public ResponseEntity<BasicStudentDto> getBasicStudentDetails(@PathVariable("regdNo") String regdNo) {
+    public ResponseEntity<StudentBasicDTO> getBasicStudentDetails(@PathVariable("regdNo") String regdNo) {
         return ResponseEntity.ok(accountSectionService.getBasicStudentDetails(regdNo));
     }
 
@@ -175,14 +177,29 @@ public class AccountSectionController {
         return ResponseEntity.ok(accountSectionService.getFines());
     }
 
-    @GetMapping("get-due-status-report")
-    public ResponseEntity<List<DueStatusReport>> getDueStatusReport(@RequestParam("course")Courses course, @RequestParam("branch") String branch, @RequestParam("regdYear") Integer regdYear){
+    @GetMapping("/get-due-status-report")
+    public ResponseEntity<List<DueStatusReport>> getDueStatusReport(@RequestParam("course") Optional<Courses> course, @RequestParam("branch") Optional<String> branch, @RequestParam("regdYear") Optional<Integer> regdYear){
         return ResponseEntity.ok(accountSectionService.fetchDueStatusReport(course, branch, regdYear));
     }
 //
 //    public ResponseEntity<Boolean> addFeeTypes(@RequestBody Set<FeeTypesOnly> feeTypes){
 //
 //    }
+
+    @PostMapping("/edit-fee-collection")
+    public ResponseEntity<Boolean> editFeeCollection(@RequestBody AlterFeeCollection feeCollection){
+        return ResponseEntity.ok(accountSectionService.addToAlterQueue(feeCollection));
+    }
+
+    @GetMapping("/get-excess-fee-student-data")
+    public ResponseEntity<ExcessFeeStudentData> getStudentWithExcessFee(@RequestParam("regdNo") String regdNo){
+        return ResponseEntity.ok(accountSectionService.findStudentsWithExcessFee(regdNo));
+    }
+
+    @PostMapping("/refund-excess-fee")
+    public void refundExcessFee(@RequestBody ExcessRefundDTO excessRefundDTO){
+        accountSectionService.insertRefundData(new ExcessRefund(excessRefundDTO));
+    }
 }
 
 

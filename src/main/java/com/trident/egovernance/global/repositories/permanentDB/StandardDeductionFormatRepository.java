@@ -14,4 +14,6 @@ public interface StandardDeductionFormatRepository extends JpaRepository<Standar
     @Query("SELECT s FROM STANDARDDEDUCTIONFORMAT s WHERE s.description IN :descriptions")
     List<StandardDeductionFormat> findByDescriptions(@Param("descriptions") Set<String> descriptions);
 
+
+
 }

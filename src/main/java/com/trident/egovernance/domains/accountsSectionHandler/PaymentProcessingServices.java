@@ -18,7 +18,7 @@ public interface PaymentProcessingServices {
     Pair<MoneyReceipt,StudentBasicDTO> processPaymentNonAutoModes(FeeCollection feeCollection, String regdNo, boolean isUpdate);
 
     MoneyReceipt processPaymentInterface(FeeCollection feeCollection, String regdNo, boolean isUpdate);
-    Pair<MoneyReceipt,StudentBasicDTO> processOtherFeesPayment(OtherFeesPayment otherFeesPayment, String regdNo, boolean isUpdate);
+    Pair<MoneyReceipt,StudentBasicDTO> processOtherFeesPayment(OtherFeesPayment otherFeesPayment, String regdNo, boolean isUpdate, String paymentReceiver);
     MoneyReceipt processOtherFessPaymentInterface(OtherFeesPayment otherFeesPayment, String regdNo, boolean isUpdate);
 //    MoneyReceipt updateFeesCollection(FeeCollection feeCollection);
     boolean deleteFeeCollection(Long mrNo);

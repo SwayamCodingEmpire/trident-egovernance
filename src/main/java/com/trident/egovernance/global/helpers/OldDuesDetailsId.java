@@ -5,15 +5,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serializable;
 import java.util.Objects;
-
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class DuesDetailsId implements Serializable {
+public class OldDuesDetailsId {
+
+    private Long id;
     private String regdNo;
     private String description;
     @Override
@@ -24,12 +24,12 @@ public class DuesDetailsId implements Serializable {
         if(o == null || getClass()!=o.getClass()){
             return false;
         }
-        DuesDetailsId duesDetailsId = (DuesDetailsId)o;
-        return Objects.equals(regdNo,duesDetailsId.regdNo) && Objects.equals(description,duesDetailsId.description);
+        OldDuesDetailsId oldDuesDetails = (OldDuesDetailsId)o;
+        return Objects.equals(regdNo,oldDuesDetails.regdNo) && Objects.equals(description,oldDuesDetails.description) && Objects.equals(id,oldDuesDetails.id);
     }
 
     @Override
     public int hashCode(){
-        return Objects.hash(regdNo,description);
+        return Objects.hash(regdNo,description,id);
     }
 }
