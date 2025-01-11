@@ -15,7 +15,7 @@ public interface FeesRepository extends JpaRepository<Fees,Long> {
     @Query("SELECT f FROM FEES f JOIN FETCH f.feeType WHERE f.description IN :descriptions")
     List<Fees> findByDescriptionIn(@Param("descriptions") List<String> descriptions);
     List<Fees> findAllByDescription(String description);
-    @Query("SELECT MAX(f.feeId) FROM FEES f")
+    @Query("SELECT MAX(f.feeId)+1 FROM FEES f")
     Long getMaxIdForFees();
 
 }

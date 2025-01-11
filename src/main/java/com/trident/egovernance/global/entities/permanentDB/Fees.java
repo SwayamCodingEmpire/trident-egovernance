@@ -5,6 +5,9 @@ import com.trident.egovernance.dto.SessionInitiationDTO;
 import com.trident.egovernance.global.helpers.CfPaymentMode;
 import com.trident.egovernance.global.helpers.TFWType;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.io.Serializable;
@@ -23,6 +26,7 @@ public class Fees implements Serializable {
     @Transient
     private BasicFeeBatchDetails batchElements;
     private String batchId;
+    @NotNull
     private Integer regdYear;
     @Column(name = "DESCRIPTION")
     private String description;

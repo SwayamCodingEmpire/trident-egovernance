@@ -13,6 +13,7 @@ import com.trident.egovernance.global.repositories.permanentDB.*;
 import com.trident.egovernance.global.repositories.views.RollSheetRepository;
 import com.trident.egovernance.global.services.MasterTableServicesImpl;
 import com.trident.egovernance.global.services.MiscellaniousServices;
+import com.trident.egovernance.global.services.SessionUpdateService;
 import com.trident.egovernance.global.services.SubjectDataFetcherService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,8 +44,9 @@ public class TestController {
     private final HostelRepository hostelRepository;
     private final TransportRepository transportRepository;
     private final BranchRepository branchRepository;
+    private final SessionUpdateService sessionUpdateService;
 
-    public TestController(StudentRepository studentRepository, SectionsRepository sectionsRepository, PersonalDetailsRepository personalDetailsRepository, RollSheetRepository rollSheetRepository, SubjectDataFetcherService subjectDataFetcherService, MiscellaniousServices miscellaniousServices, MasterTableServicesImpl masterTableServicesImpl, FeeCollectionRepository feeCollectionRepository, StudentDashBoardsServiceImpl studentDashBoardsServiceImpl, StudentAdmissionDetailsRepository studentAdmissionDetailsRepository, StudentCareerRepository studentCareerRepository, HostelRepository hostelRepository, TransportRepository transportRepository, BranchRepository branchRepository) {
+    public TestController(StudentRepository studentRepository, SectionsRepository sectionsRepository, PersonalDetailsRepository personalDetailsRepository, RollSheetRepository rollSheetRepository, SubjectDataFetcherService subjectDataFetcherService, MiscellaniousServices miscellaniousServices, MasterTableServicesImpl masterTableServicesImpl, FeeCollectionRepository feeCollectionRepository, StudentDashBoardsServiceImpl studentDashBoardsServiceImpl, StudentAdmissionDetailsRepository studentAdmissionDetailsRepository, StudentCareerRepository studentCareerRepository, HostelRepository hostelRepository, TransportRepository transportRepository, BranchRepository branchRepository, SessionUpdateService sessionUpdateService) {
         this.studentRepository = studentRepository;
         this.sectionsRepository = sectionsRepository;
         this.personalDetailsRepository = personalDetailsRepository;
@@ -60,6 +62,7 @@ public class TestController {
         this.hostelRepository = hostelRepository;
         this.transportRepository = transportRepository;
         this.branchRepository = branchRepository;
+        this.sessionUpdateService = sessionUpdateService;
     }
 
     @GetMapping("/hello")
@@ -165,6 +168,11 @@ public class TestController {
     public void geTTest(@PathVariable String regdNo){
         StudentDetailsDTO studentDetailsDTO = studentRepository.findStudentDetailsDiagnostic(regdNo);
         logger.info(studentDetailsDTO.toString());
+    }
+
+    @GetMapping("/update-sessions")
+    public ResponseEntity<List<TestTable>> updateSessions(){
+        return ResponseEntity.ok(sessionUpdateService.updateTestTable());
     }
 }
 

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Repository
@@ -55,5 +56,7 @@ public interface SessionsRepository extends JpaRepository<Sessions, SessionIdId>
 //    GROUP BY se.session, se.course, br.branch, se.studentType, se.regdYear
 //""")
 //    List<SessionWiseRecords> fetchSessionWiseStatistics(StudentStatus status);
+
+    Optional<Sessions> findByCourseAndRegdYearAndAdmissionYearAndStudentType(String course, int regdYear, int admissionYear, StudentType studentType);
 
 }

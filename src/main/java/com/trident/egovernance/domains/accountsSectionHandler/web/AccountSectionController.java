@@ -30,16 +30,14 @@ public class AccountSectionController {
     private final AccountSectionService accountSectionService;
     private final MiscellaniousServicesImpl miscellaniousServices;
 
-    private final FeeCollectionRepository feeCollectionRepository;
     private final Logger logger = LoggerFactory.getLogger(AccountSectionController.class);
     private final MasterTableServicesImpl masterTableServicesImpl;
     ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
-    public AccountSectionController(FeeCollectionTransactions feeCollectionTransactions, AccountSectionService accountSectionService, MiscellaniousServicesImpl miscellaniousServices, FeeCollectionRepository feeCollectionRepository, MasterTableServicesImpl masterTableServicesImpl) {
+    public AccountSectionController(FeeCollectionTransactions feeCollectionTransactions, AccountSectionService accountSectionService, MiscellaniousServicesImpl miscellaniousServices, MasterTableServicesImpl masterTableServicesImpl) {
         this.feeCollectionTransactions = feeCollectionTransactions;
         this.accountSectionService = accountSectionService;
         this.miscellaniousServices = miscellaniousServices;
-        this.feeCollectionRepository = feeCollectionRepository;
         this.masterTableServicesImpl = masterTableServicesImpl;
     }
 
@@ -193,12 +191,28 @@ public class AccountSectionController {
 
     @GetMapping("/get-excess-fee-student-data")
     public ResponseEntity<ExcessFeeStudentData> getStudentWithExcessFee(@RequestParam("regdNo") String regdNo){
+        logger.info("get-excess-fee-student-data");
         return ResponseEntity.ok(accountSectionService.findStudentsWithExcessFee(regdNo));
     }
 
     @PostMapping("/refund-excess-fee")
     public void refundExcessFee(@RequestBody ExcessRefundDTO excessRefundDTO){
         accountSectionService.insertRefundData(new ExcessRefund(excessRefundDTO));
+    }
+
+    @GetMapping("/get-feeType-list")
+    public ResponseEntity<Set<FeeTypesOnly>> getFeeTypeList(@RequestParam("year") Integer year){
+        return ResponseEntity.ok(accountSectionService.getDescriptionByYear(year));
+    }
+
+    @PostMapping("/create-fees")
+    public void createFees(@RequestBody FeesCRUDDto feesList){
+        accountSectionService.insertFees(feesList);
+    }
+
+    @PostMapping("/create-fee-types")
+    public ResponseEntity<Set<FeeTypesOnly>> createFeeTypes(@RequestBody Set<FeeTypesOnly> feeTypes){
+        return ResponseEntity.ok(masterTableServicesImpl.createNewFeeTypes(feeTypes));
     }
 }
 

@@ -51,8 +51,9 @@ public class AccountSectionServicesImpl implements AccountSectionService {
     private final AlterFeeCollectionRepository alterFeeCollectionRepository;
     private final ExcessRefundRepository excessRefundRepository;
     private final StandardDeductionFormatRepository standardDeductionFormatRepository;
+    private final FeesRepository feesRepository;
 
-    public AccountSectionServicesImpl(MiscellaniousServices miscellaniousServices, MapperService mapperService, OldDuesDetailsRepository oldDuesDetailsRepository, DuesDetailsRepository duesDetailsRepository, FeeCollectionRepository feeCollectionRepository, StudentRepository studentRepository, DailyCollectionSummaryRepository dailyCollectionSummaryRepository, CollectionReportRepository collectionReportRepository, FeeTypesRepository feeTypesRepository, MrDetailsRepository mrDetailsRepository, FeeCollectionViewRepository feeCollectionViewRepository, AlterFeeCollectionRepository alterFeeCollectionRepository, ExcessRefundRepository excessRefundRepository, StandardDeductionFormatRepository standardDeductionFormatRepository) {
+    public AccountSectionServicesImpl(MiscellaniousServices miscellaniousServices, MapperService mapperService, OldDuesDetailsRepository oldDuesDetailsRepository, DuesDetailsRepository duesDetailsRepository, FeeCollectionRepository feeCollectionRepository, StudentRepository studentRepository, DailyCollectionSummaryRepository dailyCollectionSummaryRepository, CollectionReportRepository collectionReportRepository, FeeTypesRepository feeTypesRepository, MrDetailsRepository mrDetailsRepository, FeeCollectionViewRepository feeCollectionViewRepository, AlterFeeCollectionRepository alterFeeCollectionRepository, ExcessRefundRepository excessRefundRepository, StandardDeductionFormatRepository standardDeductionFormatRepository, FeesRepository feesRepository) {
         this.miscellaniousServices = miscellaniousServices;
         this.mapperService = mapperService;
         this.oldDuesDetailsRepository = oldDuesDetailsRepository;
@@ -67,6 +68,7 @@ public class AccountSectionServicesImpl implements AccountSectionService {
         this.alterFeeCollectionRepository = alterFeeCollectionRepository;
         this.excessRefundRepository = excessRefundRepository;
         this.standardDeductionFormatRepository = standardDeductionFormatRepository;
+        this.feesRepository = feesRepository;
     }
 
 
@@ -281,6 +283,10 @@ public class AccountSectionServicesImpl implements AccountSectionService {
 
     @Override
     public ExcessFeeStudentData findStudentsWithExcessFee(String regdNo) {
+        logger.info("findStudentsWithExcessFee");
+        if(!studentRepository.existsById(regdNo)){
+            throw new RecordNotFoundException("Invalid Registration No");
+        }
         return duesDetailsRepository.findStudentsWithExcessFee(regdNo).orElseThrow(()->new RecordNotFoundException("Student has no pending Excess Fees"));
     }
 
@@ -307,5 +313,25 @@ public class AccountSectionServicesImpl implements AccountSectionService {
         else{
             duesDetailsRepository.updateById(excessFeeStudentData.regdNo(), standardDeductionFormat.getDescription(), excessRefund.getRefundAmount());
         }
+    }
+
+    public Set<FeeTypesOnly> getDescriptionByYear(Integer year){
+        Set<Integer> sem = new HashSet<>();
+        sem.add(year*2-1);
+        sem.add(year*2);
+        return feeTypesRepository.findAllBySemesterIn(sem);
+    }
+
+    @Override
+    @Transactional
+    public void insertFees(FeesCRUDDto feesCRUDDto) {
+        Long feeId = feesRepository.getMaxIdForFees();
+        String batchId = feesCRUDDto.batchElements().course().getEnumName() + feesCRUDDto.batchElements().admYear() + feesCRUDDto.batchElements().branchCode() + feesCRUDDto.batchElements().studentType();
+        for(Fees fees : feesCRUDDto.feesList()){
+            fees.setBatchId(batchId);
+            fees.setFeeId(feeId);
+            feeId++;
+        }
+        feesRepository.saveAllAndFlush(feesCRUDDto.feesList());
     }
 }

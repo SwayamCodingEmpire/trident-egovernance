@@ -1,22 +1,22 @@
 package com.trident.egovernance.global.entities.permanentDB;
 
-
 import com.trident.egovernance.global.helpers.SessionIdId;
+import com.trident.egovernance.global.helpers.StudentType;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-import java.io.Serializable;
 import java.sql.Date;
 
-@Setter
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
 @IdClass(SessionIdId.class)
-@Entity(name = "SESSIONS")
-@Table(name = "SESSIONS")
-public class Sessions implements Serializable {
+@Entity(name = "TEST_TABLE")
+@Table(name = "TEST_TABLE")
+public class TestTable {
     @Id
     @Column(name = "SESSIONID")
     private String sessionId;
@@ -35,5 +35,17 @@ public class Sessions implements Serializable {
     @Column(name = "ADMISSIONYEAR")
     @Id
     private int admissionYear;
-    private String studentType;
+    @Enumerated(EnumType.STRING)
+    private StudentType studentType;
+
+    public TestTable(TestTable testTable) {
+        this.sessionId = testTable.getSessionId();
+        this.startDate = testTable.getStartDate();
+        this.endDate = testTable.getEndDate();
+        this.course = testTable.getCourse();
+        this.regdYear = testTable.getRegdYear();
+        this.prevSessionId = testTable.getPrevSessionId();
+        this.admissionYear = testTable.getAdmissionYear();
+        this.studentType = testTable.getStudentType();
+    }
 }

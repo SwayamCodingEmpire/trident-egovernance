@@ -66,9 +66,9 @@ public class MasterTableServicesImpl implements MasterTableServices {
 //        String currYear = String.valueOf(Year.now().getValue());
 //        String nextYear = String.valueOf(Year.now().getValue()+1);
 //        return currYear+"-"+nextYear;
-        SessionIdId sessionIdId = new SessionIdId(course.getDisplayName(), regdYear, admissionYear, studentType.getEnumName());
-        logger.info(sessionIdId.toString());
-        Sessions sessions = sessionsRepository.findById(sessionIdId).orElseThrow(() -> new RecordNotFoundException("Session not found"));
+//        SessionIdId sessionIdId = new SessionIdId(course.getDisplayName(), regdYear, admissionYear, studentType.getEnumName());
+//        logger.info(sessionIdId.toString());
+        Sessions sessions = sessionsRepository.findByCourseAndRegdYearAndAdmissionYearAndStudentType(course.getDisplayName(), regdYear, admissionYear, studentType).orElseThrow(() -> new RecordNotFoundException("Session not found"));
         logger.info(sessions.toString());
         logger.info(sessions.toString());
         return sessions.getSessionId();
@@ -203,8 +203,9 @@ public class MasterTableServicesImpl implements MasterTableServices {
     }
 
     @Override
+    @Transactional
     public Set<FeeTypesOnly> createNewFeeTypes(Set<FeeTypesOnly> feeTypes) {
         List<FeeTypes> feeTypesList = mapperService.convertToFeeTypesList(feeTypes);
-        return mapperService.convertToFeeTypesOnlySet(feeTypesRepository.saveAll(feeTypesList));
+        return mapperService.convertToFeeTypesOnlySet(feeTypesRepository.saveAllAndFlush(feeTypesList));
     }
 }

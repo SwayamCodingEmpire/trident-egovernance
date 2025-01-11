@@ -53,9 +53,6 @@ public class FeeTypes implements Serializable {
         this.feeGroup=feeTypesOnly.feeGroup();
         this.mrHead=feeTypesOnly.mrHead();
         this.partOf=feeTypesOnly.partOf();
-        this.semester=feeTypesOnly.semester();
-        this.fees=null;
-        this.duesDetails=null;
-        this.mrDetails=null;
+        this.semester=feeTypesOnly.semester() == null ? -1 : feeTypesOnly.semester();
     }
 }
