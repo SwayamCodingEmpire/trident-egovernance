@@ -1,11 +1,8 @@
 package com.trident.egovernance.global.controllers;
 
 import com.trident.egovernance.config.security.CustomUserDetails;
-import com.trident.egovernance.domains.accountsSectionHandler.services.FeeCollectionTransactions;
+import com.trident.egovernance.domains.accountsSectionHandler.services.FeeCollectionTransactionsServiceImpl;
 import com.trident.egovernance.dto.*;
-import com.trident.egovernance.global.entities.permanentDB.BaseDuesDetails;
-import com.trident.egovernance.global.entities.permanentDB.Branch;
-import com.trident.egovernance.global.entities.permanentDB.DuesDetails;
 import com.trident.egovernance.global.repositories.permanentDB.BranchRepository;
 import com.trident.egovernance.global.repositories.permanentDB.DuesDetailsRepository;
 import com.trident.egovernance.global.repositories.permanentDB.FeesRepository;
@@ -20,16 +17,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @RestController
@@ -48,11 +41,11 @@ public class PublicController {
     private final FeesRepository feesRepository;
     private final BranchRepository branchRepository;
     private final URLService urlService;
-    private final FeeCollectionTransactions feeCollectionTransactions;
+    private final FeeCollectionTransactionsServiceImpl feeCollectionTransactionsServiceImpl;
     private final MicrosoftGraphService microsoftGraphService;
 
     public PublicController(S3ServiceImpl s3Service, DuesDetailsRepository duesDetailsRepository, AppBearerTokenService appBearerTokenService, AuthenticationServiceImpl authenticationService, EntityManager entityManager, StudentRepository studentRepository, CustomJwtServiceImpl customJwtService,
-                            FeesRepository feesRepository, BranchRepository branchRepository, URLService urlService, FeeCollectionTransactions feeCollectionTransactions, MicrosoftGraphService microsoftGraphService) {
+                            FeesRepository feesRepository, BranchRepository branchRepository, URLService urlService, FeeCollectionTransactionsServiceImpl feeCollectionTransactionsServiceImpl, MicrosoftGraphService microsoftGraphService) {
         this.s3Service = s3Service;
         this.duesDetailsRepository = duesDetailsRepository;
         this.appBearerTokenService = appBearerTokenService;
@@ -63,7 +56,7 @@ public class PublicController {
         this.feesRepository = feesRepository;
         this.branchRepository = branchRepository;
         this.urlService = urlService;
-        this.feeCollectionTransactions = feeCollectionTransactions;
+        this.feeCollectionTransactionsServiceImpl = feeCollectionTransactionsServiceImpl;
         this.webClientGraph = WebClient.builder()
                 .baseUrl("https://graph.microsoft.com/v1.0/users")
                 .build();
@@ -141,7 +134,7 @@ public class PublicController {
         Pair<Long,String> decodedValue = urlService.getNumberFromUrl(key.token());
         headers.add("Payment-Receiver", decodedValue.getRight());
         headers.add("Access-Control-Expose-Headers", "Payment-Receiver");
-        return ResponseEntity.ok().headers(headers).body(feeCollectionTransactions.getMoneyReceiptByMrNo(decodedValue.getLeft()));
+        return ResponseEntity.ok().headers(headers).body(feeCollectionTransactionsServiceImpl.getMoneyReceiptByMrNo(decodedValue.getLeft()));
 
     }
 

@@ -19,7 +19,7 @@ public record FeeTypesOnly(
                 feeTypes.getFeeGroup(),
                 feeTypes.getMrHead(),
                 feeTypes.getPartOf(),
-                feeTypes.getSemester()
+                feeTypes.getSemester() == null ? -1 : feeTypes.getSemester()
         );
     }
 }

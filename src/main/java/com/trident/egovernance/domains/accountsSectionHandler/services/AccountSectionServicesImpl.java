@@ -1,6 +1,5 @@
 package com.trident.egovernance.domains.accountsSectionHandler.services;
 
-import com.trident.egovernance.domains.accountsSectionHandler.AccountSectionService;
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.exceptions.DatabaseException;
 import com.trident.egovernance.exceptions.InvalidInputsException;
@@ -16,10 +15,8 @@ import com.trident.egovernance.global.repositories.permanentDB.*;
 import com.trident.egovernance.global.repositories.views.CollectionReportRepository;
 import com.trident.egovernance.global.repositories.views.DailyCollectionSummaryRepository;
 import com.trident.egovernance.global.repositories.views.FeeCollectionViewRepository;
-import com.trident.egovernance.global.services.DateConverterServices;
 import com.trident.egovernance.global.services.MapperService;
 import com.trident.egovernance.global.services.MiscellaniousServices;
-import jakarta.persistence.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -326,7 +323,7 @@ public class AccountSectionServicesImpl implements AccountSectionService {
     @Transactional
     public void insertFees(FeesCRUDDto feesCRUDDto) {
         Long feeId = feesRepository.getMaxIdForFees();
-        String batchId = feesCRUDDto.batchElements().course().getEnumName() + feesCRUDDto.batchElements().admYear() + feesCRUDDto.batchElements().branchCode() + feesCRUDDto.batchElements().studentType();
+        String batchId = miscellaniousServices.generateBatchId(feesCRUDDto.batchElements());
         for(Fees fees : feesCRUDDto.feesList()){
             fees.setBatchId(batchId);
             fees.setFeeId(feeId);

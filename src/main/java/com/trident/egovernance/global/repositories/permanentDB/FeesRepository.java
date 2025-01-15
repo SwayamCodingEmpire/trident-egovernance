@@ -17,5 +17,6 @@ public interface FeesRepository extends JpaRepository<Fees,Long> {
     List<Fees> findAllByDescription(String description);
     @Query("SELECT MAX(f.feeId)+1 FROM FEES f")
     Long getMaxIdForFees();
+    List<Fees> findAllByBatchId(String batchId);
 
 }

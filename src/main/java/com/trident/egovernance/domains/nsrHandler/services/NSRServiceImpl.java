@@ -8,8 +8,6 @@ import com.trident.egovernance.global.entities.redisEntities.NSR;
 import com.trident.egovernance.exceptions.RecordNotFoundException;
 import com.trident.egovernance.global.helpers.*;
 import com.trident.egovernance.global.repositories.permanentDB.StudentRepository;
-import com.trident.egovernance.domains.nsrHandler.DuesInitiationService;
-import com.trident.egovernance.domains.nsrHandler.NSRService;
 import com.trident.egovernance.global.repositories.redisRepositories.NSRRepository;
 import com.trident.egovernance.global.services.CourseFetchingServiceImpl;
 import com.trident.egovernance.global.services.MapperService;

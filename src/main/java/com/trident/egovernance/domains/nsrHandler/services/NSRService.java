@@ -1,4 +1,4 @@
-package com.trident.egovernance.domains.nsrHandler;
+package com.trident.egovernance.domains.nsrHandler.services;
 
 import com.trident.egovernance.dto.NSRDto;
 import com.trident.egovernance.global.entities.redisEntities.NSR;

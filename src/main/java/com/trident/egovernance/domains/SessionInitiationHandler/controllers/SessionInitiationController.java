@@ -1,4 +1,4 @@
-package com.trident.egovernance.domains.SessionInitiationHandler.web;
+package com.trident.egovernance.domains.SessionInitiationHandler.controllers;
 
 import com.trident.egovernance.domains.SessionInitiationHandler.services.SessionInitiationServiceImpl;
 import com.trident.egovernance.domains.officeHandler.services.OfficeServicesImpl;
@@ -6,12 +6,9 @@ import com.trident.egovernance.dto.SessionInitiationDTO;
 import com.trident.egovernance.dto.SessionInitiationData;
 import com.trident.egovernance.dto.StudentOnlyDTO;
 import com.trident.egovernance.global.entities.permanentDB.Sessions;
-import com.trident.egovernance.global.entities.permanentDB.Student;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
 import java.util.List;
 
 @RestController

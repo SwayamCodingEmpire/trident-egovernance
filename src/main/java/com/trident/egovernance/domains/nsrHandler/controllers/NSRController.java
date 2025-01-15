@@ -1,13 +1,15 @@
-package com.trident.egovernance.domains.nsrHandler.web;
+package com.trident.egovernance.domains.nsrHandler.controllers;
 
 import com.trident.egovernance.config.security.CustomUserDetails;
 import com.trident.egovernance.dto.NSRDto;
 import com.trident.egovernance.global.entities.redisEntities.NSR;
 import com.trident.egovernance.exceptions.InvalidInputsException;
-import com.trident.egovernance.domains.nsrHandler.NSRService;
+import com.trident.egovernance.domains.nsrHandler.services.NSRService;
 import com.trident.egovernance.global.helpers.RankType;
 import com.trident.egovernance.global.services.CourseFetchingServiceImpl;
 import com.trident.egovernance.global.services.MapperServiceImpl;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +26,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/NSR")
+@Tag(name = "NSR Section - New Student Reporting APIs", description = "APIs accessible by users with role ACCOUNTS and ADMIN only")
 class NSRController {
     private final NSRService nsrService;
     private final CourseFetchingServiceImpl courseFetchingService;
@@ -36,6 +39,7 @@ class NSRController {
         this.mapperService = mapperService;
     }
 
+    @Operation(summary = "Post NSR data by Admin", description = "Accessible by Office and Admin")
     @PostMapping("/post")
     public ResponseEntity<NSRDto> postNSRData(@RequestBody NSR nsr,BindingResult rBindingResult){
         logger.info(nsr.toString());
@@ -45,6 +49,7 @@ class NSRController {
         return ResponseEntity.ok(nsrService.postNSRData(nsr));
     }
 
+    @Operation(summary = "Bulk Post NSR data by Admin", description = "Accessible by Office and Admin")
     @PostMapping("/bulk-post")
     public ResponseEntity<Boolean> bulkPostNSRData(@RequestBody @Valid Set<NSR> nsrs,BindingResult rBindingResult){
         logger.info(nsrs.toString());
@@ -85,6 +90,8 @@ class NSRController {
         nsrService.bulkSaveNSRData(nsrs);
         return ResponseEntity.ok(true);
     }
+
+    @Operation(summary = "Post NSR data by Student", description = "Accessible by NSR roles")
     @PutMapping("/postByStudent")
     public ResponseEntity<NSRDto> postNSRDataByStudentName(@RequestBody NSR nsr){
         try
@@ -105,11 +112,13 @@ class NSRController {
         }
     }
 
+    @Operation(summary = "Get NSR data by RegdNo", description = "Accessible by NSR roles and admin")
     @GetMapping("/getByRollNo/{rollNo}")
     public ResponseEntity<NSRDto> getNSRDataByRollNo(@PathVariable("rollNo") String rollNo){
         return ResponseEntity.ok(nsrService.getNSRDataByRollNo(rollNo));
     }
 
+    @Operation(summary = "Get All NSR data")
     @GetMapping("/get-all-nsr")
     public ResponseEntity<List<NSRDto>> getAllNSRData(){
         return ResponseEntity.ok(nsrService.getAllNSRData());
@@ -140,6 +149,7 @@ class NSRController {
         }
     }
 
+    @Operation(summary = "Final Submit in multi step form of NSR")
     @PostMapping("/postByStudent/{jeeApplicationNo}")
     public ResponseEntity<Boolean> finalSubmit(@PathVariable("jeeApplicationNo") String jeeApplicationNo){
         CustomUserDetails customUserDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -150,6 +160,7 @@ class NSRController {
         return ResponseEntity.ok(nsrService.saveToPermanentDatabase(jeeApplicationNo));
     }
 
+    @Operation(summary = "Get NSR DTO by admission year")
     @GetMapping("/get-by-adm-year/{admYear}")
     public ResponseEntity<Set<NSRDto>> getAllNSRbyAdmissionYear(@PathVariable("admYear") String admissionyear){
         return ResponseEntity.ok(nsrService.getAllNSRDataByAdmissionYear(admissionyear));

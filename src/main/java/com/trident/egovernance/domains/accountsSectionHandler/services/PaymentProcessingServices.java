@@ -1,4 +1,4 @@
-package com.trident.egovernance.domains.accountsSectionHandler;
+package com.trident.egovernance.domains.accountsSectionHandler.services;
 
 import com.trident.egovernance.dto.MoneyReceipt;
 import com.trident.egovernance.dto.OtherFeesPayment;

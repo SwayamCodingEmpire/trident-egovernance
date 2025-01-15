@@ -12,21 +12,13 @@ import com.trident.egovernance.global.repositories.permanentDB.PaymentDuesDetail
 import com.trident.egovernance.global.services.MapperService;
 import com.trident.egovernance.global.services.MasterTableServices;
 import com.trident.egovernance.global.services.MiscellaniousServices;
-import org.apache.commons.lang3.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.task.ThreadPoolTaskExecutorBuilder;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import pl.allegro.finance.tradukisto.ValueConverters;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -34,8 +26,8 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Service
-public class FeeCollectionTransactions implements FeeCollectionTransactionServices {
-    private final Logger logger = LoggerFactory.getLogger(FeeCollectionTransactions.class);
+public class FeeCollectionTransactionsServiceImpl implements FeeCollectionTransactionServices {
+    private final Logger logger = LoggerFactory.getLogger(FeeCollectionTransactionsServiceImpl.class);
     private final ExecutorService executorService;
     private final FeeCollectionRepository feeCollectionRepository;
     private final DuesDetailsRepository duesDetailsRepository;
@@ -44,7 +36,7 @@ public class FeeCollectionTransactions implements FeeCollectionTransactionServic
     private final PaymentDuesDetailsRepository paymentDuesDetailsRepository;
     private final MiscellaniousServices miscellaniousServices;
 
-    public FeeCollectionTransactions(FeeCollectionRepository feeCollectionRepository, DuesDetailsRepository duesDetailsRepository, MasterTableServices masterTableServices, MapperService mapperService, PaymentDuesDetailsRepository paymentDuesDetailsRepository, MiscellaniousServices miscellaniousServices) {
+    public FeeCollectionTransactionsServiceImpl(FeeCollectionRepository feeCollectionRepository, DuesDetailsRepository duesDetailsRepository, MasterTableServices masterTableServices, MapperService mapperService, PaymentDuesDetailsRepository paymentDuesDetailsRepository, MiscellaniousServices miscellaniousServices) {
         this.executorService = Executors.newVirtualThreadPerTaskExecutor();
         this.feeCollectionRepository = feeCollectionRepository;
         this.duesDetailsRepository = duesDetailsRepository;

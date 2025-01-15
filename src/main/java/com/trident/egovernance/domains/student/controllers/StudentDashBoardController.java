@@ -1,4 +1,4 @@
-package com.trident.egovernance.domains.student.web;
+package com.trident.egovernance.domains.student.controllers;
 
 import com.trident.egovernance.domains.student.services.StudentDashBoardsServiceImpl;
 import com.trident.egovernance.dto.*;

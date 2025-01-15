@@ -5,7 +5,6 @@ import com.trident.egovernance.dto.*;
 import com.trident.egovernance.exceptions.InvalidInputsException;
 import com.trident.egovernance.exceptions.InvalidStudentException;
 import com.trident.egovernance.exceptions.RecordNotFoundException;
-import com.trident.egovernance.domains.accountsSectionHandler.PaymentProcessingServices;
 import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.global.entities.views.CurrentSession;
 import com.trident.egovernance.global.helpers.FeeProcessingMode;
@@ -19,9 +18,7 @@ import jakarta.persistence.EntityManager;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -40,7 +37,7 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
     private final EntityManager entityManager;
     private final Logger logger = LoggerFactory.getLogger(PaymentProcessingServicesImpl.class);
     private final FeeCollectionRepository feeCollectionRepository;
-    private final FeeCollectionTransactions saveFeeCollection;
+    private final FeeCollectionTransactionsServiceImpl saveFeeCollection;
     private final CurrentSessionRepository currentSessionRepository;
     private final MapperServiceImpl mapperServiceImpl;
     private final EmailSenderServiceImpl emailSenderServiceImpl;
@@ -48,7 +45,7 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
     private final URLService urlService;
     private final MiscellaniousServices miscellaniousServices;
 
-    public PaymentProcessingServicesImpl(PDFGenerationService pdfGeneration, FeeCollectionTransactionServices feeCollectionTransactionServices, StudentRepository studentRepository, MasterTableServices masterTableServicesImpl, CurrentSessionFetcherServices currentSessionFetchingService, DuesDetailsRepository duesDetailsRepository, EntityManager entityManager, FeeCollectionRepository feeCollectionRepository, FeeCollectionTransactions saveFeeCollection, CurrentSessionRepository currentSessionRepository, MapperServiceImpl mapperServiceImpl, EmailSenderServiceImpl emailSenderServiceImpl, PDFGenerationService pdfGenerationService, MoneyReceiptTokenGeneratorService moneyReceiptTokenGeneratorService, URLService urlService, MiscellaniousServices miscellaniousServices) {
+    public PaymentProcessingServicesImpl(PDFGenerationService pdfGeneration, FeeCollectionTransactionServices feeCollectionTransactionServices, StudentRepository studentRepository, MasterTableServices masterTableServicesImpl, CurrentSessionFetcherServices currentSessionFetchingService, DuesDetailsRepository duesDetailsRepository, EntityManager entityManager, FeeCollectionRepository feeCollectionRepository, FeeCollectionTransactionsServiceImpl saveFeeCollection, CurrentSessionRepository currentSessionRepository, MapperServiceImpl mapperServiceImpl, EmailSenderServiceImpl emailSenderServiceImpl, PDFGenerationService pdfGenerationService, MoneyReceiptTokenGeneratorService moneyReceiptTokenGeneratorService, URLService urlService, MiscellaniousServices miscellaniousServices) {
         this.pdfGeneration = pdfGeneration;
         this.feeCollectionTransactionServices = feeCollectionTransactionServices;
         this.currentSessionFetchingService = currentSessionFetchingService;

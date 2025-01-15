@@ -1,10 +1,8 @@
 package com.trident.egovernance.domains.accountsSectionHandler.services;
 
-import com.trident.egovernance.dto.CurrentSessionDto;
 import com.trident.egovernance.global.entities.permanentDB.Adjustments;
 import com.trident.egovernance.global.entities.permanentDB.Discount;
 import com.trident.egovernance.exceptions.InvalidStudentException;
-import com.trident.egovernance.domains.accountsSectionHandler.DiscountAndAdjustmentService;
 import com.trident.egovernance.global.entities.views.CurrentSession;
 import com.trident.egovernance.global.repositories.permanentDB.AdjustmentsRepository;
 import com.trident.egovernance.global.repositories.permanentDB.DiscountRepository;
@@ -17,10 +15,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 class DiscountAndAdjustmentServiceImpl implements DiscountAndAdjustmentService {

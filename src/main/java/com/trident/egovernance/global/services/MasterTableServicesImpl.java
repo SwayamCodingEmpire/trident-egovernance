@@ -182,7 +182,7 @@ public class MasterTableServicesImpl implements MasterTableServices {
 
     @Override
     public Set<FeesOnly> getFeesByBatchId(BasicFeeBatchDetails basicFeeBatchDetails) {
-        return mapperService.convertToFeesOnly(feesRepository.findAllByDescription(miscellaniousServices.generateBatchId(basicFeeBatchDetails)));
+        return mapperService.convertToFeesOnly(feesRepository.findAllByBatchId(miscellaniousServices.generateBatchId(basicFeeBatchDetails)));
     }
 
     @Override

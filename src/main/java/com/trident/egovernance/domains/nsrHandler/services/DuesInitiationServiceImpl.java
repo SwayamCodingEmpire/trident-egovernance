@@ -5,22 +5,15 @@ import com.trident.egovernance.dto.StudentRequiredFieldsDTO;
 import com.trident.egovernance.global.entities.permanentDB.DuesDetails;
 import com.trident.egovernance.global.entities.permanentDB.Fees;
 import com.trident.egovernance.global.entities.permanentDB.StandardDeductionFormat;
-import com.trident.egovernance.global.entities.permanentDB.Student;
-import com.trident.egovernance.global.entities.redisEntities.NSR;
 import com.trident.egovernance.global.helpers.*;
-import com.trident.egovernance.domains.nsrHandler.DuesInitiationService;
 import com.trident.egovernance.global.repositories.permanentDB.DuesDetailsRepository;
-import com.trident.egovernance.global.repositories.permanentDB.SessionsRepository;
 import com.trident.egovernance.global.services.MasterTableServices;
 import com.trident.egovernance.global.services.MiscellaniousServices;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -28,8 +21,6 @@ import java.time.LocalDate;
 import java.time.Year;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Service
