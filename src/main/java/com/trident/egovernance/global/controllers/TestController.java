@@ -37,7 +37,6 @@ public class TestController {
     private final MiscellaniousServices miscellaniousServices;
     private final MasterTableServicesImpl masterTableServicesImpl;
     private final Logger logger = LoggerFactory.getLogger(TestController.class);
-    private final FeeCollectionRepository feeCollectionRepository;
     private final StudentDashBoardsServiceImpl studentDashBoardsServiceImpl;
     private final StudentAdmissionDetailsRepository studentAdmissionDetailsRepository;
     private final StudentCareerRepository studentCareerRepository;
@@ -46,7 +45,7 @@ public class TestController {
     private final BranchRepository branchRepository;
     private final SessionUpdateService sessionUpdateService;
 
-    public TestController(StudentRepository studentRepository, SectionsRepository sectionsRepository, PersonalDetailsRepository personalDetailsRepository, RollSheetRepository rollSheetRepository, SubjectDataFetcherService subjectDataFetcherService, MiscellaniousServices miscellaniousServices, MasterTableServicesImpl masterTableServicesImpl, FeeCollectionRepository feeCollectionRepository, StudentDashBoardsServiceImpl studentDashBoardsServiceImpl, StudentAdmissionDetailsRepository studentAdmissionDetailsRepository, StudentCareerRepository studentCareerRepository, HostelRepository hostelRepository, TransportRepository transportRepository, BranchRepository branchRepository, SessionUpdateService sessionUpdateService) {
+    public TestController(StudentRepository studentRepository, SectionsRepository sectionsRepository, PersonalDetailsRepository personalDetailsRepository, RollSheetRepository rollSheetRepository, SubjectDataFetcherService subjectDataFetcherService, MiscellaniousServices miscellaniousServices, MasterTableServicesImpl masterTableServicesImpl, StudentDashBoardsServiceImpl studentDashBoardsServiceImpl, StudentAdmissionDetailsRepository studentAdmissionDetailsRepository, StudentCareerRepository studentCareerRepository, HostelRepository hostelRepository, TransportRepository transportRepository, BranchRepository branchRepository, SessionUpdateService sessionUpdateService) {
         this.studentRepository = studentRepository;
         this.sectionsRepository = sectionsRepository;
         this.personalDetailsRepository = personalDetailsRepository;
@@ -54,8 +53,6 @@ public class TestController {
         this.subjectDataFetcherService = subjectDataFetcherService;
         this.miscellaniousServices = miscellaniousServices;
         this.masterTableServicesImpl = masterTableServicesImpl;
-
-        this.feeCollectionRepository = feeCollectionRepository;
         this.studentDashBoardsServiceImpl = studentDashBoardsServiceImpl;
         this.studentAdmissionDetailsRepository = studentAdmissionDetailsRepository;
         this.studentCareerRepository = studentCareerRepository;
