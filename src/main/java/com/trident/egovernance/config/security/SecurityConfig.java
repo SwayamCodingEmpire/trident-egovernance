@@ -70,7 +70,8 @@ public class SecurityConfig {
 //            "/office/**",
 //            "/subjects/**",
             "/actuator/**",
-            "/accounts-section/**"
+            "/accounts-section/**",
+            "/api/refresh-menu-data"
     };
 
     @Bean

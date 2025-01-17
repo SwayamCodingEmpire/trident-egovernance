@@ -1,8 +1,8 @@
 package com.trident.egovernance.global.services;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
@@ -12,6 +12,8 @@ import java.net.UnknownHostException;
 @Service
 public class URLService {
     private final MoneyReceiptTokenGeneratorService tokenGeneratorService;
+    @Value("${frontend.ip}")
+    private String frontEndIP;
 
     public URLService(MoneyReceiptTokenGeneratorService tokenGeneratorService) {
         this.tokenGeneratorService = tokenGeneratorService;
@@ -24,10 +26,10 @@ public class URLService {
         // URL encode the JWT token to make it URL-safe
         String encodedToken = URLEncoder.encode(token, "UTF-8");
 
-        String ipAddress = "172.16.9.202";
-        String port = ":3000";
+//        String ipAddress = "172.16.9.202";
+//        String port = ":3000";
         // Return the URL with the encoded token as a query parameter
-        return "http://" + ipAddress + port + "/verifymr?key=" + encodedToken;
+        return frontEndIP + "/verifymr?key=" + encodedToken;
 
     }
 

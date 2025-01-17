@@ -38,6 +38,20 @@ public class MasterTableServicesImpl implements MasterTableServices {
         this.miscellaniousServices = miscellaniousServices;
     }
 
+    public Set<FeeTypesOnly> getDescriptionByYear(Integer year){
+        Set<Integer> sem = new HashSet<>();
+        sem.add(year*2-1);
+        sem.add(year*2);
+        return feeTypesRepository.findAllBySemesterIn(sem);
+    }
+
+
+    @Override
+    public List<FeeTypesOnly> getFines() {
+        return feeTypesRepository.findAllByFeeGroup("FINES");
+    }
+
+
     @Cacheable(value = "fees", key = "#batchId")
     @Override
     public List<Fees> getFeesByBatchIdAndRegdYear(String batchId, Integer regdYear) {
@@ -207,5 +221,20 @@ public class MasterTableServicesImpl implements MasterTableServices {
     public Set<FeeTypesOnly> createNewFeeTypes(Set<FeeTypesOnly> feeTypes) {
         List<FeeTypes> feeTypesList = mapperService.convertToFeeTypesList(feeTypes);
         return mapperService.convertToFeeTypesOnlySet(feeTypesRepository.saveAllAndFlush(feeTypesList));
+    }
+
+    public FeeGroupAndPartOfDTO getFeeGroupAndPartOfDTO() {
+        List<Object[]> results = feeTypesRepository.findAllDistinctFeeGroupAndPartOfByDescription();
+        List<String> feeGroups = results.stream()
+                .map(result -> (String) result[0])
+                .distinct()
+                .toList();
+
+        List<String> partOfs = results.stream()
+                .map(result -> (String) result[1])
+                .distinct()
+                .toList();
+
+        return new FeeGroupAndPartOfDTO(feeGroups, partOfs);
     }
 }

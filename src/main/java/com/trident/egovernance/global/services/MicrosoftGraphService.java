@@ -1,8 +1,6 @@
 package com.trident.egovernance.global.services;
 
 
-import com.trident.egovernance.dto.BasicMSUserDto;
-import com.trident.egovernance.dto.UserJobInformationDto;
 import com.trident.egovernance.global.entities.permanentDB.Student;
 import com.trident.egovernance.global.repositories.permanentDB.StudentRepository;
 import org.slf4j.Logger;
@@ -14,8 +12,6 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.naming.ldap.PagedResultsControl;
-import java.nio.file.Paths;
 import java.util.List;
 
 @Service

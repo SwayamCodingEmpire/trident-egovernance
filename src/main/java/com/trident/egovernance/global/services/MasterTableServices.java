@@ -15,6 +15,7 @@ import java.util.Set;
 
 public interface MasterTableServices {
     List<Fees> getFeesByBatchIdAndRegdYear(String batchId, Integer regdYear);
+    public List<FeeTypesOnly> getFines();
     List<StandardDeductionFormat> getStandardDeductionformatByDescriptions(Set<String> descriptions);
     String getSessionId(Courses course, int regdYear, int admissionYear, StudentType studentType);
     int getAdmissionYearFromSession(String sessionId, Courses course, int regdYear, StudentType studentType);
@@ -34,4 +35,5 @@ public interface MasterTableServices {
     Set<FeesOnly> getFeesByBatchId(BasicFeeBatchDetails basicFeeBatchDetails);
     List<Fees> updateFees(FeesCRUDDto feesCRUDDto);
     Set<FeeTypesOnly> createNewFeeTypes(Set<FeeTypesOnly> feeTypes);
+    Set<FeeTypesOnly> getDescriptionByYear(Integer year);
 }

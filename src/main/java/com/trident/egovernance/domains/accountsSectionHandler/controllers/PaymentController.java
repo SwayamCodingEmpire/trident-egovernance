@@ -4,6 +4,7 @@ import com.trident.egovernance.domains.accountsSectionHandler.services.AccountSe
 import com.trident.egovernance.domains.nsrHandler.services.EmailSenderServiceImpl;
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.permanentDB.Adjustments;
+import com.trident.egovernance.global.entities.permanentDB.AlterFeeCollection;
 import com.trident.egovernance.global.entities.permanentDB.Discount;
 import com.trident.egovernance.global.entities.permanentDB.FeeCollection;
 import com.trident.egovernance.domains.accountsSectionHandler.services.DiscountAndAdjustmentService;
@@ -63,6 +64,11 @@ public class PaymentController {
 //        return ResponseEntity.ok(paymentProcessingService.processNonAutoModes(feeCollection,no));
 //    }
 
+    @GetMapping("/get-new-mrNo")
+    public ResponseEntity<Long> getNewMrNo(){
+        return ResponseEntity.ok(paymentProcessingService.getMaxMrNo());
+    }
+
     @Operation(summary = "Fee Collection endpoint", description = "Insert into FeeCollection Entity along with path variable of regdNo")
     @PostMapping("/fees-payment/{regdNo}")
     public ResponseEntity<MoneyReceipt> feesPayment(@RequestBody FeeCollection feeCollection, @PathVariable("regdNo") String regdNo){
@@ -97,5 +103,10 @@ public class PaymentController {
         logger.info("otherFeesPayment");
         logger.info(otherFeesPayment.toString());
         return ResponseEntity.ok(paymentProcessingService.processOtherFessPaymentInterface(otherFeesPayment,regdNo, false));
+    }
+
+    @PostMapping("/edit-fee-collection-accept")
+    public ResponseEntity<Boolean> editFeeCollection(@RequestBody AlterFeeCollection feeCollection){
+        return ResponseEntity.ok(accountSectionService.addToAlterQueue(feeCollection));
     }
 }

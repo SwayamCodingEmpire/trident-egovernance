@@ -170,10 +170,7 @@ public class AccountSectionServicesImpl implements AccountSectionService {
         return collectionSummaries;
     }
 
-    @Override
-    public List<FeeTypesOnly> getFines() {
-        return feeTypesRepository.findAllByFeeGroup("FINES");
-    }
+
 
     public Set<DailyCollectionSummary> collectionSummaryByTimePeriod(String unit, int timePeriod) {
         Set<String> dates = new HashSet<>();
@@ -312,12 +309,7 @@ public class AccountSectionServicesImpl implements AccountSectionService {
         }
     }
 
-    public Set<FeeTypesOnly> getDescriptionByYear(Integer year){
-        Set<Integer> sem = new HashSet<>();
-        sem.add(year*2-1);
-        sem.add(year*2);
-        return feeTypesRepository.findAllBySemesterIn(sem);
-    }
+
 
     @Override
     @Transactional

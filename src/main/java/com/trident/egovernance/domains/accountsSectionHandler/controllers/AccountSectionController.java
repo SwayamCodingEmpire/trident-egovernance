@@ -186,7 +186,7 @@ public class AccountSectionController {
     @Operation(summary = "Endpoint to get List of Fine Fees", description = "It results out a List of FeesTypesOnly DTO")
     @GetMapping("/get-fines-list")
     public ResponseEntity<List<FeeTypesOnly>> getFines(){
-        return ResponseEntity.ok(accountSectionService.getFines());
+        return ResponseEntity.ok(masterTableServicesImpl.getFines());
     }
 
     @Operation(summary = "Endpoint to get Due Status Report = List of DueStatusReport DTO", description = "It takes inputs a query params of branch, regdYear, course. Not giving a query param is equivalent to passing ALL")
@@ -220,7 +220,7 @@ public class AccountSectionController {
     @Operation(summary = "Endpoint to get Feetype list by inputting year as a query param", description = "It results a set of FeeTypesOnly")
     @GetMapping("/get-feeType-list")
     public ResponseEntity<Set<FeeTypesOnly>> getFeeTypeList(@RequestParam("year") Integer year){
-        return ResponseEntity.ok(accountSectionService.getDescriptionByYear(year));
+        return ResponseEntity.ok(masterTableServicesImpl.getDescriptionByYear(year));
     }
 
     @Operation(summary = "Endpoint to create Fees", description = "Create records in Fees Tables")
@@ -234,6 +234,12 @@ public class AccountSectionController {
     @PostMapping("/create-fee-types")
     public ResponseEntity<Set<FeeTypesOnly>> createFeeTypes(@RequestBody Set<FeeTypesOnly> feeTypes){
         return ResponseEntity.ok(masterTableServicesImpl.createNewFeeTypes(feeTypes));
+    }
+
+    @Operation(summary = "Endpoint to get FEE GROUPS and PARTOFS")
+    @GetMapping("/get-feeGroups-partOf")
+    public ResponseEntity<FeeGroupAndPartOfDTO> getFeeGroupAndPartOf(){
+        return ResponseEntity.ok(masterTableServicesImpl.getFeeGroupAndPartOfDTO());
     }
 }
 

@@ -6,6 +6,7 @@ import com.trident.egovernance.global.entities.permanentDB.Fees;
 import com.trident.egovernance.global.helpers.BooleanString;
 import com.trident.egovernance.global.helpers.FeeTypesType;
 import com.trident.egovernance.global.helpers.TFWType;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
@@ -197,7 +198,7 @@ public class MiscellaniousServicesImpl implements MiscellaniousServices {
         return new MoneyDTO(input,amountInWords);
     }
 
-    public UserJobInformationDto getUserJobInformation() {
+    public Pair<UserJobInformationDto, String> getUserJobInformation() {
         try{
             JwtAuthenticationToken authentication = (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
             if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
@@ -206,7 +207,7 @@ public class MiscellaniousServicesImpl implements MiscellaniousServices {
 
                 if (!authorities.isEmpty() && authorities.size() > 0) {
                     // First authority is jobTitle with "ROLE_" prefix
-                    return new UserJobInformationDto(jwt.getClaimAsString("name"), authorities.get(0).getAuthority().substring(5), authorities.get(1).getAuthority(), authorities.get(2).getAuthority(),authorities.get(3).getAuthority());
+                    return Pair.of(new UserJobInformationDto(jwt.getClaimAsString("name"), authorities.get(0).getAuthority().substring(5), authorities.get(1).getAuthority(), authorities.get(2).getAuthority(),authorities.get(3).getAuthority()),authorities.get(4).getAuthority());
                 }
             }
             return null;
@@ -216,7 +217,7 @@ public class MiscellaniousServicesImpl implements MiscellaniousServices {
     }
 
     public RoleDetails getMenuItems() {
-        UserJobInformationDto userJobInformationDto = getUserJobInformation();
+        UserJobInformationDto userJobInformationDto = getUserJobInformation().getLeft();
         NavigationMenu navigationMenu = menuBladeFetcherService.getNavigationMenu();
         String role = userJobInformationDto.jobTitle();
 

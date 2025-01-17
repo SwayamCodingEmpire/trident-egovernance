@@ -7,5 +7,6 @@ import java.io.IOException;
 public interface MenuBladeFetcherService {
     NavigationMenu getNavigationMenu();
 //    MenuBladeDto getMenuBlade(Authentication authentication);
+    NavigationMenu getNavigationMenuForceFetch();
 
 }

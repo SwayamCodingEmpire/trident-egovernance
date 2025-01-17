@@ -1,7 +1,6 @@
 package com.trident.egovernance.global.services;
 
 import com.trident.egovernance.domains.student.services.StudentDashBoardsService;
-import com.trident.egovernance.dto.BasicMSUserDto;
 import com.trident.egovernance.dto.OtherProfileDTO;
 import com.trident.egovernance.dto.ProfileDTO;
 import com.trident.egovernance.dto.UserJobInformationDto;
@@ -19,15 +18,11 @@ import java.util.Map;
 
 @Service
 public class ProfileFetcherService {
-    private final AppBearerTokenService appBearerTokenService;
     private final MiscellaniousServices miscellaniousServices;
     private final Logger logger = LoggerFactory.getLogger(ProfileFetcherService.class);
-    private final UserDataFetcherFromMS userDataFetcherFromMS;
     private final StudentDashBoardsService studentDashBoardsService;
-    public ProfileFetcherService(AppBearerTokenService appBearerTokenService, MiscellaniousServices miscellaniousServices, UserDataFetcherFromMS userDataFetcherFromMS, StudentDashBoardsService studentDashBoardsService) {
-        this.appBearerTokenService = appBearerTokenService;
+    public ProfileFetcherService(MiscellaniousServices miscellaniousServices, StudentDashBoardsService studentDashBoardsService) {
         this.miscellaniousServices = miscellaniousServices;
-        this.userDataFetcherFromMS = userDataFetcherFromMS;
         this.studentDashBoardsService = studentDashBoardsService;
     }
 
@@ -35,12 +30,12 @@ public class ProfileFetcherService {
     public ProfileDTO getUserJobInformation(Authentication authentication){
         logger.info("Running getUserJobInformation" + authentication.getName());
         if(authentication.isAuthenticated()){
-            UserJobInformationDto userJobInformationDto = miscellaniousServices.getUserJobInformation();
+            UserJobInformationDto userJobInformationDto = miscellaniousServices.getUserJobInformation().getLeft();
             if(userJobInformationDto.jobTitle().equals("STUDENT")){
                 return studentDashBoardsService.getStudentProfile(userJobInformationDto);
             }
             else {
-                return new OtherProfileDTO(miscellaniousServices.getUserJobInformation());
+                return new OtherProfileDTO(miscellaniousServices.getUserJobInformation().getLeft());
             }
         }
         throw new UserNotLoggedInException("User not logged in");

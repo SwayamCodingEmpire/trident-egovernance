@@ -27,7 +27,6 @@ public interface AccountSectionService {
 
     List<FeeCollectionOnlyDTO> getFeeCollectionFilteredByPaymentDate(String paymentDate);
     List<FeeCollectionOnlyDTO> getFeeCollectionFilteredBySessionId(String sessionId);
-    List<FeeTypesOnly> getFines();
     List<MrDetailsDTO> fetchMrDetailsByMrNo(Long mrNo);
 
     List<DueStatusReport> fetchDueStatusReport(Optional<Courses> course, Optional<String> branch, Optional<Integer> regdYear);
@@ -38,8 +37,6 @@ public interface AccountSectionService {
     ExcessFeeStudentData findStudentsWithExcessFee(String regdNo);
 //    FeeCollectionAndMrDetails getFeeCollectionBeMrNo(Long mrNo);
     void insertRefundData(ExcessRefund excessRefund);
-
-    Set<FeeTypesOnly> getDescriptionByYear(Integer year);
 
     void insertFees(FeesCRUDDto feesCRUDDto);
 }

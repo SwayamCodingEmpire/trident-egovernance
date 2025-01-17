@@ -4,6 +4,7 @@ import com.trident.egovernance.dto.PDFObject;
 import com.trident.egovernance.exceptions.InvalidInputsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -15,8 +16,8 @@ public class PDFGenerationService {
     private final Logger logger = LoggerFactory.getLogger(PDFGenerationService.class);
     private final WebClient webClient;
 
-    public PDFGenerationService(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("http://172.16.12.97:3000").build();
+    public PDFGenerationService(WebClient.Builder webClientBuilder, @Value("${frontend.ip}") String frontEndIP) {
+        this.webClient = webClientBuilder.baseUrl(frontEndIP).build();
     }
 
     public byte[] generatePdf(PDFObject requestBody) {
@@ -28,6 +29,7 @@ public class PDFGenerationService {
                     .bodyValue(requestBody)
                     .retrieve()
                     .bodyToMono(byte[].class)
+                    .doOnError(e -> logger.error(e.getMessage()))
                     .block();
         } catch (WebClientResponseException e) {
             // Handle HTTP errors (e.g., 4xx, 5xx)

@@ -22,8 +22,8 @@ public class AppBearerTokenService {
     private String scope_uri;
     private final Logger logger = LoggerFactory.getLogger(AppBearerTokenService.class);
 
-    public AppBearerTokenService() {
-        this.webClient = WebClient.builder().baseUrl("https://login.microsoftonline.com/df9a92cf-6a3b-4312-b0cd-28c580cf2804/oauth2/v2.0/token").build();
+    public AppBearerTokenService(@Value("${spring.security.oauth2.client.provider.azure.token-uri}") String tokenUri) {
+        this.webClient = WebClient.builder().baseUrl(tokenUri).build();
     }
     @Cacheable(key = "#defaultKey", value = "appBearerTokenCache")
     public String getAppBearerToken(String defaultKey) {

@@ -36,10 +36,10 @@ public class FeeTypes implements Serializable {
     private String partOf;
     @Column(name = "SEM")
     private Integer semester;
-    @OneToMany(mappedBy = "feeType",cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "feeType", fetch = FetchType.LAZY)
     @ToString.Exclude
     private Set<Fees> fees;
-    @OneToMany(mappedBy = "feeType", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "feeType",  fetch = FetchType.LAZY)
     @ToString.Exclude
     private Set<DuesDetails> duesDetails;
 

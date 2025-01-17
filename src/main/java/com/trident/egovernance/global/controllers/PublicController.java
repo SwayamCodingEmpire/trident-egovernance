@@ -142,9 +142,4 @@ public class PublicController {
     public void uploadPhoto(@PathVariable("regd1") String regd1, @PathVariable("regd2") String regd2) {
         microsoftGraphService.startOperation(regd1, regd2);
     }
-//
-    @GetMapping("/testOne")
-    public void doOne(){
-        microsoftGraphService.callServer("210310224669");
-    }
 }

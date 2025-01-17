@@ -2,13 +2,14 @@ package com.trident.egovernance.global.services;
 
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.permanentDB.Fees;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.List;
 
 public interface MiscellaniousServices {
-    UserJobInformationDto getUserJobInformation();
+    Pair<UserJobInformationDto, String> getUserJobInformation();
     String generateBatchId(BasicFeeBatchDetails basicFeeBatchDetails);
     List<String> getLastNumberOfDays(int days);
     List<String> getDatesFromStartOfWeekTillToday();

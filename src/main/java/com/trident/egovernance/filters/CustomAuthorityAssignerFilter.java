@@ -8,6 +8,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -24,6 +26,7 @@ import java.util.Map;
 
 @Component
 public class CustomAuthorityAssignerFilter extends OncePerRequestFilter {
+    private final Logger logger = LoggerFactory.getLogger(CustomAuthorityAssignerFilter.class);
     private final AppBearerTokenService appBearerTokenService;
     private final UserDataFetcherFromMS userDataFetcherFromMS;
 
@@ -37,20 +40,22 @@ public class CustomAuthorityAssignerFilter extends OncePerRequestFilter {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(authentication instanceof JwtAuthenticationToken jwtAuth && authentication.isAuthenticated()){
             Jwt jwt = jwtAuth.getToken();
-            String apptoken = appBearerTokenService.getAppBearerToken("defaultKey");
+            String appToken = appBearerTokenService.getAppBearerToken("defaultKey");
             Jwt jwts = (Jwt)(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
             Map<String,Object> claims = jwts.getClaims();
-            BasicMSUserDto basicMSUserDto = new BasicMSUserDto(apptoken,claims.get("preferred_username").toString());
+            BasicMSUserDto basicMSUserDto = new BasicMSUserDto(appToken,claims.get("preferred_username").toString(), claims.get("oid").toString());
             UserJobInformationDto userJobInformationDto = userDataFetcherFromMS.fetchUserJobInformation(basicMSUserDto);
             String roleJobTitle = "ROLE_" + userJobInformationDto.jobTitle().toUpperCase().replace(" ", "_");
             Collection<GrantedAuthority> newAuthorities = List.of(
                     new SimpleGrantedAuthority(roleJobTitle),
                     new SimpleGrantedAuthority(userJobInformationDto.department()),
                     new SimpleGrantedAuthority(userJobInformationDto.employeeId()),
-                    new SimpleGrantedAuthority(claims.get("name").toString())
+                    new SimpleGrantedAuthority(claims.get("name").toString()),
+                    new SimpleGrantedAuthority(claims.get("oid").toString())
             );
             JwtAuthenticationToken newAuth = new JwtAuthenticationToken(jwt,newAuthorities);
             SecurityContextHolder.getContext().setAuthentication(newAuth);
+            logger.info("The principal is {}",SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString());
         }
         filterChain.doFilter(request,response);
     }

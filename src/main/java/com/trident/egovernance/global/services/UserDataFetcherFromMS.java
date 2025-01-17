@@ -1,14 +1,11 @@
 package com.trident.egovernance.global.services;
 
 import com.trident.egovernance.dto.BasicMSUserDto;
-import com.trident.egovernance.dto.MenuItem;
-import com.trident.egovernance.dto.ProfileDTO;
 import com.trident.egovernance.dto.UserJobInformationDto;
-import com.trident.egovernance.exceptions.UserNotLoggedInException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -20,14 +17,16 @@ import java.util.Map;
 
 @Service
 public class UserDataFetcherFromMS {
-    private final AppBearerTokenService appBearerTokenService;
-    private Logger logger = LoggerFactory.getLogger(UserDataFetcherFromMS.class);
+    private final Logger logger = LoggerFactory.getLogger(UserDataFetcherFromMS.class);
     private final WebClient webClientGraph;
 
-    public UserDataFetcherFromMS(AppBearerTokenService appBearerTokenService) {
-        this.appBearerTokenService = appBearerTokenService;
-        this.webClientGraph = WebClient.builder().baseUrl("https://graph.microsoft.com/v1.0/users").build();
+    public UserDataFetcherFromMS(@Value("${graph.url}") String graphUrl) {
+        this.webClientGraph = WebClient.builder().baseUrl(graphUrl).build();
     }
+
+//    public UserDataFetcherFromMS() {
+//        this.webClientGraph = WebClient.builder().baseUrl("https://graph.microsoft.com/v1.0/users").build();
+//    }
 
     public Map<String, Object> getClaims() {
         Jwt jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -74,7 +73,7 @@ public class UserDataFetcherFromMS {
     @Cacheable(key = "#basicMSUserDto.username()", value = "UserJobInformationFilterData")
     public UserJobInformationDto fetchUserJobInformation(BasicMSUserDto basicMSUserDto) {
         logger.info("Fetching the user job information");
-        String uri = UriComponentsBuilder.fromPath("/"+basicMSUserDto.username())
+        String uri = UriComponentsBuilder.fromPath("/users/"+basicMSUserDto.userId())
                 .queryParam("$select","displayName,jobTitle,department,employeeId")
                 .toUriString();
         return webClientGraph.get()
@@ -84,6 +83,4 @@ public class UserDataFetcherFromMS {
                 .bodyToMono(UserJobInformationDto.class)
                 .block();
     }
-
-
 }

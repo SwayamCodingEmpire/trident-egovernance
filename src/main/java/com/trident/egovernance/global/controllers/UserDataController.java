@@ -1,10 +1,7 @@
 package com.trident.egovernance.global.controllers;
 
 import com.trident.egovernance.dto.*;
-import com.trident.egovernance.global.services.AppBearerTokenService;
-import com.trident.egovernance.global.services.MiscellaniousServices;
-import com.trident.egovernance.global.services.ProfileFetcherService;
-import com.trident.egovernance.global.services.UserDataFetcherFromMS;
+import com.trident.egovernance.global.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -18,13 +15,15 @@ import java.util.List;
 @RestController
 @RequestMapping("/api")
 public class UserDataController {
+    private final MenuBladeFetcherService menuBladeFetcherService;
     private final ProfileFetcherService profileFetcherService;
     private final Logger logger = LoggerFactory.getLogger(UserDataController.class);
     private final UserDataFetcherFromMS userDataFetcherFromMS;
     private final AppBearerTokenService appBearerTokenService;
     private final MiscellaniousServices miscellaniousServices;
 
-    public UserDataController(ProfileFetcherService profileFetcherService, UserDataFetcherFromMS userDataFetcherFromMS, AppBearerTokenService appBearerTokenService, MiscellaniousServices miscellaniousServices) {
+    public UserDataController(MenuBladeFetcherService menuBladeFetcherService, ProfileFetcherService profileFetcherService, UserDataFetcherFromMS userDataFetcherFromMS, AppBearerTokenService appBearerTokenService, MiscellaniousServices miscellaniousServices) {
+        this.menuBladeFetcherService = menuBladeFetcherService;
         this.profileFetcherService = profileFetcherService;
         this.userDataFetcherFromMS = userDataFetcherFromMS;
         this.appBearerTokenService = appBearerTokenService;
@@ -59,4 +58,8 @@ public class UserDataController {
         return ResponseEntity.ok(miscellaniousServices.getMenuItems());
     }
 
+    @GetMapping("/refresh-menu-data")
+    public ResponseEntity<NavigationMenu> refreshMenuBlade(){
+        return ResponseEntity.ok(menuBladeFetcherService.getNavigationMenuForceFetch());
+    }
 }

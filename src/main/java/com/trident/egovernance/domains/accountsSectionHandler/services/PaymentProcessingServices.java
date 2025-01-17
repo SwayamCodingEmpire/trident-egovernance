@@ -14,12 +14,14 @@ import java.util.List;
 
 public interface PaymentProcessingServices {
     PaymentProcessingInternalData processPayment(FeeCollection feeCollection, Student student, String regdNo, List<DuesDetails> duesDetails, BigDecimal collectedFees, long slNo);
-    Pair<MoneyReceipt, StudentBasicDTO> processPaymentAutoMode(FeeCollection feeCollection, String regdNo, boolean isUpdate);
-    Pair<MoneyReceipt,StudentBasicDTO> processPaymentNonAutoModes(FeeCollection feeCollection, String regdNo, boolean isUpdate);
+    Pair<MoneyReceipt, StudentBasicDTO> processPaymentAutoMode(FeeCollection feeCollection, String regdNo);
+    Pair<MoneyReceipt,StudentBasicDTO> processPaymentNonAutoModes(FeeCollection feeCollection, String regdNo);
 
     MoneyReceipt processPaymentInterface(FeeCollection feeCollection, String regdNo, boolean isUpdate);
-    Pair<MoneyReceipt,StudentBasicDTO> processOtherFeesPayment(OtherFeesPayment otherFeesPayment, String regdNo, boolean isUpdate, String paymentReceiver);
+    Pair<MoneyReceipt,StudentBasicDTO> processOtherFeesPayment(OtherFeesPayment otherFeesPayment, String regdNo, String paymentReceiver);
     MoneyReceipt processOtherFessPaymentInterface(OtherFeesPayment otherFeesPayment, String regdNo, boolean isUpdate);
-//    MoneyReceipt updateFeesCollection(FeeCollection feeCollection);
+    MoneyReceipt updateFeesCollection(FeeCollection feeCollection);
     boolean deleteFeeCollection(Long mrNo);
+
+    Long getMaxMrNo();
 }

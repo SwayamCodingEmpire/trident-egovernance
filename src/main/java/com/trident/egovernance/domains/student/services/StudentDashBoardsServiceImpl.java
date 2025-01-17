@@ -74,7 +74,7 @@ public class StudentDashBoardsServiceImpl implements StudentDashBoardsService {
     }
 
     public StudentDuesDetails getStudentDuesDetails() {
-        UserJobInformationDto userJobInformationDto = miscellaniousServices.getUserJobInformation();
+        UserJobInformationDto userJobInformationDto = miscellaniousServices.getUserJobInformation().getLeft();
         CompletableFuture<Set<DuesDetailsDto>> duesDetails = CompletableFuture.supplyAsync(
                 () -> duesDetailsRepository.findAllByRegdNo(userJobInformationDto.employeeId()), executorService
         );
@@ -94,7 +94,7 @@ public class StudentDashBoardsServiceImpl implements StudentDashBoardsService {
     }
 
     public SemesterResultData getSemesterResultsSortedByCourse(){
-        UserJobInformationDto userJobInformationDto = miscellaniousServices.getUserJobInformation();
+        UserJobInformationDto userJobInformationDto = miscellaniousServices.getUserJobInformation().getLeft();
         CompletableFuture<SGPADTO> maxSGPAs = CompletableFuture.supplyAsync(
                 () -> {
                     SGPADTO result = resultsRepository.findMaxSgpasByCourseAndYear(userJobInformationDto.employeeId());
@@ -116,7 +116,7 @@ public class StudentDashBoardsServiceImpl implements StudentDashBoardsService {
     }
 
     public SemesterResultData getSemesterResultsSortedByBranch(){
-        UserJobInformationDto userJobInformationDto = miscellaniousServices.getUserJobInformation();
+        UserJobInformationDto userJobInformationDto = miscellaniousServices.getUserJobInformation().getLeft();
         CompletableFuture<SGPADTO> maxSGPAs = CompletableFuture.supplyAsync(
                 () -> {
                     SGPADTO result = resultsRepository.findMaxSgpasByBranchAndYear(userJobInformationDto.employeeId());
@@ -139,7 +139,7 @@ public class StudentDashBoardsServiceImpl implements StudentDashBoardsService {
 
 
     public Map<Integer, List<AttendanceSummaryDTO>> getAttendanceSummary() {
-        UserJobInformationDto userJobInformationDto = miscellaniousServices.getUserJobInformation();
+        UserJobInformationDto userJobInformationDto = miscellaniousServices.getUserJobInformation().getLeft();
         List<AttendanceSummaryDTO> attendanceSummaryDTOS = studAttViewRepository.findAllByRegdNo(userJobInformationDto.employeeId());
         logger.info(attendanceSummaryDTOS.toString());
         return attendanceSummaryDTOS.stream()
@@ -150,7 +150,7 @@ public class StudentDashBoardsServiceImpl implements StudentDashBoardsService {
 
 
     public StudentSubjectWiseResults getResultsGroupedBySemester() {
-        UserJobInformationDto userJobInformationDto = miscellaniousServices.getUserJobInformation();
+        UserJobInformationDto userJobInformationDto = miscellaniousServices.getUserJobInformation().getLeft();
         // Fetch results from the repository
         List<SubjectResultData> semesterResults = mapperService.convertToSubjectResultsData(semesterResultRepository.findAllByRegdNo(userJobInformationDto.employeeId()));
 
@@ -164,7 +164,7 @@ public class StudentDashBoardsServiceImpl implements StudentDashBoardsService {
     }
 
     public List<StudentCareerHistory> getStudentCareerDTO(){
-        UserJobInformationDto userJobInformationDto = miscellaniousServices.getUserJobInformation();
+        UserJobInformationDto userJobInformationDto = miscellaniousServices.getUserJobInformation().getLeft();
         StudentCareerOnlyDTO studentCareerOnlyDTO = studentCareerRepository.findByRegdNo(userJobInformationDto.employeeId());
         CompletableFuture<BigDecimal> cgpa = CompletableFuture.supplyAsync(
                 () -> resultsRepository.findCGPAByRegdNo(userJobInformationDto.employeeId()).orElse(BigDecimal.ZERO), executorService

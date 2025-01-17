@@ -36,4 +36,8 @@ public class AlterFeeCollection {
     private String paymentDate;
     @Column(name = "PAYMENTRECEIVER")
     private String paymentReceiver;
+    @Column(name = "COMMENTS")
+    private String comments;
 }
+
+

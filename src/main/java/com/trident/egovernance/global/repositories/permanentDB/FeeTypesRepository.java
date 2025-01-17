@@ -1,6 +1,7 @@
 package com.trident.egovernance.global.repositories.permanentDB;
 
 import com.trident.egovernance.dto.DescriptionTypeSemester;
+import com.trident.egovernance.dto.FeeGroupAndPartOfDTO;
 import com.trident.egovernance.dto.FeeTypesOnly;
 import com.trident.egovernance.dto.FeeTypesMrHead;
 import com.trident.egovernance.global.entities.permanentDB.FeeTypes;
@@ -36,5 +37,8 @@ public interface FeeTypesRepository extends JpaRepository<FeeTypes,String> {
     List<FeeTypesOnly> findAllByFeeGroup(String feeGroup);
 
     Set<FeeTypesOnly> findAllBySemesterIn(Set<Integer> semesters);
+
+    @Query("SELECT DISTINCT f.feeGroup, f.partOf FROM FEETYPES f")
+    List<Object[]> findAllDistinctFeeGroupAndPartOfByDescription();
 
 }
