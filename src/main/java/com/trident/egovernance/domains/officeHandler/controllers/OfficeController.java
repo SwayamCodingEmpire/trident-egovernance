@@ -1,6 +1,7 @@
 package com.trident.egovernance.domains.officeHandler.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.trident.egovernance.domains.officeHandler.services.OfficeServices;
 import com.trident.egovernance.domains.officeHandler.services.OfficeServicesImpl;
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.exceptions.InvalidInputsException;
@@ -20,11 +21,11 @@ import java.util.List;
 @RequestMapping("/office")
 @Tag(name = "Office Section - APIS for office", description = "APIs accessible by users with role OFFICE and ADMIN only")
 public class OfficeController {
-    private final OfficeServicesImpl officeServices;
+    private final OfficeServices officeServices;
     private final CourseRepository courseRepository;
     private final Logger logger = LoggerFactory.getLogger(OfficeController.class);
 
-    public OfficeController(OfficeServicesImpl officeServices, CourseRepository courseRepository) {
+    public OfficeController(OfficeServices officeServices, CourseRepository courseRepository) {
         this.officeServices = officeServices;
         this.courseRepository = courseRepository;
     }

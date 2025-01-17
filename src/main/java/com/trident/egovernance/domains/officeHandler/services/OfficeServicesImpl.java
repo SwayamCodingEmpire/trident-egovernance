@@ -20,7 +20,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 @Service
-public class OfficeServicesImpl {
+public class OfficeServicesImpl implements OfficeServices {
     private final Logger logger = LoggerFactory.getLogger(OfficeServicesImpl.class);
     private final StudentRepository studentRepository;
     private final MapperService mapperService;
