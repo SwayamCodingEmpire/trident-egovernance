@@ -14,7 +14,7 @@ public record StudentProfileDTO (
     public StudentProfileDTO(Student student, UserJobInformationDto userJobInformationDto) {
         this(
                 userJobInformationDto,
-                new StudentCollegeInformation(student.getRollSheet()==null?-1:student.getRollSheet().getCollegeRollNo(), student.getCurrentYear(), student.getSection()==null?-1:student.getSection().getSem(), student.getRollSheet()==null?-1:student.getRollSheet().getLabGroup(), student.getSection()==null?"N/A":student.getSection().getSection(), student.getCourse(), student.getHostelier(), student.getTransportAvailed()),
+                new StudentCollegeInformation(student.getRollSheet()==null?-1:student.getRollSheet().getCollegeRollNo(), student.getCurrentYear(), student.getRollSheet()==null?-1:student.getRollSheet().getSem(), student.getRollSheet()==null?-1:student.getRollSheet().getLabGroup(), student.getRollSheet()==null?"N/A":student.getRollSheet().getSection(), student.getCourse(), student.getHostelier(), student.getTransportAvailed()),
                 new StudentPersonalInformation(student.getPersonalDetails().getPresentAddress(), student.getPhNo(), student.getEmail(), student.getDob()),
                 new ParentsPersonalInformation(student.getPersonalDetails())
         );

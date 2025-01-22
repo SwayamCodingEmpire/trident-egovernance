@@ -171,22 +171,23 @@ class NSRServiceImpl implements NSRService {
             hostel.setStudent(student);
             logger.info("Student object : {}",student);
             logger.info("Started saving to databse");
-            studentRepository.save(student);
+            logger.info("Student before saving : {} ",student);
+            studentRepository.saveAndFlush(student);
             logger.info("Saved to database");
             processDues.join();
             String password = generateRandomPassword();
             try{
                 logger.info("Inside try block to process user creation");
                 String response = userCreationService.createUser(
-                        student.getStudentName() + "(" + nsr.getJeeApplicationNo() + ")",
-                        "student",
-                        student.getBranchCode() + nsr.getAdmissionYear(),
+                        student.getStudentName(),
+                        "STUDENT",
+                        student.getBranchCode(),
                         student.getRegdNo(),
                         password,
                         student.getEmail(),
                         student.getDegreeYop());
                 logger.info("Response for Microsoft : {}",response);
-                userCreationService.setProfilePicture(nsr.getRegdNo(), response);
+//                userCreationService.setProfilePicture(nsr.getRegdNo(), response);
                 emailSenderServiceImpl.sendTridentCredentialsEmail(response,password);
             }catch (Exception e){
                 e.printStackTrace();

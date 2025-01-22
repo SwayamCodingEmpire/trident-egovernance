@@ -29,7 +29,6 @@ public interface StudentRepository extends JpaRepository<Student, String> {
 
     @Query("SELECT s FROM STUDENT s " +
             "LEFT JOIN FETCH s.personalDetails " +
-            "LEFT JOIN FETCH s.section " +
             "LEFT JOIN FETCH s.rollSheet " +
             "WHERE s.regdNo = :regdNo")
     Student findStudentProfileData(String regdNo);
@@ -212,11 +211,6 @@ SELECT DISTINCT
     Student findStudentWithDetails(String regdNo);
 
     // 4. Finally, try with RollSheet and Section (since these worked before)
-    @Query("SELECT s FROM STUDENT s " +
-            "LEFT JOIN FETCH s.rollSheet " +
-            "LEFT JOIN FETCH s.section " +
-            "WHERE s.regdNo = :regdNo")
-    Student findStudentWithRollAndSection(String regdNo);
 
     @Query("SELECT NEW com.trident.egovernance.dto.StudentDetailsDTO(" +
             "s.regdNo, " +
@@ -278,5 +272,8 @@ SELECT DISTINCT
 
     @Query("SELECT s FROM STUDENT s LEFT JOIN FETCH s.studentAdmissionDetails sa WHERE s.regdNo IN :regdNoList")
     List<Student> findByRegdNoList(List<String> regdNoList);
+
+    @Query("SELECT new com.trident.egovernance.dto.StudentBasicDTO(s.regdNo, s.course, s.studentName, s.gender, s.branchCode, s.admissionYear, s.currentYear, s.email) FROM STUDENT s WHERE s.course = :course AND s.currentYear = :currentYear AND s.branchCode = :branchCode ORDER BY s.studentName")
+    List<StudentBasicDTO> findStudentWithCourseAndCurrentYearAndBranchCode(Courses course, Integer currentYear, String branchCode);
 }
 

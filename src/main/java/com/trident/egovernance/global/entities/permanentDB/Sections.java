@@ -1,11 +1,16 @@
 package com.trident.egovernance.global.entities.permanentDB;
 
+import com.trident.egovernance.dto.SectionFetcher;
+import com.trident.egovernance.dto.StudentSectionData;
+import com.trident.egovernance.global.entities.views.RollSheet;
 import com.trident.egovernance.global.helpers.CourseConverter;
 import com.trident.egovernance.global.helpers.Courses;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 
 @AllArgsConstructor
@@ -19,8 +24,6 @@ public class Sections {
     @Id
     @Column(name = "SECTIONID")
     private Long sectionId;
-    @Column(name = "ADMISSIONYEAR")
-    private String admissionYear;
     @Column(name = "COURSE")
 //    @Convert(converter = CourseConverter.class)
     private String course;
@@ -33,8 +36,6 @@ public class Sections {
     @Column(name = "SEM", precision = 4)
     private Integer sem;
 
-    @Column(name = "CURRENTYEAR", precision = 5)
-    private Integer currentYear;
 
     // Foreign key relationship to "Branch" entity
     @ManyToOne
@@ -43,7 +44,21 @@ public class Sections {
             @JoinColumn(name = "COURSE", referencedColumnName = "COURSE", insertable = false, updatable = false)
     })
     private Branch branch;
-    @OneToMany(mappedBy = "section",fetch = FetchType.LAZY)
-    @ToString.Exclude
-    private List<Student> students;
+
+    @OneToMany(mappedBy = "sections", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Roll_Sheet> rollSheets;
+
+    public Sections(SectionFetcher sectionFetcher) {
+        this.branchCode = sectionFetcher.branchCode();
+        this.course = sectionFetcher.course().getDisplayName();
+        this.section = sectionFetcher.section();
+        this.sem = sectionFetcher.sem();
+        List<Roll_Sheet> newStudentSectionData = new ArrayList<>();
+        Roll_Sheet rollSheet;
+        for(StudentSectionData studentSectionData : sectionFetcher.studentSectionData()) {
+            rollSheet = new Roll_Sheet(studentSectionData);
+            newStudentSectionData.add(rollSheet);
+        }
+        this.rollSheets = newStudentSectionData;
+    }
 }

@@ -59,4 +59,5 @@ public interface SessionsRepository extends JpaRepository<Sessions, SessionIdId>
 
     Optional<Sessions> findByCourseAndRegdYearAndAdmissionYearAndStudentType(String course, int regdYear, int admissionYear, StudentType studentType);
 
+    List<Sessions> findAllByCourseOrderBySessionIdAscRegdYearAsc(String course);
 }

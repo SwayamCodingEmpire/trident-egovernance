@@ -34,4 +34,9 @@ public interface OfficeServices {
     List<TotalAdmissionData> getTotalAdmissionData(Courses course, String branch);
 
     List<SessionWiseRecords> getSessionWiseRecords(StudentStatus status);
+
+    List<StudentBasicDTO>  fetchStudentDataWithRollSheet(Courses course, String branch, Integer currentYear);
+
+    void initializeSection(SectionFetcher sectionFetcher, String mode);
+    SectionFetcher getSectionList(String course, Integer sem, String branchCode, String section);
 }

@@ -131,45 +131,45 @@ public class TestController {
         logger.info(rollSheet.toString());
     }
 
-    @GetMapping("/all/{regdNo}")
-    public void getAll(@PathVariable String regdNo){
-        StudentBasicDTO studentBasicDTO = studentRepository.findBasicStudentData(regdNo);
-        logger.info(studentBasicDTO.toString());
-        StudentWithEnumsDTO studentWithEnumsDTO = studentRepository.findStudentWithEnums(regdNo);
-        logger.info(studentWithEnumsDTO.toString());
-        StudentAdmissionDetails studentAdmissionDetails = studentAdmissionDetailsRepository.findByRegdNo(regdNo);
-        logger.info(studentAdmissionDetails.toString());
-        PersonalDetails personalDetails = personalDetailsRepository.findByRegdNo(regdNo);
-        logger.info(personalDetails.toString());
-        StudentCareerOnlyDTO studentCareer = studentCareerRepository.findByRegdNo(regdNo);
-        logger.info(studentCareer.toString());
-        Sections sections = sectionsRepository.findById(1L).orElseThrow(()->new RuntimeException("Student not found"));
-        logger.info(sections.toString());
-        Map<String, Object> ans =  sectionsRepository.findSectionRawById(1L);
-        logger.info(ans.toString());
-        Branch branch = branchRepository.findById(new BranchId("CST","B.TECH.")).orElseThrow(()-> new RuntimeException("Branch not found"));
-        logger.info(branch.toString());
-        Hostel hostel = hostelRepository.findById(regdNo).orElseThrow(()->new RuntimeException("Hostel not found"));
-        logger.info(hostel.toString());
-        Transport transport = transportRepository.findById(regdNo).orElseThrow(()->new RuntimeException("Transport not found"));
-        logger.info(transport.toString());
-        Student st = studentRepository.findStudentWithDetails(regdNo);
-        logger.info(st.toString());
-        Student st1 = studentRepository.findStudentWithRollAndSection(regdNo);
-        logger.info(st1.toString());
-        Student s = studentRepository.findById(regdNo).orElseThrow(()->new RuntimeException("Student not found"));
-        logger.info(s.toString());
-    }
-
-    @GetMapping("/diagnose/{regdNo}")
-    public void geTTest(@PathVariable String regdNo){
-        StudentDetailsDTO studentDetailsDTO = studentRepository.findStudentDetailsDiagnostic(regdNo);
-        logger.info(studentDetailsDTO.toString());
-    }
+//    @GetMapping("/all/{regdNo}")
+//    public void getAll(@PathVariable String regdNo){
+//        StudentBasicDTO studentBasicDTO = studentRepository.findBasicStudentData(regdNo);
+//        logger.info(studentBasicDTO.toString());
+//        StudentWithEnumsDTO studentWithEnumsDTO = studentRepository.findStudentWithEnums(regdNo);
+//        logger.info(studentWithEnumsDTO.toString());
+//        StudentAdmissionDetails studentAdmissionDetails = studentAdmissionDetailsRepository.findByRegdNo(regdNo);
+//        logger.info(studentAdmissionDetails.toString());
+//        PersonalDetails personalDetails = personalDetailsRepository.findByRegdNo(regdNo);
+//        logger.info(personalDetails.toString());
+//        StudentCareerOnlyDTO studentCareer = studentCareerRepository.findByRegdNo(regdNo);
+//        logger.info(studentCareer.toString());
+//        Sections sections = sectionsRepository.findById(1L).orElseThrow(()->new RuntimeException("Student not found"));
+//        logger.info(sections.toString());
+//        Map<String, Object> ans =  sectionsRepository.findSectionRawById(1L);
+//        logger.info(ans.toString());
+//        Branch branch = branchRepository.findById(new BranchId("CST","B.TECH.")).orElseThrow(()-> new RuntimeException("Branch not found"));
+//        logger.info(branch.toString());
+//        Hostel hostel = hostelRepository.findById(regdNo).orElseThrow(()->new RuntimeException("Hostel not found"));
+//        logger.info(hostel.toString());
+//        Transport transport = transportRepository.findById(regdNo).orElseThrow(()->new RuntimeException("Transport not found"));
+//        logger.info(transport.toString());
+//        Student st = studentRepository.findStudentWithDetails(regdNo);
+//        logger.info(st.toString());
+//        Student st1 = studentRepository.findStudentWithRollAndSection(regdNo);
+//        logger.info(st1.toString());
+//        Student s = studentRepository.findById(regdNo).orElseThrow(()->new RuntimeException("Student not found"));
+//        logger.info(s.toString());
+//    }
+//
+//    @GetMapping("/diagnose/{regdNo}")
+//    public void geTTest(@PathVariable String regdNo){
+//        StudentDetailsDTO studentDetailsDTO = studentRepository.findStudentDetailsDiagnostic(regdNo);
+//        logger.info(studentDetailsDTO.toString());
+//    }
 
     @GetMapping("/update-sessions")
-    public ResponseEntity<List<TestTable>> updateSessions(){
-        return ResponseEntity.ok(sessionUpdateService.updateTestTable());
+    public ResponseEntity<List<Sessions>> updateSessions(){
+        return ResponseEntity.ok(sessionUpdateService.updateTestTable1());
     }
 }
 

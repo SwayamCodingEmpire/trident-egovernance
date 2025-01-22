@@ -49,6 +49,7 @@ public class UserCreationServiceImpl implements UserCreationService {
         requestBody.put("department", department);
         requestBody.put("userPrincipalName", userPrincipalName);
 
+        logger.info("Creating user using request body: " + requestBody);
         Map<String, Object> passwordProfile = new HashMap<>();
         passwordProfile.put("forceChangePasswordNextSignIn", true);
         passwordProfile.put("password", password);

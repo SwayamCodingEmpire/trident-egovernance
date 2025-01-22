@@ -138,8 +138,13 @@ public class PublicController {
 
     }
 
-    @GetMapping("/photo-upload/{regd1}/{regd2}")
-    public void uploadPhoto(@PathVariable("regd1") String regd1, @PathVariable("regd2") String regd2) {
-        microsoftGraphService.startOperation(regd1, regd2);
+    @GetMapping("/photo-upload/{section}")
+    public void uploadPhoto(@PathVariable("section") String section) {
+        microsoftGraphService.getAllFileNames(section);
     }
+
+//    @GetMapping("/get-file-names")
+//    public void printFileName() {
+//        microsoftGraphService.getAllFileNames();
+//    }
 }

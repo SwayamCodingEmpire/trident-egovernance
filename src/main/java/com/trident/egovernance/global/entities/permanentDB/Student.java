@@ -133,6 +133,11 @@ public class Student {
     @OneToOne(mappedBy = "student", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @ToString.Exclude
     private RollSheet rollSheet;
+
+    @OneToOne(mappedBy = "student", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ToString.Exclude
+    private Roll_Sheet roll_Sheet;
+
     @OneToOne(mappedBy = "student") // Reference the Results entity
     private Results results;
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -149,7 +154,4 @@ public class Student {
 
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
     private List<Attendance> attendances;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "SECTIONID", referencedColumnName = "SECTIONID")
-    private Sections section;
 }

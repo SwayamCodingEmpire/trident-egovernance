@@ -30,13 +30,13 @@ public class OfficeServicesImpl implements OfficeServices {
     private final StudentAdmissionDetailsRepository studentAdmissionDetailsRepository;
     private final StudentCareerRepository studentCareerRepository;
     private final StudentDocsRepository studentDocsRepository;
+    private final SectionsRepository sectionsRepository;
     private EntityManager entityManager;
     private final BranchRepository branchRepository;
     private final SessionsRepository sessionsRepository;
 
-
     public OfficeServicesImpl(StudentRepository studentRepository, MapperService mapperService, PersonalDetailsRepository personalDetailsRepository, TransportRepository transportRepository, HostelRepository hostelRepository, StudentAdmissionDetailsRepository studentAdmissionDetailsRepository, StudentCareerRepository studentCareerRepository, StudentDocsRepository studentDocsRepository,
-                              SectionsRepository sectionsRepository, BranchRepository branchRepository, SessionsRepository sessionsRepository) {
+                              BranchRepository branchRepository, SessionsRepository sessionsRepository, SectionsRepository sectionsRepository) {
         this.studentRepository = studentRepository;
         this.mapperService = mapperService;
         this.personalDetailsRepository = personalDetailsRepository;
@@ -47,6 +47,7 @@ public class OfficeServicesImpl implements OfficeServices {
         this.studentDocsRepository = studentDocsRepository;
         this.branchRepository = branchRepository;
         this.sessionsRepository = sessionsRepository;
+        this.sectionsRepository = sectionsRepository;
     }
 
     @PersistenceContext
@@ -408,9 +409,48 @@ public class OfficeServicesImpl implements OfficeServices {
         return studentRepository.fetchSessionWiseStatistics(status);
     }
 
+    @Override
+    public List<StudentBasicDTO>  fetchStudentDataWithRollSheet(Courses course, String branch, Integer currentYear) {
+        return studentRepository.findStudentWithCourseAndCurrentYearAndBranchCode(course,currentYear, branch);
+    }
+
+    @Override
+    @Transactional
+    public void initializeSection(SectionFetcher sectionFetcher, String mode) {
+        Long sectionId;
+        if(mode.equals("create")){
+            sectionId = sectionsRepository.getMaxId();
+        }
+        else if(mode.equals("update")){
+            sectionId = sectionsRepository.findSectionIdByCourseAndSemAndBranchCodeAndSection(sectionFetcher.course().getDisplayName(), sectionFetcher.sem(), sectionFetcher.branchCode(), sectionFetcher.section());
+        }
+        else{
+            throw new InvalidInputsException("Invalid mode");
+        }
+        Sections sections = new Sections(sectionFetcher);
+        sections.setSectionId(sectionId);
+        sectionsRepository.saveAndFlush(sections);
+    }
+
+    @Override
+    public SectionFetcher getSectionList(String course, Integer sem, String branchCode, String section) {
+        Sections sections = sectionsRepository.findAllByCourseAndSemAndBranchCodeAndSection(course, sem, branchCode, section).orElseThrow(() -> new RecordNotFoundException("Student Not Found"));
+        List<Roll_Sheet> rollSheets = sections.getRollSheets();
+        StudentSectionData sectionData;
+        List<StudentSectionData> studentSectionDataList = new ArrayList<>();
+        for (Roll_Sheet roll_sheet : rollSheets) {
+            sectionData = new StudentSectionData(roll_sheet);
+            studentSectionDataList.add(sectionData);
+        }
+        return new SectionFetcher(sections, studentSectionDataList);
+    }
+
+
 //    public boolean createSection(Sections sections){
 //        sectionsRepository.save(sections);
 //        Student student= new Student();
 //        student.setSec
 //    }
+
+
 }

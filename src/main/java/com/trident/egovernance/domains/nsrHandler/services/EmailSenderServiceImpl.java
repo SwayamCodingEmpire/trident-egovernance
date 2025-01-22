@@ -48,7 +48,7 @@ public class EmailSenderServiceImpl {
         String classStart = "1st November 2024";
         // Sender and Recipient
         helper.setFrom("mohantyswayam2001@gmail.com");
-        helper.setTo("surajsahoo2606@gmail.com");
+        helper.setTo("elitecracker25@gmail.com");
         helper.setSubject("Trident : Credentials for Microsoft Teams");
 
         // HTML Content with colored text

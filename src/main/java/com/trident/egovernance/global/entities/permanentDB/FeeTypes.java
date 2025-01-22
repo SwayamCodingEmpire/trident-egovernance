@@ -44,7 +44,7 @@ public class FeeTypes implements Serializable {
     private Set<DuesDetails> duesDetails;
 
     @ToString.Exclude
-    @OneToMany(mappedBy = "feeType", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "feeType", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<MrDetails> mrDetails;
 
     public FeeTypes(FeeTypesOnly feeTypesOnly){

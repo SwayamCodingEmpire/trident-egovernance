@@ -67,11 +67,12 @@ public class SecurityConfig {
             "/public/**",
 //            "/accounts-section/**",
 //            "/initiate-session/**",
-//            "/office/**",
+            "/office/**",
 //            "/subjects/**",
             "/actuator/**",
             "/accounts-section/**",
-            "/api/refresh-menu-data"
+            "/api/refresh-menu-data",
+//            "/office/**"
     };
 
     @Bean
@@ -79,7 +80,7 @@ public class SecurityConfig {
         httpSecurity.authorizeHttpRequests(authorize -> {
 //            authorize.requestMatchers("/NSR/post").hasAnyRole("OFFICE", "ADMIN");
             authorize.requestMatchers("/student-portal/**").hasAnyRole("STUDENT", "ADMIN");
-            authorize.requestMatchers("/office/**").hasAnyRole("OFFICE", "ADMIN");
+//            authorize.requestMatchers("/office/**").hasAnyRole("OFFICE", "ADMIN");
 //            authorize.requestMatchers("/accounts-section/**").hasAnyRole("ACCOUNTS", "ADMIN");
             authorize.requestMatchers(PUBLIC_URLS).permitAll();
             authorize.requestMatchers("/test/hello").hasAnyRole("NSR", "ADMIN");

@@ -220,6 +220,7 @@ public class MasterTableServicesImpl implements MasterTableServices {
     @Transactional
     public Set<FeeTypesOnly> createNewFeeTypes(Set<FeeTypesOnly> feeTypes) {
         List<FeeTypes> feeTypesList = mapperService.convertToFeeTypesList(feeTypes);
+        logger.info(feeTypesList.toString());
         return mapperService.convertToFeeTypesOnlySet(feeTypesRepository.saveAllAndFlush(feeTypesList));
     }
 

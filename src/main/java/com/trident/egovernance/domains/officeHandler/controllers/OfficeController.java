@@ -5,6 +5,7 @@ import com.trident.egovernance.domains.officeHandler.services.OfficeServices;
 import com.trident.egovernance.domains.officeHandler.services.OfficeServicesImpl;
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.exceptions.InvalidInputsException;
+import com.trident.egovernance.global.entities.permanentDB.Branch;
 import com.trident.egovernance.global.helpers.Courses;
 import com.trident.egovernance.global.helpers.StudentStatus;
 import com.trident.egovernance.global.repositories.permanentDB.CourseRepository;
@@ -100,19 +101,19 @@ public class OfficeController {
 //        return ResponseEntity.ok(officeServices.addDocsToStudentDocsTable(studentDocsOnlyDTOS,regdNo));
 //    }
 
-    @Operation(summary = "Dont touch this")
-    @GetMapping("/constraints-off")
-    public void testConstraintsOff(){
-        courseRepository.disableAllConstraints();
-        logger.info("Constraints-off");
-    }
-
-    @Operation(summary = "Dont touch this")
-    @GetMapping("/constraints-on")
-    public void testConstraintsOn(){
-        courseRepository.enableAllConstraints();
-        logger.info("Constraints-on");
-    }
+//    @Operation(summary = "Dont touch this")
+//    @GetMapping("/constraints-off")
+//    public void testConstraintsOff(){
+//        courseRepository.disableAllConstraints();
+//        logger.info("Constraints-off");
+//    }
+//
+//    @Operation(summary = "Dont touch this")
+//    @GetMapping("/constraints-on")
+//    public void testConstraintsOn(){
+//        courseRepository.enableAllConstraints();
+//        logger.info("Constraints-on");
+//    }
 
     @Operation(summary = "Admission Report year wise")
     @GetMapping("/get-admission-data-year-wise-reports/{admissionYear}")
@@ -130,5 +131,20 @@ public class OfficeController {
     @GetMapping("/get-session-wise-reports")
     public ResponseEntity<List<SessionWiseRecords>> getAdmissionDataYearwiseReports(@RequestParam StudentStatus status){
         return ResponseEntity.ok(officeServices.getSessionWiseRecords(status));
+    }
+
+    @GetMapping("/get-student-for-sections")
+    public ResponseEntity<List<StudentBasicDTO>> getStudentForSections(@RequestParam("course") Courses course, @RequestParam("branch") String branch, @RequestParam("currentYear") Integer currentYear){
+        return ResponseEntity.ok(officeServices.fetchStudentDataWithRollSheet(course, branch, currentYear));
+    }
+
+    @GetMapping("/get-section-data")
+    public ResponseEntity<SectionFetcher> getSectionData(@RequestParam("course") Courses course, @RequestParam("branch") String branchCode, @RequestParam("sem") Integer sem, @RequestParam("section") String section){
+        return ResponseEntity.ok(officeServices.getSectionList(course.getDisplayName(), sem, branchCode, section));
+    }
+
+    @PostMapping("/sections/{mode}")
+    public void createSections(@RequestBody SectionFetcher sectionFetcher, @PathVariable String mode){
+        officeServices.initializeSection(sectionFetcher, mode);
     }
 }
