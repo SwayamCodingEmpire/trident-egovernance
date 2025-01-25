@@ -1,7 +1,7 @@
 package com.trident.egovernance.global.entities.permanentDB;
 
 import com.trident.egovernance.dto.BasicFeeBatchDetails;
-import com.trident.egovernance.dto.SessionInitiationDTO;
+import com.trident.egovernance.dto.SessionInitiationDto;
 import com.trident.egovernance.global.helpers.CfPaymentMode;
 import com.trident.egovernance.global.helpers.TFWType;
 import jakarta.persistence.*;
