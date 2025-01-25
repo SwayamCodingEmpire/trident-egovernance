@@ -90,20 +90,19 @@ public class UserCreationServiceImpl implements UserCreationService {
 
         // Split the name into parts
         String[] nameParts = fullName.trim().toLowerCase().split("\\s+");
-        if (nameParts.length < 2) {
-            throw new IllegalArgumentException("Full name must contain at least first and last name");
+        if (nameParts.length == 0) {
+            throw new IllegalArgumentException("Full name must contain at least a first name");
         }
 
-        // Extract first name and last name
-        String firstName = String.join(" ", java.util.Arrays.copyOf(nameParts, nameParts.length - 1));
-        String lastName = nameParts[nameParts.length - 1];
+        String firstName = nameParts[0]; // Always at least the first name
+        String lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : ""; // Optional last name
 
         // Combine parts to form UPN
-        // Remove spaces in the first name
-
-        return String.format(
+        return lastName.isEmpty()
+                ? String.format("%s.%d@codingEmpire.onmicrosoft.com", firstName.replace(" ", ""), yearOfPassing)
+                : String.format(
                 "%s.%s.%s%d@codingEmpire.onmicrosoft.com",
-                firstName.replace(" ", ""), // Remove spaces in the first name
+                firstName.replace(" ", ""),
                 lastName,
                 branch.toLowerCase(),
                 yearOfPassing);

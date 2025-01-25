@@ -39,6 +39,8 @@ public class CustomAuthorityAssignerFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(authentication instanceof JwtAuthenticationToken jwtAuth && authentication.isAuthenticated()){
+            String authorizationHeader = request.getHeader("Authorization");
+            String jwtToken = authorizationHeader.substring(7);
             Jwt jwt = jwtAuth.getToken();
             String appToken = appBearerTokenService.getAppBearerToken("defaultKey");
             Jwt jwts = (Jwt)(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
@@ -51,7 +53,8 @@ public class CustomAuthorityAssignerFilter extends OncePerRequestFilter {
                     new SimpleGrantedAuthority(userJobInformationDto.department()),
                     new SimpleGrantedAuthority(userJobInformationDto.employeeId()),
                     new SimpleGrantedAuthority(claims.get("name").toString()),
-                    new SimpleGrantedAuthority(claims.get("oid").toString())
+                    new SimpleGrantedAuthority(claims.get("oid").toString()),
+                    new SimpleGrantedAuthority(jwtToken)
             );
             JwtAuthenticationToken newAuth = new JwtAuthenticationToken(jwt,newAuthorities);
             SecurityContextHolder.getContext().setAuthentication(newAuth);

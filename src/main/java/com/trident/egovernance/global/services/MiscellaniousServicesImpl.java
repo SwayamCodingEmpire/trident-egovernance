@@ -198,7 +198,7 @@ public class MiscellaniousServicesImpl implements MiscellaniousServices {
         return new MoneyDTO(input,amountInWords);
     }
 
-    public Pair<UserJobInformationDto, String> getUserJobInformation() {
+    public Pair<UserJobInformationDto, UserIdAndOriginalToken> getUserJobInformation() {
         try{
             JwtAuthenticationToken authentication = (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
             if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
@@ -207,7 +207,7 @@ public class MiscellaniousServicesImpl implements MiscellaniousServices {
 
                 if (!authorities.isEmpty() && authorities.size() > 0) {
                     // First authority is jobTitle with "ROLE_" prefix
-                    return Pair.of(new UserJobInformationDto(jwt.getClaimAsString("name"), authorities.get(0).getAuthority().substring(5), authorities.get(1).getAuthority(), authorities.get(2).getAuthority(),authorities.get(3).getAuthority()),authorities.get(4).getAuthority());
+                    return Pair.of(new UserJobInformationDto(jwt.getClaimAsString("name"), authorities.get(0).getAuthority().substring(5), authorities.get(1).getAuthority(), authorities.get(2).getAuthority(),authorities.get(3).getAuthority()),new UserIdAndOriginalToken(authorities.get(4).getAuthority(), authorities.get(5).getAuthority()));
                 }
             }
             return null;

@@ -150,6 +150,17 @@ public class MapperServiceImpl implements MapperService {
         return collectionSummaries;
     }
 
+    public List<StudentOfficeDTO> convertToStudentOfficeDTO(List<StudentOfficeFromDatabaseDTO> studentOfficeFromDatabaseDTOS){
+        return studentOfficeFromDatabaseDTOS.stream()
+                .map(studentOfficeDTO -> new StudentOfficeDTO(studentOfficeDTO))
+                .collect(Collectors.toList());
+    }
+    public List<StudentOfficeFromDatabaseDTO> convertToStudentOfficeDatabaseDTO(List<StudentOfficeDTO> studentOfficeDTOS){
+        return studentOfficeDTOS.stream()
+                .map(studentOfficeDTO -> new StudentOfficeFromDatabaseDTO(studentOfficeDTO))
+                .collect(Collectors.toList());
+    }
+
 //    @Override
 //    public Set<String> getListOfOtherFees() {
 //        feeTypesRepository.

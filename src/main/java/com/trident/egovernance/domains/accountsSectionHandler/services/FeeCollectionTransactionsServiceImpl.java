@@ -68,6 +68,7 @@ public class FeeCollectionTransactionsServiceImpl implements FeeCollectionTransa
         com.trident.egovernance.global.entities.permanentDB.PaymentDuesDetails paymentDuesDetailsEntity = new com.trident.egovernance.global.entities.permanentDB.PaymentDuesDetails(paymentDuesDetails);
         paymentDuesDetailsEntity.setFeeCollection(processedFeeCollection);
         processedFeeCollection.setPaymentDuesDetails(paymentDuesDetailsEntity);
+        logger.info("PaymentDuesDetailsEntity: " + paymentDuesDetailsEntity);
         FeeCollection savedFeeCollection = feeCollectionRepository.save(processedFeeCollection);
         savedFeeCollection.getPaymentMode();
         savedFeeCollection.getDdNo();

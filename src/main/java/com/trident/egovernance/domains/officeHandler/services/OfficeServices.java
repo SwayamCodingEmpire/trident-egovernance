@@ -5,6 +5,7 @@ import com.trident.egovernance.global.helpers.Courses;
 import com.trident.egovernance.global.helpers.StudentStatus;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface OfficeServices {
     List<StudentOfficeDTO> getAllContinuingStudents();
@@ -29,11 +30,11 @@ public interface OfficeServices {
 
     Boolean updateStudentDocsTable(List<StudentDocsOnlyDTO> updates, String regdNo);
 
-    List<AdmissionData> getAdmissionData(String admissionYear);
+    List<AdmissionData> getAdmissionData(Optional<String> admissionYear);
 
-    List<TotalAdmissionData> getTotalAdmissionData(Courses course, String branch);
+    List<TotalAdmissionData> getTotalAdmissionData(Optional<Courses> course, Optional<String> branch);
 
-    List<SessionWiseRecords> getSessionWiseRecords(StudentStatus status);
+    List<SessionWiseRecords> getSessionWiseRecords(Optional<StudentStatus> status);
 
     List<StudentBasicDTO>  fetchStudentDataWithRollSheet(Courses course, String branch, Integer currentYear);
 

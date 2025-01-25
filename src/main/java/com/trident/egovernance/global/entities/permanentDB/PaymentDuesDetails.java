@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Entity(name  = "PAYMENTDUESDETAILS")
 @Table(name  = "PAYMENTDUESDETAILS")
+@ToString
 public class PaymentDuesDetails {
     @Id
     private Long mrNo;

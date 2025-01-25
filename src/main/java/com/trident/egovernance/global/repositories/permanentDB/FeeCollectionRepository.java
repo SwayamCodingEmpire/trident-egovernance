@@ -43,6 +43,7 @@ public interface FeeCollectionRepository extends JpaRepository<FeeCollection,Lon
             "WHERE md.particulars = :particulars AND fc.sessionId = :sessionId AND s.regdNo IN :regdNos")
     Set<FeeCollectionDTOWithRegdNo> findAllByMrDetails_ParticularsAndSessionIdNew(String particulars, String sessionId, Set<String> regdNos);
 
+    @Modifying
     @Query("UPDATE FEECOLLECTION f SET f.dueYear = :year, f.sessionId = :sessionId WHERE f.mrNo IN :mrNos")
     int updateFeeCollectionByMrForHostelRegistered(Integer year, String sessionId, Set<Long> mrNos);
 

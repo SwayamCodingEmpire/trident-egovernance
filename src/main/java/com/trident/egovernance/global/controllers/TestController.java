@@ -6,11 +6,14 @@ import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.global.entities.views.Attendance;
 import com.trident.egovernance.global.entities.views.RollSheet;
+import com.trident.egovernance.global.entities.views.Student_Test;
 import com.trident.egovernance.global.helpers.BranchId;
+import com.trident.egovernance.global.helpers.Courses;
 import com.trident.egovernance.global.helpers.StringRecordTemp;
 import com.trident.egovernance.global.helpers.SubjectInfo;
 import com.trident.egovernance.global.repositories.permanentDB.*;
 import com.trident.egovernance.global.repositories.views.RollSheetRepository;
+import com.trident.egovernance.global.repositories.views.StudentTestRepository;
 import com.trident.egovernance.global.services.MasterTableServicesImpl;
 import com.trident.egovernance.global.services.MiscellaniousServices;
 import com.trident.egovernance.global.services.SessionUpdateService;
@@ -44,8 +47,9 @@ public class TestController {
     private final TransportRepository transportRepository;
     private final BranchRepository branchRepository;
     private final SessionUpdateService sessionUpdateService;
+    private final StudentTestRepository studentTestRepository;
 
-    public TestController(StudentRepository studentRepository, SectionsRepository sectionsRepository, PersonalDetailsRepository personalDetailsRepository, RollSheetRepository rollSheetRepository, SubjectDataFetcherService subjectDataFetcherService, MiscellaniousServices miscellaniousServices, MasterTableServicesImpl masterTableServicesImpl, StudentDashBoardsServiceImpl studentDashBoardsServiceImpl, StudentAdmissionDetailsRepository studentAdmissionDetailsRepository, StudentCareerRepository studentCareerRepository, HostelRepository hostelRepository, TransportRepository transportRepository, BranchRepository branchRepository, SessionUpdateService sessionUpdateService) {
+    public TestController(StudentRepository studentRepository, SectionsRepository sectionsRepository, PersonalDetailsRepository personalDetailsRepository, RollSheetRepository rollSheetRepository, SubjectDataFetcherService subjectDataFetcherService, MiscellaniousServices miscellaniousServices, MasterTableServicesImpl masterTableServicesImpl, StudentDashBoardsServiceImpl studentDashBoardsServiceImpl, StudentAdmissionDetailsRepository studentAdmissionDetailsRepository, StudentCareerRepository studentCareerRepository, HostelRepository hostelRepository, TransportRepository transportRepository, BranchRepository branchRepository, SessionUpdateService sessionUpdateService, StudentTestRepository studentTestRepository) {
         this.studentRepository = studentRepository;
         this.sectionsRepository = sectionsRepository;
         this.personalDetailsRepository = personalDetailsRepository;
@@ -60,6 +64,7 @@ public class TestController {
         this.transportRepository = transportRepository;
         this.branchRepository = branchRepository;
         this.sessionUpdateService = sessionUpdateService;
+        this.studentTestRepository = studentTestRepository;
     }
 
     @GetMapping("/hello")
@@ -170,6 +175,17 @@ public class TestController {
     @GetMapping("/update-sessions")
     public ResponseEntity<List<Sessions>> updateSessions(){
         return ResponseEntity.ok(sessionUpdateService.updateTestTable1());
+    }
+
+    @GetMapping("/get-student-test/{course}")
+    public ResponseEntity<List<Student_Test>> getStudentTest(@PathVariable Courses course){
+        List<Student_Test> st1 = studentTestRepository.findAllByCourse(course);
+        List<Student_Test> output = new ArrayList<>();
+        for(Student_Test st : st1){
+            Student_Test st2 = new Student_Test(st);
+            output.add(st2);
+        }
+        return ResponseEntity.ok(output);
     }
 }
 

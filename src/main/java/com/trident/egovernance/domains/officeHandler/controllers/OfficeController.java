@@ -2,10 +2,8 @@ package com.trident.egovernance.domains.officeHandler.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trident.egovernance.domains.officeHandler.services.OfficeServices;
-import com.trident.egovernance.domains.officeHandler.services.OfficeServicesImpl;
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.exceptions.InvalidInputsException;
-import com.trident.egovernance.global.entities.permanentDB.Branch;
 import com.trident.egovernance.global.helpers.Courses;
 import com.trident.egovernance.global.helpers.StudentStatus;
 import com.trident.egovernance.global.repositories.permanentDB.CourseRepository;
@@ -17,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/office")
@@ -117,19 +116,19 @@ public class OfficeController {
 
     @Operation(summary = "Admission Report year wise")
     @GetMapping("/get-admission-data-year-wise-reports/{admissionYear}")
-    public ResponseEntity<List<AdmissionData>> getAdmissionDataYearwiseReports(@PathVariable("admissionYear") String admissionYear){
+    public ResponseEntity<List<AdmissionData>> getAdmissionDataYearwiseReports(@PathVariable("admissionYear") Optional<String> admissionYear){
         return ResponseEntity.ok(officeServices.getAdmissionData(admissionYear));
     }
 
     @Operation(summary = "Total Admission Report with Request param course and branch")
     @GetMapping("/get-total-admission-data-reports")
-    public ResponseEntity<List<TotalAdmissionData>>  getAdmissionDataYearwiseReports(@RequestParam Courses course, @RequestParam String branch){
+    public ResponseEntity<List<TotalAdmissionData>>  getAdmissionDataYearwiseReports(@RequestParam Optional<Courses> course, @RequestParam Optional<String> branch){
         return ResponseEntity.ok(officeServices.getTotalAdmissionData(course, branch));
     }
 
     @Operation(summary = "Session wise Report with query params as Status")
     @GetMapping("/get-session-wise-reports")
-    public ResponseEntity<List<SessionWiseRecords>> getAdmissionDataYearwiseReports(@RequestParam StudentStatus status){
+    public ResponseEntity<List<SessionWiseRecords>> getSessionwiseRecords(@RequestParam Optional<StudentStatus> status){
         return ResponseEntity.ok(officeServices.getSessionWiseRecords(status));
     }
 
@@ -139,7 +138,7 @@ public class OfficeController {
     }
 
     @GetMapping("/get-section-data")
-    public ResponseEntity<SectionFetcher> getSectionData(@RequestParam("course") Courses course, @RequestParam("branch") String branchCode, @RequestParam("sem") Integer sem, @RequestParam("section") String section){
+    public ResponseEntity<SectionFetcher> getSectionData(@RequestParam("course") Courses course, @RequestParam("branchCode") String branchCode, @RequestParam("sem") Integer sem, @RequestParam("section") String section){
         return ResponseEntity.ok(officeServices.getSectionList(course.getDisplayName(), sem, branchCode, section));
     }
 

@@ -35,7 +35,6 @@ public class DuesDetailBackupServiceImpl {
         this.masterTableServices = masterTableServices;
     }
 
-    @Async
     public Boolean transferToOldDuesDetails(Set<String> regdNos,String session) {
         try{
             List<DuesDetails> duesDetails = duesDetailsRepository.findAllByRegdNoIn(regdNos);
@@ -97,7 +96,7 @@ public class DuesDetailBackupServiceImpl {
 
 
     private List<DuesDetails> createThePreviousDueRecordInDuesDetailsEntities(HashMap<String, BigDecimal> oldDuesCalculate, List<OldDueDetails> oldDueDetails, String session) {
-        return oldDueDetails.parallelStream()
+        return oldDueDetails.stream()
                 .filter(oldDueDetail -> oldDuesCalculate.containsKey(oldDueDetail.getRegdNo()))
                 .map(oldDueDetail -> {
                     DuesDetails duesDetails = new DuesDetails();

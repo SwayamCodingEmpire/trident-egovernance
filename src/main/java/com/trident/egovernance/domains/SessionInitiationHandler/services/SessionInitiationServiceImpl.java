@@ -77,18 +77,25 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
             Boolean transportbackUp = transportBackupServiceimpl.transferToOldTransport(regdNos);
             Boolean hostelBackUp = hostelBackupService.transferToOldHostel(regdNos);
             Boolean adjustmentbackUp = adjustmentBackupService.transferToOldAdjustment(regdNos);
+            logger.info("Old Adjustment backed up");
             Boolean discountbackUp = discountBackUpService.transferToOldDiscount(regdNos);
+            logger.info("Disocunt completed");
             Boolean duesDetailsbackUp = duesDetailBackupService.transferToOldDuesDetails(regdNos,sessionInitiationData.sessionId());
+            logger.info("Dues Details completed");
 //            duesDetailBackupService.saveToDuesDetails(previousYearDues);
             logger.info("Transaction Commited Successfully");
-            return true;
+            if(promoteStudent(sessionInitiationData)){
+                return true;
+            }
+            throw new RuntimeException("Promotion failed");
         }catch (Exception e){
+            logger.error(e.getMessage());
             throw new RuntimeException(e);
         }
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public boolean promoteStudent(SessionInitiationData sessionInitiationData,TransactionStatus transactionStatus){
+    public boolean promoteStudent(SessionInitiationData sessionInitiationData){
         try {
             Set<FeeCollectionDTOWithRegdNo> feeCollectionDTOWithRegdNos = feeCollectionRepository.findAllByMrDetails_ParticularsAndSessionIdNew("HOSTEL ADVANCE", sessionInitiationData.prevSessionId(), sessionInitiationData.regdNos());
 
@@ -110,8 +117,11 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
 
             // Fetching the FeeTypes for Hostel fees
             FeeTypes hostelFees = masterTableServicesImpl.getFeeTypesByFeeGroupAndSemester("HOSTELFEES", sessionInitiationData.currentYear() * 2 + 1);
-            feeCollectionRepository.updateFeeCollectionByMrForHostelRegistered(sessionInitiationData.currentYear() + 1, sessionInitiationData.sessionId(), hostelOptedMrNos);
-            mrDetailsRepository.updateMrDetailsByMrNoForHostelRegistered(hostelFees.getDescription(), hostelOptedMrNos);
+            if(!hostelOptedMrNos.isEmpty()){
+                feeCollectionRepository.updateFeeCollectionByMrForHostelRegistered(sessionInitiationData.currentYear() + 1, sessionInitiationData.sessionId(), hostelOptedMrNos);
+                mrDetailsRepository.updateMrDetailsByMrNoForHostelRegistered(hostelFees.getDescription(), hostelOptedMrNos);
+            }
+            logger.info(sessionInitiationData.regdNos().toString());
             studentRepository.updateStudentCurrentYearByRegdNo(sessionInitiationData.regdNos());
             List<DuesDetailsInitiationDTO> duesDetailsInitiationDTOS = studentRepository.findStudentByRegdNo(sessionInitiationData.regdNos());
             for (FeeCollectionDTOWithRegdNo f : feeCollectionDTOWithRegdNos) {

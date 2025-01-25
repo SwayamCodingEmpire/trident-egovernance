@@ -1,8 +1,6 @@
 package com.trident.egovernance.global.repositories.permanentDB;
 
 import com.trident.egovernance.dto.*;
-import com.trident.egovernance.global.entities.permanentDB.Branch;
-import com.trident.egovernance.global.entities.permanentDB.Course;
 import com.trident.egovernance.global.entities.permanentDB.Student;
 import com.trident.egovernance.global.helpers.*;
 import org.hibernate.exception.ConstraintViolationException;
@@ -21,8 +19,8 @@ import java.util.Set;
 @Repository
 public interface StudentRepository extends JpaRepository<Student, String> {
 //    List<StudentOfficeDTO> findAllByStatus(StudentStatus status);
-    @Query("SELECT new com.trident.egovernance.dto.StudentOfficeDTO(s.regdNo, s.studentName, s.course, s.branchCode, s.phNo, s.email, s.studentType, s.currentYear, p.parentContact) FROM STUDENT s LEFT JOIN s.personalDetails p WHERE s.status=:status")
-    List<StudentOfficeDTO> findAllByStatusAlongWithParentContact(@Param("status") StudentStatus status);
+    @Query("SELECT new com.trident.egovernance.dto.StudentOfficeFromDatabaseDTO(s.regdNo, s.studentName, s.course, s.branchCode, s.phNo, s.email, s.studentType, s.currentYear, p.parentContact) FROM STUDENT s LEFT JOIN s.personalDetails p WHERE s.status=:status")
+    List<StudentOfficeFromDatabaseDTO> findAllByStatusAlongWithParentContact(@Param("status") StudentStatus status);
 
     @Query("SELECT s FROM STUDENT s LEFT JOIN FETCH s.studentAdmissionDetails sa WHERE s.batchId = :batchId")
     List<Student> findAllByBatchId(String batchId);
@@ -112,7 +110,7 @@ SELECT DISTINCT
     ) throws DataIntegrityViolationException, ConstraintViolationException, SQLException;
 
     @Query("UPDATE STUDENT s SET s.currentYear = s.currentYear+1 WHERE s.regdNo IN :regdNos")
-    int updateStudentCurrentYearByRegdNo(Set<String> regdNo);
+    int updateStudentCurrentYearByRegdNo(Set<String> regdNos);
 
     @Query("SELECT new com.trident.egovernance.dto.DuesDetailsInitiationDTO(s.regdNo, s.studentType, s.indortrng, s.plpoolm, s.studentAdmissionDetails.tfw, s.transport.transportOpted, s.hostel.hostelOption, s.hostel.hostelChoice, s.currentYear, s.course, s.batchId) FROM STUDENT s LEFT JOIN s.studentCareer LEFT JOIN s.studentAdmissionDetails LEFT JOIN s.transport LEFT JOIN s.hostel WHERE s.regdNo IN :regdNo")
     List<DuesDetailsInitiationDTO> findStudentByRegdNo(Set<String> regdNo);
@@ -146,7 +144,7 @@ SELECT DISTINCT
     )
     FROM STUDENT s
     LEFT JOIN s.studentAdmissionDetails sa
-    WHERE s.admissionYear = :admissionYear
+    WHERE (:admissionYear IS NULL OR s.admissionYear = :admissionYear)
     GROUP BY s.course, s.branchCode, s.studentType
 """)
     List<AdmissionData> getStudentSummary(Gender male, Gender female, Religion hindu, TFWType tfw, TFWType ntfw, String admissionYear);
@@ -162,12 +160,11 @@ SELECT DISTINCT
     )
     FROM STUDENT s
     JOIN s.studentAdmissionDetails sa
-    WHERE s.course = :course
-      AND s.branchCode = :branch
+    WHERE (:course IS NULL OR s.course = :course)
+      AND (:branch IS NULL OR s.branchCode = :branch)
     GROUP BY s.admissionYear, s.course, s.branchCode, s.studentType
 """)
     List<TotalAdmissionData> getAdmissionSummaryByCourseAndBranch(Courses course, String branch);
-
 
     @Query("SELECT new com.trident.egovernance.dto.SessionWiseRecords(" +
             "se.sessionId, " +
@@ -182,7 +179,7 @@ SELECT DISTINCT
             "JOIN BRANCH br ON s.branchCode = br.branchCode AND s.course = br.course " +
             "JOIN SESSIONS se ON s.course = se.course AND CAST(s.admissionYear AS int) = CAST(se.admissionYear AS int) " +
             "AND s.studentType = se.studentType " +
-            "AND s.currentYear = se.regdYear WHERE s.status = :status "+
+            "AND s.currentYear = se.regdYear WHERE (:status IS NULL OR s.status = :status) "+
             "GROUP BY se.sessionId, se.course, br.branch, se.studentType, se.regdYear")
     List<SessionWiseRecords> fetchSessionWiseStatistics(StudentStatus status);
 

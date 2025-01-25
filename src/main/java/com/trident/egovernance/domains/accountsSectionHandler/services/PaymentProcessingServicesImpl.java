@@ -72,16 +72,19 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
         if (feeCollection.getCollectedFee().compareTo(BigDecimal.ZERO) <= 0) {
             throw new InvalidInputsException("Invalid Collected Fee");
         }
+        BigDecimal bg = BigDecimal.ONE;
         feeCollection.setStudent(student);
         feeCollection.setDueYear(student.getCurrentYear());
         feeCollection.setPaymentDate(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
         List<DuesDetails> duesDetails = duesDetailsRepository.findAllByRegdNoAndBalanceAmountNotOrderByDeductionOrder(regdNo, BigDecimal.ZERO);
 
+        logger.info("Fetched Dues Details {}",duesDetails.toString());
 
 //        long mrNo = feeCollectionRepository.getMaxMrNo() + 1;
 //        feeCollection.setMrNo(mrNo);
 
         PaymentProcessingInternalData processedData = processPayment(feeCollection, student, regdNo, duesDetails, feeCollection.getCollectedFee(), 1);
+        logger.info("Processed Payment {}", processedData);
         FeeCollection processedFeeCollection = processedData.feeCollection();
         List<DuesDetails> processedDuesDetails = processedData.duesDetails();
         Set<MrDetails> processedMrDetails = processedData.mrDetails();
@@ -127,7 +130,7 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
                 logger.info(processedFeeCollection.toString());
                 DuesDetails excessDues = createExcessDues(regdNo, processedDataOptionalFees);
                 processedDuesDetails.add(excessDues);
-                processedMrDetails.add(createMrDetails(excessDues, processedData.collectedFees(), processedData.slNo(), processedFeeCollection));
+                processedMrDetails.add(createMrDetails(excessDues, processedDataOptionalFees.collectedFees(), processedDataOptionalFees.slNo(), processedFeeCollection));
                 logger.info(processedMrDetails.toString());
             }
         }
@@ -311,7 +314,7 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
 
     private MrDetails createMrDetails(DuesDetails duesDetails, BigDecimal collectedFees, long slNo, FeeCollection feeCollection) {
         MrDetails mrDetails = new MrDetails();
-        mrDetails.setSlNo(slNo);
+        mrDetails.setSlNo(slNo+1);
         if (collectedFees.compareTo(BigDecimal.ZERO) == 0) {
             mrDetails.setAmount((duesDetails.getBalanceAmount()));
         } else if (duesDetails.getDescription().compareTo("EXCESS FEE") == 0) {

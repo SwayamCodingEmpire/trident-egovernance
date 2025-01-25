@@ -1,6 +1,8 @@
 package com.trident.egovernance.domains.nsrHandler.services;
 
-import com.trident.egovernance.dto.PDFObject;
+import com.trident.egovernance.dto.*;
+import com.trident.egovernance.global.services.AppBearerTokenService;
+import com.trident.egovernance.global.services.MiscellaniousServices;
 import com.trident.egovernance.global.services.MoneyReceiptPDFGenerator;
 import com.trident.egovernance.global.services.PDFGenerationService;
 import jakarta.mail.MessagingException;
@@ -9,6 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -16,28 +20,41 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalTime;
+import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @Service
 public class EmailSenderServiceImpl {
+    private final WebClient webClientMailer;
     private final MoneyReceiptPDFGenerator moneyReceiptPDFGenerator;
     private final Logger logger = LoggerFactory.getLogger(EmailSenderServiceImpl.class);
     private final JavaMailSender mailSender;
     private final PDFGenerationService pdfGenerationService;
+    private final AppBearerTokenService appBearerTokenService;
+    private final MiscellaniousServices miscellaniousServices;
 
-    public EmailSenderServiceImpl(MoneyReceiptPDFGenerator moneyReceiptPDFGenerator, JavaMailSender mailSender, PDFGenerationService pdfGenerationService) {
+    public EmailSenderServiceImpl(MoneyReceiptPDFGenerator moneyReceiptPDFGenerator, JavaMailSender mailSender, PDFGenerationService pdfGenerationService, AppBearerTokenService appBearerTokenService, MiscellaniousServices miscellaniousServices) {
+        this.webClientMailer = WebClient.builder().baseUrl("https://graph.microsoft.com/v1.0")
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .build();
         this.moneyReceiptPDFGenerator = moneyReceiptPDFGenerator;
         this.mailSender = mailSender;
         this.pdfGenerationService = pdfGenerationService;
+        this.appBearerTokenService = appBearerTokenService;
+        this.miscellaniousServices = miscellaniousServices;
     }
 
     @Async
     public CompletableFuture<Void> sendTridentCredentialsEmail(String microsoftMail, String password) throws MessagingException, IOException {
+        logger.info("Sending Trident credentials email");
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 

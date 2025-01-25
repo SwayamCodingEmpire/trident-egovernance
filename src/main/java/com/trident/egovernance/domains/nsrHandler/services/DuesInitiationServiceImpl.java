@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -36,20 +37,14 @@ public class DuesInitiationServiceImpl implements DuesInitiationService {
         this.miscellaniousServices = miscellaniousServices;
     }
 
-    @Async("taskExecutor")
-    @Transactional
-    @Override
-    public CompletableFuture<Boolean> initiateDues(DuesDetailsInitiationDTO student, SharedStateAmongDueInitiationAndNSRService sharedState) {
-        return CompletableFuture.completedFuture(initiateDuesDetails(student, sharedState));
-    }
+//    @Async("taskExecutor")
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public Boolean initiateDuesDetails(DuesDetailsInitiationDTO student, SharedStateAmongDueInitiationAndNSRService sharedState) {
-        try {
+    public Boolean initiateDuesDetails(DuesDetailsInitiationDTO student) {
             logger.info("Fetching fees from database");
             List<Fees> fees = masterTableServicesImpl.getFeesByBatchIdAndRegdYear(student.batchId(), student.currentYear());
-            isInterrupted(sharedState.isProceed());
+//            isInterrupted(sharedState.isProceed());
             logger.info(fees.toString());
 
             Set<String> descriptions = fees.stream()
@@ -78,19 +73,16 @@ public class DuesInitiationServiceImpl implements DuesInitiationService {
                     .filter(Objects::nonNull)
                     .toList();
 
+
             logger.info("Saving dues details to database");
-            isInterrupted(sharedState.isProceed());
+//            isInterrupted(sharedState.isProceed());
             duesDetailsRepository.saveAllAndFlush(duesDetailsList);
-            isInterrupted(sharedState.isProceed());
+//            isInterrupted(sharedState.isProceed());
             logger.info("Saved dues details to database");
 
 
             return true;
-        } catch (Exception e) {
-            logger.info(student.toString());
-            logger.error("Error occurred while processing dues details: " + e.getMessage());
-            throw new RuntimeException("Error occurred while processing dues details: " + e.getMessage());
-        }
+
     }
 
     // Helper method to check if the fee is relevant
@@ -99,6 +91,7 @@ public class DuesInitiationServiceImpl implements DuesInitiationService {
     // Helper method to create DuesDetails for each fee
     public DuesDetails createDuesDetails(Fees fee, DuesDetailsInitiationDTO student, Map<String, StandardDeductionFormat> deductionFormatMap) {
         try {
+            int admissionYear = Year.now().getValue();
             DuesDetails duesDetails = new DuesDetails();
             duesDetails.setId(-1L);
             duesDetails.setRegdNo(student.regdNo());
@@ -108,7 +101,7 @@ public class DuesInitiationServiceImpl implements DuesInitiationService {
             duesDetails.setAmountDue(fee.getAmount());
             duesDetails.setDeductionOrder(deductionFormatMap.get(fee.getDescription()).getDeductionOrder());
             duesDetails.setDueYear(student.currentYear());
-            duesDetails.setSessionId(masterTableServicesImpl.getSessionId(student.course(), duesDetails.getDueYear(), Year.now().getValue(), student.studentType()));
+            duesDetails.setSessionId(masterTableServicesImpl.getSessionId(student.course(), duesDetails.getDueYear(), 2024, student.studentType()));
             duesDetails.setAmountPaidToJee(BigDecimal.ZERO);
             duesDetails.setDueDate(Date.valueOf(LocalDate.now()));
             return duesDetails;

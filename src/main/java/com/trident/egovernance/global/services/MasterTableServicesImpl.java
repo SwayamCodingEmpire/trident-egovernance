@@ -82,7 +82,11 @@ public class MasterTableServicesImpl implements MasterTableServices {
 //        return currYear+"-"+nextYear;
 //        SessionIdId sessionIdId = new SessionIdId(course.getDisplayName(), regdYear, admissionYear, studentType.getEnumName());
 //        logger.info(sessionIdId.toString());
-        Sessions sessions = sessionsRepository.findByCourseAndRegdYearAndAdmissionYearAndStudentType(course.getDisplayName(), regdYear, admissionYear, studentType).orElseThrow(() -> new RecordNotFoundException("Session not found"));
+        logger.info("Course : {}", course.getDisplayName());
+        logger.info("Regdyear: {}", regdYear);
+        logger.info("Admissionyear: {}", admissionYear);
+        logger.info("Student Type : {}", studentType.toString());
+        Sessions sessions = sessionsRepository.findByCourseAndRegdYearAndAdmissionYearAndStudentType(course.getDisplayName(), regdYear, admissionYear, studentType.toString()).orElseThrow(() -> new RecordNotFoundException("Session not found"));
         logger.info(sessions.toString());
         logger.info(sessions.toString());
         return sessions.getSessionId();

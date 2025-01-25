@@ -49,6 +49,12 @@ public class GlobalExceptionHandler {
             problemDetail.setProperty("description","The Username or Password is incorrect");
             return problemDetail;
         }
+
+        if(exception instanceof MessagingException){
+            problemDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500),exception.getMessage());
+            problemDetail.setProperty("description","Unable to send message");
+            return problemDetail;
+        }
         if(exception instanceof UnsupportedEncodingException){
             problemDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500),exception.getMessage());
             problemDetail.setProperty("description","Unable to fetch the data");
@@ -79,11 +85,11 @@ public class GlobalExceptionHandler {
             problemDetail.setProperty("description","The record not found");
             return problemDetail;
         }
-        if(exception instanceof MessagingException){
-            problemDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(404),exception.getMessage());
-            problemDetail.setProperty("description","The record not found");
-            return problemDetail;
-        }
+//        if(exception instanceof MessagingException){
+//            problemDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(404),exception.getMessage());
+//            problemDetail.setProperty("description","The record not found");
+//            return problemDetail;
+//        }
         if(exception instanceof InvalidInputsException){
             String[] errors = exception.getMessage().split("\\s*,\\s*");
             problemDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(422),exception.getMessage());

@@ -4,5 +4,6 @@ import java.io.Serializable;
 
 public enum CfPaymentMode implements Serializable {
     SEMESTER,
-    YEARLY
+    YEARLY,
+    SEM
 }

@@ -9,7 +9,7 @@ import java.sql.Date;
 import java.util.List;
 
 public interface MiscellaniousServices {
-    Pair<UserJobInformationDto, String> getUserJobInformation();
+    Pair<UserJobInformationDto, UserIdAndOriginalToken> getUserJobInformation();
     String generateBatchId(BasicFeeBatchDetails basicFeeBatchDetails);
     List<String> getLastNumberOfDays(int days);
     List<String> getDatesFromStartOfWeekTillToday();

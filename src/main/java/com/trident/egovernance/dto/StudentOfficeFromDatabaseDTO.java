@@ -1,12 +1,11 @@
 package com.trident.egovernance.dto;
 
-import com.trident.egovernance.global.helpers.Courses;
-import com.trident.egovernance.global.helpers.StudentType;
+import com.trident.egovernance.global.helpers.*;
 
-public record StudentOfficeDTO(
+public record StudentOfficeFromDatabaseDTO(
         String regdNo,
         String studentName,
-        String course,
+        Courses course,
         String branchCode,
         String phNo,
         String email,
@@ -14,11 +13,11 @@ public record StudentOfficeDTO(
         Integer currentYear,
         String parentContact
 ) {
-    public StudentOfficeDTO(StudentOfficeFromDatabaseDTO std){
+    public StudentOfficeFromDatabaseDTO(StudentOfficeDTO std){
         this(
                 std.regdNo(),
                 std.studentName(),
-                std.course().getDisplayName(),
+                Courses.fromDisplayName(std.course()),
                 std.branchCode(),
                 std.phNo(),
                 std.email(),
@@ -28,3 +27,6 @@ public record StudentOfficeDTO(
         );
     }
 }
+
+
+

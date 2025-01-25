@@ -12,6 +12,7 @@ import com.trident.egovernance.global.repositories.redisRepositories.NSRReposito
 import com.trident.egovernance.global.services.CourseFetchingServiceImpl;
 import com.trident.egovernance.global.services.MapperService;
 import com.trident.egovernance.global.services.MapperServiceImpl;
+import jakarta.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.sql.Date;
 import java.time.LocalDate;
@@ -39,8 +41,9 @@ class NSRServiceImpl implements NSRService {
     private final NSRRepository nsrRepository;
     private final StudentRepository studentRepository;
 
-    private final String CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    private final int PASSWORD_LENGTH = 12;  // Adjust the length as needed
+    private final String UPALPHASET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";// Adjust the length as needed
+    private final String LOWALPHASET = "abcdefghijklmnopqrstuvwxyz";
+    private final String NUMSET = "0123456789";
     private final SecureRandom random = new SecureRandom();
     private final EmailSenderServiceImpl emailSenderServiceImpl;
 
@@ -107,14 +110,13 @@ class NSRServiceImpl implements NSRService {
     @Transactional
     @Override
     public Boolean saveToPermanentDatabase(String jeeApplicationNo){
-        SharedStateAmongDueInitiationAndNSRService sharedState = new SharedStateAmongDueInitiationAndNSRService();
+//        SharedStateAmongDueInitiationAndNSRService sharedState = new SharedStateAmongDueInitiationAndNSRService();
         NSR nsr = nsrRepository.findById(jeeApplicationNo).orElseThrow(() -> new RecordNotFoundException("Record not found"));
         nsr.setBatchId(nsr.getCourse().getEnumName() + nsr.getAdmissionYear() + nsr.getBranchCode() + nsr.getStudentType());
         nsr.setCurrentYear(((nsr.getStudentType().equals(StudentType.REGULAR))?1:2));
         logger.info("Batch ID : {}",nsr.getBatchId());
         logger.info("Fetched from Redis");
-        CompletableFuture<Boolean> processDues = duesInitiationServiceImpl.initiateDues(new DuesDetailsInitiationDTO(nsr),sharedState);
-        try{
+        Boolean processDues = duesInitiationServiceImpl.initiateDuesDetails(new DuesDetailsInitiationDTO(nsr));
             logger.info("Fetching from Redis");
             Student student = mapperService.convertToStudent(nsr);
             student.setHostelier(nsr.getHostelOption());
@@ -174,9 +176,7 @@ class NSRServiceImpl implements NSRService {
             logger.info("Student before saving : {} ",student);
             studentRepository.saveAndFlush(student);
             logger.info("Saved to database");
-            processDues.join();
             String password = generateRandomPassword();
-            try{
                 logger.info("Inside try block to process user creation");
                 String response = userCreationService.createUser(
                         student.getStudentName(),
@@ -188,15 +188,14 @@ class NSRServiceImpl implements NSRService {
                         student.getDegreeYop());
                 logger.info("Response for Microsoft : {}",response);
 //                userCreationService.setProfilePicture(nsr.getRegdNo(), response);
-                emailSenderServiceImpl.sendTridentCredentialsEmail(response,password);
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-            return true;
-        }catch (Exception e){
-            sharedState.setProceed(false);
-            return false;
+        try {
+            emailSenderServiceImpl.sendTridentCredentialsEmail(response, password);
+        } catch (MessagingException e) {
+            logger.error(e.getMessage());
+        }catch (IOException e) {
+            logger.error(e.getMessage());
         }
+            return true;
     }
 
     @Override
@@ -208,9 +207,16 @@ class NSRServiceImpl implements NSRService {
 
 
     public String generateRandomPassword() {
+        final int PASSWORD_LENGTH = 12;
         StringBuilder password = new StringBuilder(PASSWORD_LENGTH);
-        for (int i = 0; i < PASSWORD_LENGTH; i++) {
-            password.append(CHARSET.charAt(random.nextInt(CHARSET.length())));
+        for (int i = 0; i < PASSWORD_LENGTH/3; i++) {
+            password.append(UPALPHASET.charAt(random.nextInt(UPALPHASET.length())));
+        }
+        for (int i = 0; i < PASSWORD_LENGTH/3; i++) {
+            password.append(NUMSET.charAt(random.nextInt(NUMSET.length())));
+        }
+        for (int i = 0; i < PASSWORD_LENGTH/3; i++) {
+            password.append(LOWALPHASET.charAt(random.nextInt(LOWALPHASET.length())));
         }
         return password.toString();
     }

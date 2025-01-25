@@ -33,6 +33,8 @@ public interface MapperService {
     Student convertToStudentFromStudentOnlyDTO(StudentOnlyDTO studentOnlyDTO);
 
     StudentCareer covertToStudentCareerFromStudentCareerOnlyDTO(StudentCareerOnlyDTO studentCareerOnlyDTO);
+    List<StudentOfficeFromDatabaseDTO> convertToStudentOfficeDatabaseDTO(List<StudentOfficeDTO> studentOfficeDTOS);
+    List<StudentOfficeDTO> convertToStudentOfficeDTO(List<StudentOfficeFromDatabaseDTO> studentOfficeFromDatabaseDTOS);
 
     PersonalDetails convertToPersonalDetailsFromPersonalDetailsOnlyDTO(PersonalDetailsOnlyDTO personalDetailsOnlyDTO);
 

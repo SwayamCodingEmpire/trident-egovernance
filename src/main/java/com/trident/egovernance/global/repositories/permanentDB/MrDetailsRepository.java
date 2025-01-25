@@ -25,6 +25,7 @@ public interface MrDetailsRepository extends JpaRepository<MrDetails,Long> {
 
 //    int updateMrDetailsParticularsByMrNo(Long mrNo, String oldParticular, String);
 
+    @Modifying
     @Query("UPDATE MRDETAILS m SET m.particulars = :description WHERE m.feeCollection.mrNo IN :mrNos")
     int updateMrDetailsByMrNoForHostelRegistered(String description, Set<Long> mrNos);
 

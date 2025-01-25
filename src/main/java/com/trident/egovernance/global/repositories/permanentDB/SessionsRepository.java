@@ -57,7 +57,7 @@ public interface SessionsRepository extends JpaRepository<Sessions, SessionIdId>
 //""")
 //    List<SessionWiseRecords> fetchSessionWiseStatistics(StudentStatus status);
 
-    Optional<Sessions> findByCourseAndRegdYearAndAdmissionYearAndStudentType(String course, int regdYear, int admissionYear, StudentType studentType);
+    Optional<Sessions> findByCourseAndRegdYearAndAdmissionYearAndStudentType(String course, int regdYear, int admissionYear, String studentType);
 
     List<Sessions> findAllByCourseOrderBySessionIdAscRegdYearAsc(String course);
 }

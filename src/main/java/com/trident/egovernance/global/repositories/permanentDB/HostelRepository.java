@@ -41,11 +41,11 @@ public interface HostelRepository extends JpaRepository<Hostel,String> {
 
     @Modifying
     @Query("UPDATE HOSTEL h SET h.hostelOption = :hostelOption, h.regdyear = h.regdyear+1 WHERE h.regdNo IN :regdNos")
-    long updateHostelByRegdNoIn(BooleanString hostelOption,Set<String> regdNos);
+    void updateHostelByRegdNoIn(BooleanString hostelOption,Set<String> regdNos);
 
     @Modifying
     @Query("UPDATE HOSTEL h SET h.hostelOption = :hostelOption, h.regdyear = h.regdyear+1, h.hostelChoice = :hostelChoice WHERE h.regdNo IN :regdNos")
-    long updateHostelByRegdNoInNotOpted(BooleanString hostelOption,Set<String> regdNos, HostelChoice hostelChoice);
+    void updateHostelByRegdNoInNotOpted(BooleanString hostelOption,Set<String> regdNos, HostelChoice hostelChoice);
 
     @Modifying
     @Query(value = """

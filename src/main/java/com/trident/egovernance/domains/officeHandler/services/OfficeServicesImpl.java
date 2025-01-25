@@ -56,11 +56,11 @@ public class OfficeServicesImpl implements OfficeServices {
     }
 
     public List<StudentOfficeDTO> getAllContinuingStudents() {
-        return studentRepository.findAllByStatusAlongWithParentContact(StudentStatus.CONTINUING);
+        return mapperService.convertToStudentOfficeDTO(studentRepository.findAllByStatusAlongWithParentContact(StudentStatus.CONTINUING));
     }
 
     public List<StudentOfficeDTO> getAllAlumniStudents() {
-        return studentRepository.findAllByStatusAlongWithParentContact(StudentStatus.ALUMNI);
+        return mapperService.convertToStudentOfficeDTO(studentRepository.findAllByStatusAlongWithParentContact(StudentStatus.ALUMNI));
     }
 
     public Long countAllContinuingStudents() {
@@ -397,16 +397,16 @@ public class OfficeServicesImpl implements OfficeServices {
         }
     }
 
-    public List<AdmissionData> getAdmissionData(String admissionYear) {
-        return studentRepository.getStudentSummary(Gender.MALE, Gender.FEMALE, Religion.HINDU, TFWType.TFW, TFWType.NTFW, admissionYear);
+    public List<AdmissionData> getAdmissionData(Optional<String> admissionYear) {
+        return studentRepository.getStudentSummary(Gender.MALE, Gender.FEMALE, Religion.HINDU, TFWType.TFW, TFWType.NTFW, admissionYear.orElse(null));
     }
 
-    public List<TotalAdmissionData> getTotalAdmissionData(Courses course, String branch) {
-        return studentRepository.getAdmissionSummaryByCourseAndBranch(course, branch);
+    public List<TotalAdmissionData> getTotalAdmissionData(Optional<Courses> course, Optional<String> branch) {
+        return studentRepository.getAdmissionSummaryByCourseAndBranch(course.orElse(null), branch.orElse(null));
     }
 
-    public List<SessionWiseRecords> getSessionWiseRecords(StudentStatus status) {
-        return studentRepository.fetchSessionWiseStatistics(status);
+    public List<SessionWiseRecords> getSessionWiseRecords(Optional<StudentStatus> status) {
+        return studentRepository.fetchSessionWiseStatistics(status.orElse(null));
     }
 
     @Override
@@ -434,7 +434,7 @@ public class OfficeServicesImpl implements OfficeServices {
 
     @Override
     public SectionFetcher getSectionList(String course, Integer sem, String branchCode, String section) {
-        Sections sections = sectionsRepository.findAllByCourseAndSemAndBranchCodeAndSection(course, sem, branchCode, section).orElseThrow(() -> new RecordNotFoundException("Student Not Found"));
+        Sections sections = sectionsRepository.findAllByCourseAndSemAndBranchCodeAndSection(course, sem, branchCode, section).orElseThrow(() -> new RecordNotFoundException("Section Not Found"));
         List<Roll_Sheet> rollSheets = sections.getRollSheets();
         StudentSectionData sectionData;
         List<StudentSectionData> studentSectionDataList = new ArrayList<>();

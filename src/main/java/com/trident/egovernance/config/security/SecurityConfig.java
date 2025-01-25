@@ -53,7 +53,7 @@ public class SecurityConfig {
     private static final String[] PUBLIC_URLS = {
             "/test/**",
             "/menu/**",
-//            "/NSR/**",
+            "/NSR/**",
             "/public/**",
             "/server1/**",
             "/v3/api-docs",
@@ -66,7 +66,7 @@ public class SecurityConfig {
 //            "/payment/**",
             "/public/**",
 //            "/accounts-section/**",
-//            "/initiate-session/**",
+            "/initiate-session/**",
             "/office/**",
 //            "/subjects/**",
             "/actuator/**",
@@ -84,8 +84,8 @@ public class SecurityConfig {
 //            authorize.requestMatchers("/accounts-section/**").hasAnyRole("ACCOUNTS", "ADMIN");
             authorize.requestMatchers(PUBLIC_URLS).permitAll();
             authorize.requestMatchers("/test/hello").hasAnyRole("NSR", "ADMIN");
-            authorize.requestMatchers("/NSR/post").hasAnyRole("OFFICE","ADMIN");
-            authorize.requestMatchers("/NSR/**").hasAnyRole("ADMIN","NSR");
+//            authorize.requestMatchers("/NSR/post").hasAnyRole("OFFICE","ADMIN");
+//            authorize.requestMatchers("/NSR/**").hasAnyRole("ADMIN","NSR");
             authorize.requestMatchers("/api/**").authenticated();
         }).sessionManagement(session -> {
             session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
