@@ -6,7 +6,6 @@ import com.trident.egovernance.dto.*;
 import com.trident.egovernance.exceptions.InvalidInputsException;
 import com.trident.egovernance.global.entities.permanentDB.AlterFeeCollection;
 import com.trident.egovernance.global.entities.permanentDB.ExcessRefund;
-import com.trident.egovernance.global.entities.permanentDB.Fees;
 import com.trident.egovernance.global.entities.permanentDB.PaymentMode;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
 import com.trident.egovernance.global.helpers.Courses;
@@ -179,7 +178,7 @@ public class AccountSectionController {
     }
 
     @GetMapping("/get-mrDetails-mrNo/{mrNo}")
-    public ResponseEntity<List<MrDetailsDTO>> getMrDetails(@PathVariable("mrNo") Long mrNo){
+    public ResponseEntity<List<MrDetailsDTOMinimal>> getMrDetails(@PathVariable("mrNo") Long mrNo){
         return ResponseEntity.ok(accountSectionService.fetchMrDetailsByMrNo(mrNo));
     }
 

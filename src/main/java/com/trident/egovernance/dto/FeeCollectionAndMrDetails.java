@@ -4,6 +4,6 @@ import java.util.Set;
 
 public record FeeCollectionAndMrDetails(
         FeeCollectionOnlyDTO feeCollection,
-        Set<MrDetailsDTO> mrDetails
+        Set<MrDetailsDTOMinimal> mrDetails
 ) {
 }

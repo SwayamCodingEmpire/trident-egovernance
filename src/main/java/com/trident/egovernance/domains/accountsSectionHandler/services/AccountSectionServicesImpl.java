@@ -256,7 +256,7 @@ public class AccountSectionServicesImpl implements AccountSectionService {
         return mapperService.convertToFeeCollectionOnlyDTOList(feeCollectionRepository.findAllBySessionId(sessionId));
     }
 
-    public List<MrDetailsDTO> fetchMrDetailsByMrNo(Long mrNo) {
+    public List<MrDetailsDTOMinimal> fetchMrDetailsByMrNo(Long mrNo) {
         return mrDetailsRepository.findAllByMrNo(mrNo);
     }
 

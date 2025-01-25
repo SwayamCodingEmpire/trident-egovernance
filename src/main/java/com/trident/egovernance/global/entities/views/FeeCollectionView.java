@@ -1,7 +1,7 @@
 package com.trident.egovernance.global.entities.views;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.trident.egovernance.dto.MrDetailsDTO;
+import com.trident.egovernance.dto.MrDetailsDTOMinimal;
 import com.trident.egovernance.global.entities.permanentDB.MrDetails;
 import com.trident.egovernance.global.entities.permanentDB.PaymentDuesDetails;
 import com.trident.egovernance.global.entities.permanentDB.Student;
@@ -50,7 +50,7 @@ public class FeeCollectionView {
     @Enumerated(EnumType.STRING)
     private FeeProcessingMode feeProcessingMode;
     @Transient
-    private Set<MrDetailsDTO> mrDetailsDTOSet;
+    private Set<MrDetailsDTOMinimal> mrDetailsDTOSet;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REGDNO", insertable = false, updatable = false)
     @JsonIgnore

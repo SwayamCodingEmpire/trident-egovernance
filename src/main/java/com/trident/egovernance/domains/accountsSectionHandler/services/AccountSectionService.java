@@ -27,7 +27,7 @@ public interface AccountSectionService {
 
     List<FeeCollectionOnlyDTO> getFeeCollectionFilteredByPaymentDate(String paymentDate);
     List<FeeCollectionOnlyDTO> getFeeCollectionFilteredBySessionId(String sessionId);
-    List<MrDetailsDTO> fetchMrDetailsByMrNo(Long mrNo);
+    List<MrDetailsDTOMinimal> fetchMrDetailsByMrNo(Long mrNo);
 
     List<DueStatusReport> fetchDueStatusReport(Optional<Courses> course, Optional<String> branch, Optional<Integer> regdYear);
 

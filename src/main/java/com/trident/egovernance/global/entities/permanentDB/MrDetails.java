@@ -1,7 +1,6 @@
 package com.trident.egovernance.global.entities.permanentDB;
 
-import com.trident.egovernance.dto.MrDetailsDTO;
-import com.trident.egovernance.dto.OtherMrDetails;
+import com.trident.egovernance.dto.MrDetailsDTOMinimal;
 import com.trident.egovernance.global.entities.views.FeeCollectionView;
 import jakarta.persistence.*;
 import lombok.*;
@@ -45,7 +44,7 @@ public class MrDetails {
 
 
 
-    public MrDetails(MrDetailsDTO otherMrDetails, FeeCollection feeCollection) {
+    public MrDetails(MrDetailsDTOMinimal otherMrDetails, FeeCollection feeCollection) {
         this.slNo = otherMrDetails.slNo();
         this.particulars = otherMrDetails.particulars();
         this.amount = otherMrDetails.amount();

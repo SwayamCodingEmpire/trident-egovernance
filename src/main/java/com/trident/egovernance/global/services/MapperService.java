@@ -6,7 +6,6 @@ import com.trident.egovernance.global.entities.redisEntities.NSR;
 import com.trident.egovernance.global.entities.redisEntities.StudentDocData;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
 import com.trident.egovernance.global.entities.views.SemesterResult;
-import jakarta.persistence.Tuple;
 
 import java.util.List;
 import java.util.Set;
@@ -47,7 +46,7 @@ public interface MapperService {
 
     StudentDocs convertToStudentDocsFromStudentDocsOnlyDTO(StudentDocsOnlyDTO studentDocsOnlyDTO);
     Set<CollectionSummary> convertToCollectionSummarySet(Set<DailyCollectionSummary> dailyCollectionSummaries);
-    Set<MrDetailsDTO> convertToMrDetailsDTOSet(Set<MrDetails> mrDetailsSet);
+    Set<MrDetailsDTOMinimal> convertToMrDetailsDTOSet(Set<MrDetails> mrDetailsSet);
     Set<FeesOnly> convertToFeesOnly(List<Fees> fees);
     List<FeeTypes> convertToFeeTypesList(Set<FeeTypesOnly> feesList);
     Set<FeeTypesOnly> convertToFeeTypesOnlySet(List<FeeTypes> feesList);
@@ -57,6 +56,6 @@ public interface MapperService {
 
     List<SubjectResultData> convertToSubjectResultsData(List<SemesterResult> semesterResults);
     List<FeeCollectionOnlyDTO> convertToFeeCollectionOnlyDTOList(List<FeeCollection> feeCollections);
-    List<MrDetailsDTO> convertToMrDetailsDTOList(List<MrDetails> mrDetailsList);
+    List<MrDetailsDTOMinimal> convertToMrDetailsDTOList(List<MrDetails> mrDetailsList);
 //    Set<String> getListOfOtherFees();
 }

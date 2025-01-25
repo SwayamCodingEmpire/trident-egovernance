@@ -4,13 +4,13 @@ import com.trident.egovernance.global.entities.permanentDB.MrDetails;
 
 import java.math.BigDecimal;
 
-public record MrDetailsDTO(
+public record MrDetailsDTOMinimal(
         long slNo,
         String particulars,
         BigDecimal amount
 ) {
 
-    public MrDetailsDTO(MrDetails mrDetails) {
+    public MrDetailsDTOMinimal(MrDetails mrDetails) {
         this(
                 mrDetails.getSlNo(),
                 mrDetails.getParticulars(),

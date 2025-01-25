@@ -5,6 +5,6 @@ import java.util.Set;
 public record OtherFeesPayment(
         Long mrNo,
         OtherFeeCollection feeCollection,
-        Set<MrDetailsDTO> otherMrDetails
+        Set<MrDetailsDTOMinimal> otherMrDetails
 ) {
 }

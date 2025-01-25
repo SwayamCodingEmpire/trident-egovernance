@@ -4,17 +4,14 @@ import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.global.entities.redisEntities.NSR;
 import com.trident.egovernance.global.entities.redisEntities.StudentDocData;
-import com.trident.egovernance.global.entities.views.CollectionReport;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
 import com.trident.egovernance.global.entities.views.SemesterResult;
 import com.trident.egovernance.global.repositories.permanentDB.FeeTypesRepository;
-import jakarta.persistence.Tuple;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -185,9 +182,9 @@ public class MapperServiceImpl implements MapperService {
 //                .collect(Collectors.toList());
 //    }
 
-    public Set<MrDetailsDTO> convertToMrDetailsDTOSet(Set<MrDetails> mrDetailsSet) {
+    public Set<MrDetailsDTOMinimal> convertToMrDetailsDTOSet(Set<MrDetails> mrDetailsSet) {
         return mrDetailsSet.stream()
-                .map(mrDetails -> new MrDetailsDTO(
+                .map(mrDetails -> new MrDetailsDTOMinimal(
                         mrDetails.getSlNo(),
                         mrDetails.getParticulars(),
                         mrDetails.getAmount()
@@ -240,9 +237,9 @@ public class MapperServiceImpl implements MapperService {
                 .collect(Collectors.toList());
     }
 
-    public List<MrDetailsDTO> convertToMrDetailsDTOList(List<MrDetails> mrDetailsList) {
+    public List<MrDetailsDTOMinimal> convertToMrDetailsDTOList(List<MrDetails> mrDetailsList) {
         return mrDetailsList.stream()
-                .map(MrDetailsDTO::new)
+                .map(MrDetailsDTOMinimal::new)
                 .collect(Collectors.toList());
     }
 }
