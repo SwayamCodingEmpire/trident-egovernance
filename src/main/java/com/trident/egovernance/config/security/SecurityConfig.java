@@ -53,7 +53,7 @@ public class SecurityConfig {
     private static final String[] PUBLIC_URLS = {
             "/test/**",
             "/menu/**",
-            "/NSR/**",
+//            "/NSR/**",
             "/public/**",
             "/server1/**",
             "/v3/api-docs",
@@ -67,10 +67,10 @@ public class SecurityConfig {
             "/public/**",
 //            "/accounts-section/**",
             "/initiate-session/**",
-            "/office/**",
+//            "/office/**",
 //            "/subjects/**",
             "/actuator/**",
-            "/accounts-section/**",
+//            "/accounts-section/**",
             "/api/refresh-menu-data",
 //            "/office/**"
     };
@@ -78,14 +78,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeHttpRequests(authorize -> {
-//            authorize.requestMatchers("/NSR/post").hasAnyRole("OFFICE", "ADMIN");
+            authorize.requestMatchers("/NSR/post").hasAnyRole("OFFICE", "ADMIN");
             authorize.requestMatchers("/student-portal/**").hasAnyRole("STUDENT", "ADMIN");
-//            authorize.requestMatchers("/office/**").hasAnyRole("OFFICE", "ADMIN");
-//            authorize.requestMatchers("/accounts-section/**").hasAnyRole("ACCOUNTS", "ADMIN");
+            authorize.requestMatchers("/office/**").hasAnyRole("OFFICE", "ADMIN");
+            authorize.requestMatchers("/accounts-section/**").hasAnyRole("ACCOUNTS", "ADMIN");
             authorize.requestMatchers(PUBLIC_URLS).permitAll();
             authorize.requestMatchers("/test/hello").hasAnyRole("NSR", "ADMIN");
-//            authorize.requestMatchers("/NSR/post").hasAnyRole("OFFICE","ADMIN");
-//            authorize.requestMatchers("/NSR/**").hasAnyRole("ADMIN","NSR");
+            authorize.requestMatchers("/NSR/post").hasAnyRole("OFFICE","ADMIN");
+            authorize.requestMatchers("/NSR/**").hasAnyRole("ADMIN","NSR");
             authorize.requestMatchers("/api/**").authenticated();
         }).sessionManagement(session -> {
             session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);

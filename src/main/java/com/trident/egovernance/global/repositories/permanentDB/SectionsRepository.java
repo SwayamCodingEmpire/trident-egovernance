@@ -21,5 +21,5 @@ public interface SectionsRepository extends JpaRepository<Sections, Long> {
     Optional<Sections> findAllByCourseAndSemAndBranchCodeAndSection(String course, Integer sem, String branchCode, String section);
 
     @Query("SELECT s.sectionId FROM SECTIONS s WHERE s.course = :course AND s.sem = :sem AND s.branchCode = :branchCode AND s.section = :section")
-    Long findSectionIdByCourseAndSemAndBranchCodeAndSection(String course, Integer sem, String branchCode, String section);
+    Optional<Long> findSectionIdByCourseAndSemAndBranchCodeAndSection(String course, Integer sem, String branchCode, String section);
 }

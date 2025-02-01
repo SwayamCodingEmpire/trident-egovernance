@@ -4,10 +4,13 @@ import com.trident.egovernance.domains.SessionInitiationHandler.SessionInitiatio
 import com.trident.egovernance.domains.nsrHandler.services.DuesInitiationServiceImpl;
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.exceptions.DatabaseException;
+import com.trident.egovernance.exceptions.RecordAlreadyExistsException;
+import com.trident.egovernance.exceptions.RecordNotFoundException;
 import com.trident.egovernance.global.entities.permanentDB.FeeTypes;
 import com.trident.egovernance.global.entities.permanentDB.Sessions;
 import com.trident.egovernance.global.helpers.BooleanString;
 import com.trident.egovernance.global.helpers.HostelChoice;
+import com.trident.egovernance.global.helpers.SessionIdId;
 import com.trident.egovernance.global.repositories.permanentDB.*;
 import com.trident.egovernance.global.services.MasterTableServicesImpl;
 import jakarta.persistence.EntityManager;
@@ -19,6 +22,8 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -64,7 +69,7 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
         this.duesDetailsReInitiationServiceImpl = duesDetailsReInitiationServiceImpl;
     }
 
-    public List<StudentOnlyDTO> getStudentsForPromotion(SessionInitiationDTO sessionInitiationDTO) {
+    public List<StudentCourse> getStudentsForPromotion(SessionInitiationDTO sessionInitiationDTO) {
         return studentRepository.findAllByAdmissionYearAndCourseAndCurrentYearAndStudentType(sessionInitiationDTO.admYear(), sessionInitiationDTO.course(), sessionInitiationDTO.regdYear(), sessionInitiationDTO.studentType());
 
     }
@@ -72,6 +77,11 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
     @Transactional
     public Boolean initiateNewSession(SessionInitiationData sessionInitiationData){
         try{
+            Sessions sessions = sessionsRepository.findById(new SessionIdId(sessionInitiationData.sessionId(), sessionInitiationData.course().getDisplayName(), sessionInitiationData.currentYear(), sessionInitiationData.admYear(), sessionInitiationData.studentType().getEnumName())).orElseThrow(()-> new RecordNotFoundException("Session Not Found"));
+            Sessions savedSessions = sessionsRepository.saveAndFlush(new Sessions(sessionInitiationData.sessionId(), Date.valueOf(LocalDate.now()), null, sessionInitiationData.course().getDisplayName(), sessionInitiationData.currentYear()+1, sessionInitiationData.prevSessionId(), sessionInitiationData.admYear(), sessionInitiationData.studentType().getEnumName()));
+            if(savedSessions == null){
+                throw new DatabaseException("Session Not Found");
+            }
             logger.info(sessionInitiationData.toString());
             Set<String> regdNos = sessionInitiationData.regdNos();
             Boolean transportbackUp = transportBackupServiceimpl.transferToOldTransport(regdNos);
@@ -97,6 +107,13 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
     @Transactional(propagation = Propagation.REQUIRED)
     public boolean promoteStudent(SessionInitiationData sessionInitiationData){
         try {
+            if(!masterTableServicesImpl.endSession(new Date(System.currentTimeMillis()), sessionInitiationData.prevSessionId(), sessionInitiationData.course(), sessionInitiationData.currentYear(), sessionInitiationData.studentType(), sessionInitiationData.admYear())){
+                throw new RuntimeException("Session Ending Failed");
+            }
+            Sessions sessions = createNewSession(sessionInitiationData);
+            if(sessions == null){
+                throw new RuntimeException("Session could not be created");
+            }
             Set<FeeCollectionDTOWithRegdNo> feeCollectionDTOWithRegdNos = feeCollectionRepository.findAllByMrDetails_ParticularsAndSessionIdNew("HOSTEL ADVANCE", sessionInitiationData.prevSessionId(), sessionInitiationData.regdNos());
 
             Set<String> hostelNotOpted = new HashSet<>(sessionInitiationData.regdNos());
@@ -135,24 +152,19 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
             return duesDetailsReInitiationServiceImpl.reInitiateDuesDetails(duesDetailsInitiationDTOS,feeCollectionDTOWithRegdNos);
         }catch (Exception e){
             logger.error(e.toString());
-            return false;
+            throw new RuntimeException("Session promotion failed");
         }
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     public Sessions createNewSession(SessionInitiationData sessionInitiationData) {
         try{
-            int admissionYear = masterTableServicesImpl.getAdmissionYearFromSession(sessionInitiationData.sessionId(), sessionInitiationData.course(), sessionInitiationData.currentYear(), sessionInitiationData.studentType());
-            return sessionsRepository.save(new Sessions(
-                    sessionInitiationData.sessionId(),
-                    sessionInitiationData.startDate(),
-                    null,
-                    sessionInitiationData.course().getDisplayName(),
-                    sessionInitiationData.currentYear() + 1,
-                    sessionInitiationData.prevSessionId(),
-                    sessionInitiationData.admYear(),
-                    sessionInitiationData.studentType().name()
-            ));
+            if(sessionsRepository.existsById(new SessionIdId(sessionInitiationData.sessionId(), sessionInitiationData.course().getDisplayName(), sessionInitiationData.currentYear(), sessionInitiationData.admYear(), sessionInitiationData.studentType().getEnumName()))){
+                throw new RecordAlreadyExistsException("The session already exists");
+            }
+            Sessions newSession = new Sessions(new Date(System.currentTimeMillis()), sessionInitiationData.sessionId(), sessionInitiationData.course().getDisplayName(), sessionInitiationData.currentYear()+1, sessionInitiationData.prevSessionId(), sessionInitiationData.admYear(), sessionInitiationData.studentType().getEnumName());
+            return sessionsRepository.saveAndFlush(newSession);
         }catch (Exception e){
             logger.error(e.toString());
             throw new DatabaseException("Could not create new session");

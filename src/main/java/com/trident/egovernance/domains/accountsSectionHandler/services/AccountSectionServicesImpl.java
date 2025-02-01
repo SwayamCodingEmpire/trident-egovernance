@@ -268,6 +268,7 @@ public class AccountSectionServicesImpl implements AccountSectionService {
     @Override
     public Boolean addToAlterQueue(AlterFeeCollection feeCollection) {
         try{
+            feeCollection.setRefNo(feeCollection.getRefNo() == null ? -1L : feeCollection.getRefNo());
             alterFeeCollectionRepository.save(feeCollection);
             return true;
         }catch(Exception e){
@@ -277,7 +278,6 @@ public class AccountSectionServicesImpl implements AccountSectionService {
 
     @Override
     public ExcessFeeStudentData findStudentsWithExcessFee(String regdNo) {
-        logger.info("findStudentsWithExcessFee");
         if(!studentRepository.existsById(regdNo)){
             throw new RecordNotFoundException("Invalid Registration No");
         }

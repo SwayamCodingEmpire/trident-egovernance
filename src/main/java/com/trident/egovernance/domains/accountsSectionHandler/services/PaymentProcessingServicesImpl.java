@@ -19,6 +19,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -139,7 +140,7 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
     }
 
     @Override
-    public MoneyReceipt processPaymentInterface(FeeCollection feeCollection, String regdNo, boolean isUpdate) {
+    public MoneyReceipt processPaymentInterface(FeeCollection feeCollection, String regdNo, String graphToken, boolean isUpdate, Long oldMrNo) {
         try{
             String paymentReceiver = miscellaniousServices.getUserJobInformation().getLeft().name();
             if(feeCollectionRepository.existsById(feeCollection.getMrNo())){
@@ -165,7 +166,19 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
                         processedPayment.getRight().studentName(),
                         processedPayment.getLeft().getPaymentDuesDetails().totalPaid(),
                         "8888888888",
-                        new PDFObject(studentRepository.findBasicStudentData(regdNo), moneyReceipt,url,paymentReceiver));
+                        new PDFObject(studentRepository.findBasicStudentData(regdNo), moneyReceipt,url,paymentReceiver),
+                        graphToken);
+            }
+            else{
+                emailSenderServiceImpl.sendPaymentReceiptEditEmail(
+                        processedPayment.getRight().email(),
+                        processedPayment.getLeft().getMrNo(),
+                        processedPayment.getRight().studentName(),
+                        processedPayment.getLeft().getPaymentDuesDetails().totalPaid(),
+                        "8888888888",
+                        new PDFObject(studentRepository.findBasicStudentData(regdNo), moneyReceipt,url,paymentReceiver),
+                        graphToken,
+                        oldMrNo);
             }
             logger.info("The url is: " + url);
             logger.info("Sending email");
@@ -177,11 +190,19 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
     }
 
     @Transactional
+    public MoneyReceipt acceptPaymentEditRequest(AlterFeeCollection alterFeeCollection, String oboToken){
+        logger.info("acceptPaymentEditRequest");
+        FeeCollection feeCollection = new FeeCollection(alterFeeCollection);
+        return updateFeesCollection(feeCollection, oboToken);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
     @Override
-    public MoneyReceipt updateFeesCollection(FeeCollection feeCollection) {
+    public MoneyReceipt updateFeesCollection(FeeCollection feeCollection, String oboToken) {
         FeeCollection feeCollection1 = feeCollectionRepository.findByMrNo(feeCollection.getMrNo()).orElseThrow(() -> new InvalidInputsException("Invalid Money Receipt Number"));
+        Long oldMrNo = feeCollection1.getMrNo();
         if (feeCollectionTransactionServices.deleteFeeCollectionRecord(feeCollection1) > 0) {
-            if (feeCollection.getFeeProcessingMode() == null) {
+            if (feeCollection.getFeeProcessingMode().equals(FeeProcessingMode.NA)) {
                 return processOtherFessPaymentInterface(
                         new OtherFeesPayment(
                                 feeCollection.getMrNo(),
@@ -192,11 +213,12 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
                                 mapperServiceImpl.convertToMrDetailsDTOSet(feeCollection.getMrDetails())
                         ),
                         feeCollection1.getStudent().getRegdNo(),
-                        true);
-            } else if (feeCollection.getFeeProcessingMode().equals(FeeProcessingMode.AUTO)) {
-                return processPaymentAutoMode(feeCollection, feeCollection1.getStudent().getRegdNo()).getLeft();
-            } else {
-                return processPaymentNonAutoModes(feeCollection, feeCollection1.getStudent().getRegdNo()).getLeft();
+                        true,
+                        oboToken,
+                        oldMrNo);
+            }
+            else {
+                return processPaymentInterface(feeCollection, feeCollection1.getStudent().getRegdNo(), oboToken, true, oldMrNo);
             }
         } else {
             throw new RecordNotFoundException("Invalid Fee Collection");
@@ -215,7 +237,7 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
     }
 
     @Override
-    public MoneyReceipt processOtherFessPaymentInterface(OtherFeesPayment otherFeesPayment, String regdNo, boolean isUpdate) {
+    public MoneyReceipt processOtherFessPaymentInterface(OtherFeesPayment otherFeesPayment, String regdNo, boolean isUpdate, String graphToken, Long oldMrNo) {
         try{
             BigDecimal amountPaid = otherFeesPayment.feeCollection().collectedFee();
             String paymentReceiver = miscellaniousServices.getUserJobInformation().getLeft().name();
@@ -236,7 +258,19 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
                         processedPayment.getRight().studentName(),
                         amountPaid,
                         "8888888888",
-                        new PDFObject(studentRepository.findBasicStudentData(regdNo), moneyReceipt,url,miscellaniousServices.getUserJobInformation().getLeft().name()));
+                        new PDFObject(studentRepository.findBasicStudentData(regdNo), moneyReceipt,url,miscellaniousServices.getUserJobInformation().getLeft().name()),
+                        graphToken);
+            }
+            else{
+                emailSenderServiceImpl.sendPaymentReceiptEditEmail(
+                        processedPayment.getRight().email(),
+                        processedPayment.getLeft().getMrNo(),
+                        processedPayment.getRight().studentName(),
+                        amountPaid,
+                        "8888888888",
+                        new PDFObject(studentRepository.findBasicStudentData(regdNo), moneyReceipt,url,miscellaniousServices.getUserJobInformation().getLeft().name()),
+                        graphToken,
+                        oldMrNo);
             }
             return moneyReceipt;
         } catch (Exception e) {

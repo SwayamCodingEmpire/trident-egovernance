@@ -63,5 +63,24 @@ public class FeeCollection {
     public FeeCollection(OtherFeeCollection otherFeeCollection) {
         this.collectedFee = otherFeeCollection.collectedFee();
         this.paymentMode = otherFeeCollection.paymentMode();
+        this.feeProcessingMode = FeeProcessingMode.NA;
+    }
+
+    public FeeCollection(AlterFeeCollection alterFeeCollection) {
+        this.mrNo = alterFeeCollection.getMrNo();
+        this.collectedFee = alterFeeCollection.getCollectedFee();
+        this.paymentMode = alterFeeCollection.getPaymentMode();
+        this.feeProcessingMode = alterFeeCollection.getFeeProcessingMode();
+        if(this.paymentMode.equals(PaymentMode.DD)){
+            this.ddNo = alterFeeCollection.getDdNo();
+            this.ddDate = alterFeeCollection.getDdDate();
+            this.ddBank = alterFeeCollection.getDdBank();
+        }
+        this.paymentDate = alterFeeCollection.getPaymentDate();
+        this.paymentReceiver = alterFeeCollection.getPaymentReceiver();
+        this.feeProcessingMode = alterFeeCollection.getFeeProcessingMode();
+        if(this.feeProcessingMode.equals(FeeProcessingMode.NA)){
+            mrDetails = alterFeeCollection.getMrDetails();
+        }
     }
 }

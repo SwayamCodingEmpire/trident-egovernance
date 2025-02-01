@@ -22,6 +22,7 @@ public interface DuesDetailsRepository extends JpaRepository<DuesDetails, DuesDe
     List<DuesDetails> findAllByRegdNoOrderByDeductionOrder(String regdNo);
     List<DuesDetails> findAllByRegdNoIn(Set<String> regdNos);
     @Modifying
+    @Query("DELETE FROM DUESDETAIL d WHERE d.regdNo IN :regdNos")
     long deleteAllByRegdNoIn(Set<String> regdNos);
 
     @Query("SELECT SUM(d.amountDue) FROM DUESDETAIL d")

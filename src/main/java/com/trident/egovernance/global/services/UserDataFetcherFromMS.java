@@ -81,6 +81,7 @@ public class UserDataFetcherFromMS {
                 .header("Authorization","Bearer "+basicMSUserDto.appToken())
                 .retrieve()
                 .bodyToMono(UserJobInformationDto.class)
+
                 .block();
     }
 }

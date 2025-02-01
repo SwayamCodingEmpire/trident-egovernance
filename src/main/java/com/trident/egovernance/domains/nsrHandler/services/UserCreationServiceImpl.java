@@ -33,7 +33,7 @@ public class UserCreationServiceImpl implements UserCreationService {
 
 
     @Override
-    public String createUser(String displayName, String jobTitle, String department, String employeeId, String password, String email, long yop) {
+    public String createUser(String displayName, String jobTitle, String department, String employeeId, String password, String email, long yop, String jeeApplicationNo) {
         String appToken = appBearerTokenService.getAppBearerToken("defaultKey");
 
         String userPrincipalName = generateUserPrincipalName(displayName,department, yop);
@@ -42,7 +42,7 @@ public class UserCreationServiceImpl implements UserCreationService {
         logger.info("Creating user using user principal: " + userPrincipalName);
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("accountEnabled", true);
-        requestBody.put("displayName", displayName);
+        requestBody.put("displayName", displayName+"("+jeeApplicationNo+")");
         requestBody.put("mailNickname", userPrincipalName.split("@")[0]);
         requestBody.put("jobTitle", jobTitle);
         requestBody.put("employeeId", employeeId);
@@ -99,13 +99,21 @@ public class UserCreationServiceImpl implements UserCreationService {
 
         // Combine parts to form UPN
         return lastName.isEmpty()
-                ? String.format("%s.%d@codingEmpire.onmicrosoft.com", firstName.replace(" ", ""), yearOfPassing)
+                ? String.format("%s.%d@tridentbbsr.onmicrosoft.com", firstName.replace(" ", ""), yearOfPassing)
                 : String.format(
-                "%s.%s.%s%d@codingEmpire.onmicrosoft.com",
+                "%s.%s.%s%d@tridentbbsr.onmicrosoft.com",
                 firstName.replace(" ", ""),
                 lastName,
                 branch.toLowerCase(),
                 yearOfPassing);
+//        return lastName.isEmpty()
+//                ? String.format("%s.%d@codingEmpire.onmicrosoft.com", firstName.replace(" ", ""), yearOfPassing)
+//                : String.format(
+//                "%s.%s.%s%d@codingEmpire.onmicrosoft.com",
+//                firstName.replace(" ", ""),
+//                lastName,
+//                branch.toLowerCase(),
+//                yearOfPassing);
     }
 
     @Async

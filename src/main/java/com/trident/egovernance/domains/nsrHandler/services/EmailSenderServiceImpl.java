@@ -1,10 +1,7 @@
 package com.trident.egovernance.domains.nsrHandler.services;
 
 import com.trident.egovernance.dto.*;
-import com.trident.egovernance.global.services.AppBearerTokenService;
-import com.trident.egovernance.global.services.MiscellaniousServices;
-import com.trident.egovernance.global.services.MoneyReceiptPDFGenerator;
-import com.trident.egovernance.global.services.PDFGenerationService;
+import com.trident.egovernance.global.services.*;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
@@ -40,8 +37,9 @@ public class EmailSenderServiceImpl {
     private final PDFGenerationService pdfGenerationService;
     private final AppBearerTokenService appBearerTokenService;
     private final MiscellaniousServices miscellaniousServices;
+    private final MicrosoftGraphService microsoftGraphService;
 
-    public EmailSenderServiceImpl(MoneyReceiptPDFGenerator moneyReceiptPDFGenerator, JavaMailSender mailSender, PDFGenerationService pdfGenerationService, AppBearerTokenService appBearerTokenService, MiscellaniousServices miscellaniousServices) {
+    public EmailSenderServiceImpl(MoneyReceiptPDFGenerator moneyReceiptPDFGenerator, JavaMailSender mailSender, PDFGenerationService pdfGenerationService, AppBearerTokenService appBearerTokenService, MiscellaniousServices miscellaniousServices, MicrosoftGraphService microsoftGraphService) {
         this.webClientMailer = WebClient.builder().baseUrl("https://graph.microsoft.com/v1.0")
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
@@ -50,6 +48,7 @@ public class EmailSenderServiceImpl {
         this.pdfGenerationService = pdfGenerationService;
         this.appBearerTokenService = appBearerTokenService;
         this.miscellaniousServices = miscellaniousServices;
+        this.microsoftGraphService = microsoftGraphService;
     }
 
     @Async
@@ -112,8 +111,8 @@ public class EmailSenderServiceImpl {
     }
 
     @Async
-    public CompletableFuture<Void> sendPaymentReceiptEmail(
-            String recipientEmail, Long mrNumber, String name, BigDecimal amountPaid, String supportPhoneNumber, PDFObject pdfObject)
+    public CompletableFuture<Void> sendPaymentReceiptEditEmail(
+            String recipientEmail, Long mrNumber, String name, BigDecimal amountPaid, String supportPhoneNumber, PDFObject pdfObject, String graphToken, Long oldMrNo)
             throws MessagingException, IOException {
 //        JwtAuthenticationToken authentication = (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
 //        Jwt jwt = authentication.getToken();
@@ -125,13 +124,13 @@ public class EmailSenderServiceImpl {
         logger.info("receiptPdfBytes: " + receiptPdfBytes);
         logger.info("Generated PDF : {}", LocalTime.now());
         // Create a MIME message
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-        // Set sender and recipient
-        helper.setFrom("mohantyswayam2001@gmail.com");
-        helper.setTo("elitecracker25@gmail.com");
-        helper.setSubject("Payment Receipt");
+//        MimeMessage message = mailSender.createMimeMessage();
+//        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+//
+//        // Set sender and recipient
+//        helper.setFrom("mohantyswayam2001@gmail.com");
+//        helper.setTo("elitecracker25@gmail.com");
+//        helper.setSubject("Payment Receipt");
 
         // Email HTML content with dynamic data
         String emailContent = "<!DOCTYPE html>" +
@@ -155,7 +154,91 @@ public class EmailSenderServiceImpl {
                 ".email-container {padding: 0.5rem; margin: 2rem auto;}" +
                 "table {font-size: 0.9rem;}" +
                 "th, td {padding: 0.8rem;}" +
-                ".logo-container img {width: 6rem; height: 2rem;}" +
+                ".logo-container img {width: 6rem; height: 6rem;}" +
+                "h2 {font-size: 1.5rem;}" +
+                "p {font-size: 0.9rem;}" +
+                "}" +
+                "</style>" +
+                "</head>" +
+                "<body>" +
+                "<div class='email-container'>" +
+                "<div class='logo-container'>" +
+                "<img src="+"https://tridentpublicdata.s3.ap-south-1.amazonaws.com/logos/tat-logo.jpg"+" alt='Logo'>" +
+                "</div>" +
+                "<h2>Payment Receipt</h2>" +
+                "<p>Dear " + name + ",</p>" +
+                "<p>Your previous money receipt with Money Receipt No : " + oldMrNo + " has been cancelled. Below are the details of your transaction processed with new money receipt No :</p>" +
+                "<table>" +
+                "<tr><th>Details</th><th>Information</th></tr>" +
+                "<tr><td>MR Number</td><td>" + mrNumber + "</td></tr>" +
+                "<tr><td>Name</td><td>" + name + "</td></tr>" +
+                "<tr><td>Amount Paid</td><td>₹" + amountPaid + "</td></tr>" +
+                "</table>" +
+                "<p>Your payment receipt is attached for your reference.</p>" +
+                "<p>If you have any questions or concerns, feel free to contact our support team at <a href='tel:" + supportPhoneNumber + "'>" + supportPhoneNumber + "</a>.</p>" +
+                "<p>Best Regards,<br>Accounts Department<br>Trident Group of Institutions</p>" +
+                "</div>" +
+                "</body>" +
+                "</html>";
+
+
+        // Set the email content
+//        helper.setText(emailContent, true);
+        microsoftGraphService.sendEmailWithAttachment("elitecracker25@gmail.com",mrNumber + " : Trident Payment Receipt" ,emailContent, receiptPdfBytes, graphToken);
+//
+//        // Attach the PDF receipt
+//        helper.addAttachment("Payment_Receipt.pdf", new ByteArrayResource(receiptPdfBytes));
+//
+//        // Send the email
+//        mailSender.send(message);
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Async
+    public CompletableFuture<Void> sendPaymentReceiptEmail(
+            String recipientEmail, Long mrNumber, String name, BigDecimal amountPaid, String supportPhoneNumber, PDFObject pdfObject, String graphToken)
+            throws MessagingException, IOException {
+//        JwtAuthenticationToken authentication = (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+//        Jwt jwt = authentication.getToken();
+//        Jwt jwts = (Jwt)(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+//        Map<String,Object> claims = jwts.getClaims();
+        byte[] receiptPdfBytes = pdfGenerationService.generatePdf(pdfObject);
+
+        logger.info("Generated receipt pdf bytes");
+        logger.info("Generated PDF : {}", LocalTime.now());
+        // Create a MIME message
+//        MimeMessage message = mailSender.createMimeMessage();
+//        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+//
+//        // Set sender and recipient
+//        helper.setFrom("mohantyswayam2001@gmail.com");
+//        helper.setTo("elitecracker25@gmail.com");
+//        helper.setSubject("Payment Receipt");
+
+        // Email HTML content with dynamic data
+        String emailContent = "<!DOCTYPE html>" +
+                "<html>" +
+                "<head>" +
+                "<title>Payment Receipt</title>" +
+                "<style>" +
+                "body {font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #121212; color: #ffffff;}" +
+                ".email-container {max-width: 35rem; margin: 5rem auto; background-color: #1e1e1e; border: 0.3rem solid #333333; padding: 1rem; border-radius: 8px;}" +
+                ".logo-container {text-align: center; margin-bottom: 1rem;}" +
+                ".logo-container img {width: 7rem; height: 2.5rem; object-fit: cover; border-radius: 0.5rem;}" +
+                "h2 {color: #00aaff; text-align: center;}" +
+                "p {font-size: 1rem; color: #cccccc;}" +
+                "table {width: 100%; border-collapse: collapse; margin: 1rem 0;}" +
+                "th, td {padding: 1rem; border: 0.1rem solid #444444; text-align: left;}" +
+                "th {background-color: #333333; color: #00aaff;}" +
+                "td {background-color: #1e1e1e; color: #cccccc;}" +
+                "a {color: #00aaff; text-decoration: none;}" +
+                "a:hover {text-decoration: underline;}" +
+                "@media only screen and (max-width: 600px) {" +
+                ".email-container {padding: 0.5rem; margin: 2rem auto;}" +
+                "table {font-size: 0.9rem;}" +
+                "th, td {padding: 0.8rem;}" +
+                ".logo-container img {width: 6rem; height: 6rem;}" +
                 "h2 {font-size: 1.5rem;}" +
                 "p {font-size: 0.9rem;}" +
                 "}" +
@@ -184,13 +267,14 @@ public class EmailSenderServiceImpl {
 
 
         // Set the email content
-        helper.setText(emailContent, true);
-
-        // Attach the PDF receipt
-        helper.addAttachment("Payment_Receipt.pdf", new ByteArrayResource(receiptPdfBytes));
-
-        // Send the email
-        mailSender.send(message);
+//        helper.setText(emailContent, true);
+        microsoftGraphService.sendEmailWithAttachment("elitecracker25@gmail.com",mrNumber + " : Trident Payment Receipt" ,emailContent, receiptPdfBytes, graphToken);
+//
+//        // Attach the PDF receipt
+//        helper.addAttachment("Payment_Receipt.pdf", new ByteArrayResource(receiptPdfBytes));
+//
+//        // Send the email
+//        mailSender.send(message);
 
         return CompletableFuture.completedFuture(null);
     }

@@ -43,20 +43,21 @@ public class DuesDetailsReInitiationServiceImpl {
             logger.info("Starting re-initiation of dues details for students");
             List<DuesDetails> allDuesDetails = new ArrayList<>();
 
-            List<Fees> fees = masterTableServicesImpl.getFeesByBatchIdAndRegdYear(students.getFirst().batchId(), students.getFirst().currentYear());
-            logger.info("Fees fetched for student {}: {}", students.getFirst().regdNo(), fees);
-
-            Set<String> descriptions = fees.stream()
-                    .map(Fees::getDescription)
-                    .collect(Collectors.toCollection(TreeSet::new));
-
-            Map<String, StandardDeductionFormat> deductionFormatMap = masterTableServicesImpl.getStandardDeductionformatByDescriptions(descriptions)
-                    .stream()
-                    .collect(Collectors.toMap(StandardDeductionFormat::getDescription, standardDeductionFormat -> standardDeductionFormat));
-
+            logger.info("Batch Id {} , Current Year {}", students.getFirst().batchId(), students.getFirst().currentYear());
 
             for (DuesDetailsInitiationDTO student : students) {
                 logger.info("Processing student with registration number: {}", student.regdNo());
+                List<Fees> fees = masterTableServicesImpl.getFeesByBatchIdAndRegdYear(students.getFirst().batchId(), students.getFirst().currentYear());
+                logger.info("Fees fetched for student {}: {}", students.getFirst().regdNo(), fees);
+
+                Set<String> descriptions = fees.stream()
+                        .map(Fees::getDescription)
+                        .collect(Collectors.toCollection(TreeSet::new));
+
+                Map<String, StandardDeductionFormat> deductionFormatMap = masterTableServicesImpl.getStandardDeductionformatByDescriptions(descriptions)
+                        .stream()
+                        .collect(Collectors.toMap(StandardDeductionFormat::getDescription, standardDeductionFormat -> standardDeductionFormat));
+
 
                 // Fetch fees for the student's batch and current year
 

@@ -36,6 +36,9 @@ public class Sections {
     @Column(name = "SEM", precision = 4)
     private Integer sem;
 
+    @Column(name = "SESSIONID", length = 20, nullable = false)
+    private String sessionId;
+
 
     // Foreign key relationship to "Branch" entity
     @ManyToOne
@@ -43,8 +46,10 @@ public class Sections {
             @JoinColumn(name = "BRANCHCODE", referencedColumnName = "BRANCHCODE", insertable = false, updatable = false),
             @JoinColumn(name = "COURSE", referencedColumnName = "COURSE", insertable = false, updatable = false)
     })
+    @ToString.Exclude
     private Branch branch;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "sections", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Roll_Sheet> rollSheets;
 
@@ -53,12 +58,6 @@ public class Sections {
         this.course = sectionFetcher.course().getDisplayName();
         this.section = sectionFetcher.section();
         this.sem = sectionFetcher.sem();
-        List<Roll_Sheet> newStudentSectionData = new ArrayList<>();
-        Roll_Sheet rollSheet;
-        for(StudentSectionData studentSectionData : sectionFetcher.studentSectionData()) {
-            rollSheet = new Roll_Sheet(studentSectionData);
-            newStudentSectionData.add(rollSheet);
-        }
-        this.rollSheets = newStudentSectionData;
+        this.sessionId = sectionFetcher.sessionId();
     }
 }

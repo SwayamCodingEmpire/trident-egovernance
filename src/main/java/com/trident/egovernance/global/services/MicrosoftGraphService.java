@@ -1,8 +1,7 @@
 package com.trident.egovernance.global.services;
 
 
-import com.trident.egovernance.dto.ApiResponse;
-import com.trident.egovernance.dto.ObjectId;
+import com.trident.egovernance.dto.*;
 import com.trident.egovernance.exceptions.RecordNotFoundException;
 import com.trident.egovernance.global.entities.views.StInRoll;
 import com.trident.egovernance.global.repositories.permanentDB.StudentRepository;
@@ -10,6 +9,8 @@ import com.trident.egovernance.global.repositories.views.StInRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -19,7 +20,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
 import java.io.File;
+import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class MicrosoftGraphService {
@@ -160,6 +163,58 @@ public class MicrosoftGraphService {
                 .then();  // Return Mono<Void> to indicate the operation is complete
     }
 
-    public void callServer(String number) {
+    public void sendEmailWithAttachment(String to, String subject, String htmlContent,
+                                              byte[] pdfBytes, String accessToken) {
+        // Create email attachment
+        Message message = new Message(
+                subject,
+                new Body("HTML", htmlContent),
+                List.of(new Recipient(new EmailAddress(to))),
+                pdfBytes != null ? List.of(
+                        new Attachment(
+                                "#microsoft.graph.fileAttachment",
+                                "Payment_Receipt.pdf",
+                                "application/pdf",
+                                Base64.getEncoder().encodeToString(pdfBytes)
+                        )
+                ) : List.of(),
+                "normal"
+        );
+
+        // Create the request body exactly matching required structure
+        Map<String, Object> requestBody = Map.of(
+                "message", message,
+                "saveToSentItems", true
+        );
+
+        webClientGraph
+                .post()
+                .uri("/me/sendMail")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(requestBody)
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, response ->
+                        response.bodyToMono(String.class)
+                                .flatMap(error -> Mono.error(new RuntimeException("Client error: " + error)))
+                )
+                .onStatus(HttpStatusCode::is5xxServerError, response ->
+                        response.bodyToMono(String.class)
+                                .flatMap(error -> Mono.error(new RuntimeException("Server error: " + error)))
+                )
+                .bodyToMono(Void.class)
+                .doOnSuccess(v -> logger.info("Email sent successfully"))
+                .doOnError(e -> logger.error("Failed to send email", e))
+                .block();
+    }
+
+    public byte[] getProfileImage(String oid){
+        return webClientGraph.get()
+                .uri("/users/"+oid+"/photo/$value")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + appBearerTokenService.getAppBearerToken("defaultKey"))
+                .accept(MediaType.IMAGE_JPEG) // Expect an image
+                .retrieve()
+                .bodyToMono(byte[].class)
+                .block();
     }
 }

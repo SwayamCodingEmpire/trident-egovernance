@@ -10,6 +10,7 @@ public record SectionFetcher(
         Integer sem,
         String section,
         String branchCode,
+        String sessionId,
         List<StudentSectionData> studentSectionData
 ) {
     public SectionFetcher(Sections sections, List<StudentSectionData> studentSectionData) {
@@ -18,6 +19,7 @@ public record SectionFetcher(
                 sections.getSem(),
                 sections.getSection(),
                 sections.getBranchCode(),
+                sections.getSessionId(),
                 studentSectionData
         );
     }

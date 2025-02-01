@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -37,29 +38,36 @@ public class CustomAuthorityAssignerFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(authentication instanceof JwtAuthenticationToken jwtAuth && authentication.isAuthenticated()){
-            String authorizationHeader = request.getHeader("Authorization");
-            String jwtToken = authorizationHeader.substring(7);
-            Jwt jwt = jwtAuth.getToken();
-            String appToken = appBearerTokenService.getAppBearerToken("defaultKey");
-            Jwt jwts = (Jwt)(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-            Map<String,Object> claims = jwts.getClaims();
-            BasicMSUserDto basicMSUserDto = new BasicMSUserDto(appToken,claims.get("preferred_username").toString(), claims.get("oid").toString());
-            UserJobInformationDto userJobInformationDto = userDataFetcherFromMS.fetchUserJobInformation(basicMSUserDto);
-            String roleJobTitle = "ROLE_" + userJobInformationDto.jobTitle().toUpperCase().replace(" ", "_");
-            Collection<GrantedAuthority> newAuthorities = List.of(
-                    new SimpleGrantedAuthority(roleJobTitle),
-                    new SimpleGrantedAuthority(userJobInformationDto.department()),
-                    new SimpleGrantedAuthority(userJobInformationDto.employeeId()),
-                    new SimpleGrantedAuthority(claims.get("name").toString()),
-                    new SimpleGrantedAuthority(claims.get("oid").toString()),
-                    new SimpleGrantedAuthority(jwtToken)
-            );
-            JwtAuthenticationToken newAuth = new JwtAuthenticationToken(jwt,newAuthorities);
-            SecurityContextHolder.getContext().setAuthentication(newAuth);
-            logger.info("The principal is {}",SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString());
+        try{
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication instanceof JwtAuthenticationToken jwtAuth && authentication.isAuthenticated()) {
+                String authorizationHeader = request.getHeader("Authorization");
+                String jwtToken = authorizationHeader.substring(7);
+                Jwt jwt = jwtAuth.getToken();
+                String appToken = appBearerTokenService.getAppBearerToken("defaultKey");
+                Jwt jwts = (Jwt) (SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+                Map<String, Object> claims = jwts.getClaims();
+                BasicMSUserDto basicMSUserDto = new BasicMSUserDto(appToken, claims.get("preferred_username").toString(), claims.get("oid").toString());
+                UserJobInformationDto userJobInformationDto = userDataFetcherFromMS.fetchUserJobInformation(basicMSUserDto);
+                logger.info(userJobInformationDto.toString());
+                String roleJobTitle = "ROLE_" + userJobInformationDto.jobTitle().toUpperCase().replace(" ", "_");
+                Collection<GrantedAuthority> newAuthorities = List.of(
+                        new SimpleGrantedAuthority(roleJobTitle),
+                        new SimpleGrantedAuthority(userJobInformationDto.department()),
+                        new SimpleGrantedAuthority(userJobInformationDto.employeeId()),
+                        new SimpleGrantedAuthority(claims.get("name").toString()),
+                        new SimpleGrantedAuthority(claims.get("oid").toString()),
+                        new SimpleGrantedAuthority(jwtToken)
+                );
+                JwtAuthenticationToken newAuth = new JwtAuthenticationToken(jwt, newAuthorities);
+                SecurityContextHolder.getContext().setAuthentication(newAuth);
+                logger.info("The principal is {}", SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString());
+            }
+            filterChain.doFilter(request, response);
+        }catch (Exception e){
+            logger.error(e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Unauthorized");
         }
-        filterChain.doFilter(request,response);
     }
 }

@@ -177,9 +177,9 @@ public class TestController {
         return ResponseEntity.ok(sessionUpdateService.updateTestTable1());
     }
 
-    @GetMapping("/get-student-test/{course}")
-    public ResponseEntity<List<Student_Test>> getStudentTest(@PathVariable Courses course){
-        List<Student_Test> st1 = studentTestRepository.findAllByCourse(course);
+    @GetMapping("/get-student-test/{course}/{branch}")
+    public ResponseEntity<List<Student_Test>> getStudentTest(@PathVariable Courses course, @PathVariable String branch){
+        List<Student_Test> st1 = studentTestRepository.findAllByCourse("240320056314",course, branch);
         List<Student_Test> output = new ArrayList<>();
         for(Student_Test st : st1){
             Student_Test st2 = new Student_Test(st);

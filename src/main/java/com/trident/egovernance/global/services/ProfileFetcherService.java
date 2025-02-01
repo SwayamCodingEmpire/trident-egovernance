@@ -28,7 +28,7 @@ public class ProfileFetcherService {
 
     @Cacheable(key = "#authentication.name", value = "profileDTO")
     public ProfileDTO getUserJobInformation(Authentication authentication){
-        logger.info("Running getUserJobInformation" + authentication.getName());
+        logger.info("Logged In by " + authentication.getName());
         if(authentication.isAuthenticated()){
             UserJobInformationDto userJobInformationDto = miscellaniousServices.getUserJobInformation().getLeft();
             if(userJobInformationDto.jobTitle().equals("STUDENT")){

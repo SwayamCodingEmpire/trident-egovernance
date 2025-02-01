@@ -1,5 +1,6 @@
 package com.trident.egovernance.domains.nsrHandler.services;
 
+import com.trident.egovernance.dto.BasicFeeBatchDetails;
 import com.trident.egovernance.dto.DuesDetailsInitiationDTO;
 import com.trident.egovernance.dto.NSRDto;
 import com.trident.egovernance.exceptions.RecordAlreadyExistsException;
@@ -12,6 +13,7 @@ import com.trident.egovernance.global.repositories.redisRepositories.NSRReposito
 import com.trident.egovernance.global.services.CourseFetchingServiceImpl;
 import com.trident.egovernance.global.services.MapperService;
 import com.trident.egovernance.global.services.MapperServiceImpl;
+import com.trident.egovernance.global.services.MiscellaniousServices;
 import jakarta.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,9 +48,10 @@ class NSRServiceImpl implements NSRService {
     private final String NUMSET = "0123456789";
     private final SecureRandom random = new SecureRandom();
     private final EmailSenderServiceImpl emailSenderServiceImpl;
+    private final MiscellaniousServices miscellaniousServices;
 
 
-    public NSRServiceImpl(UserCreationService userCreationService, DuesInitiationService duesInitiationServiceImpl, PlatformTransactionManager platformTransactionManager, MapperServiceImpl mapperService, CourseFetchingServiceImpl courseFetchingService, NSRRepository nsrRepository, StudentRepository studentRepository, EmailSenderServiceImpl emailSenderServiceImpl) {
+    public NSRServiceImpl(UserCreationService userCreationService, DuesInitiationService duesInitiationServiceImpl, PlatformTransactionManager platformTransactionManager, MapperServiceImpl mapperService, CourseFetchingServiceImpl courseFetchingService, NSRRepository nsrRepository, StudentRepository studentRepository, EmailSenderServiceImpl emailSenderServiceImpl, MiscellaniousServices miscellaniousServices, MiscellaniousServices miscellaniousServices1) {
         this.userCreationService = userCreationService;
         this.duesInitiationServiceImpl = duesInitiationServiceImpl;
         this.platformTransactionManager = platformTransactionManager;
@@ -57,6 +60,7 @@ class NSRServiceImpl implements NSRService {
         this.nsrRepository = nsrRepository;
         this.studentRepository = studentRepository;
         this.emailSenderServiceImpl = emailSenderServiceImpl;
+        this.miscellaniousServices = miscellaniousServices1;
     }
 
     @Override
@@ -112,11 +116,10 @@ class NSRServiceImpl implements NSRService {
     public Boolean saveToPermanentDatabase(String jeeApplicationNo){
 //        SharedStateAmongDueInitiationAndNSRService sharedState = new SharedStateAmongDueInitiationAndNSRService();
         NSR nsr = nsrRepository.findById(jeeApplicationNo).orElseThrow(() -> new RecordNotFoundException("Record not found"));
-        nsr.setBatchId(nsr.getCourse().getEnumName() + nsr.getAdmissionYear() + nsr.getBranchCode() + nsr.getStudentType());
+        nsr.setBatchId(miscellaniousServices.generateBatchId(new BasicFeeBatchDetails(Integer.valueOf(nsr.getAdmissionYear()), nsr.getCourse(), nsr.getBranchCode(), nsr.getStudentType())));
         nsr.setCurrentYear(((nsr.getStudentType().equals(StudentType.REGULAR))?1:2));
         logger.info("Batch ID : {}",nsr.getBatchId());
         logger.info("Fetched from Redis");
-        Boolean processDues = duesInitiationServiceImpl.initiateDuesDetails(new DuesDetailsInitiationDTO(nsr));
             logger.info("Fetching from Redis");
             Student student = mapperService.convertToStudent(nsr);
             student.setHostelier(nsr.getHostelOption());
@@ -175,6 +178,7 @@ class NSRServiceImpl implements NSRService {
             logger.info("Started saving to databse");
             logger.info("Student before saving : {} ",student);
             studentRepository.saveAndFlush(student);
+            Boolean processDues = duesInitiationServiceImpl.initiateDuesDetails(new DuesDetailsInitiationDTO(nsr));
             logger.info("Saved to database");
             String password = generateRandomPassword();
                 logger.info("Inside try block to process user creation");
@@ -185,8 +189,10 @@ class NSRServiceImpl implements NSRService {
                         student.getRegdNo(),
                         password,
                         student.getEmail(),
-                        student.getDegreeYop());
+                        student.getDegreeYop(),
+                        nsr.getJeeApplicationNo());
                 logger.info("Response for Microsoft : {}",response);
+                studentRepository.updateMsUserPrincipalName(student.getRegdNo(), response);
 //                userCreationService.setProfilePicture(nsr.getRegdNo(), response);
         try {
             emailSenderServiceImpl.sendTridentCredentialsEmail(response, password);

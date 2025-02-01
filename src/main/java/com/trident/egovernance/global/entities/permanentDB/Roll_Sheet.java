@@ -28,11 +28,8 @@ public class Roll_Sheet {
     @Column(name = "COLLEGEROLLNO", nullable = false)
     private int collegeRollNo;
 
-    @Column(name = "SESSIONID", length = 20, nullable = false)
-    private String sessionId;
-
-    @Column(name = "SECTIONID", nullable = false)
-    private Integer sectionId;
+//    @Column(name = "SECTIONID", nullable = false)
+//    private Integer sectionId;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REGDNO", insertable = false, updatable = false)

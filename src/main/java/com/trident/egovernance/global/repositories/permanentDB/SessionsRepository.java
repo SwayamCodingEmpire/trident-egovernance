@@ -26,8 +26,9 @@ public interface SessionsRepository extends JpaRepository<Sessions, SessionIdId>
             "WHERE s.sessionId = :sessionId AND " +
             "s.course = :course AND " +
             "s.regdYear = :regdyear AND " +
+            "s.admissionYear = :admissionYear AND " +
             "s.studentType = :studentType")
-    int updateSessionsForEndingSession(Date endDate, String sessionId, String course, int regdyear, String studentType);
+    int updateSessionsForEndingSession(Date endDate, String sessionId, String course, int regdyear, String studentType, int admissionYear);
 
     @Query("SELECT DISTINCT(s.sessionId) FROM SESSIONS s")
     Set<String> findAllSessionIds();
@@ -57,7 +58,15 @@ public interface SessionsRepository extends JpaRepository<Sessions, SessionIdId>
 //""")
 //    List<SessionWiseRecords> fetchSessionWiseStatistics(StudentStatus status);
 
+    @Query("SELECT s FROM SESSIONS s WHERE s.course = :course AND s.regdYear = :regdYear " +
+            "AND s.admissionYear = :admissionYear AND s.studentType = :studentType AND s.endDate IS NULL")
     Optional<Sessions> findByCourseAndRegdYearAndAdmissionYearAndStudentType(String course, int regdYear, int admissionYear, String studentType);
 
     List<Sessions> findAllByCourseOrderBySessionIdAscRegdYearAsc(String course);
+
+    @Query("SELECT DISTINCT s.sessionId FROM SESSIONS s WHERE s.course = :course AND s.regdYear = :regdYear AND s.endDate IS NULL")
+    List<String> findAllByCourseAndRegdyear(Integer regdYear, String course);
+
+    @Query("SELECT s FROM SESSIONS s WHERE s.regdYear <> :regdYear AND s.endDate IS NULL ORDER BY s.regdYear ASC")
+    List<Sessions> findAllByAndRegdYearEndDateIsNull(int regdYear);
 }

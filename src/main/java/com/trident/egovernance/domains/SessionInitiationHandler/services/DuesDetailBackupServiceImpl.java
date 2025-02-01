@@ -53,7 +53,7 @@ public class DuesDetailBackupServiceImpl {
             logger.info(oldDueDetails1.toString());
             logger.info(duesDetails1.toString());
             duesDetailsRepository.deleteAllByRegdNoIn(regdNos);
-            duesDetailsRepository.saveAll(duesDetails1);
+            duesDetailsRepository.saveAllAndFlush(duesDetails1);
             return true;
         }catch (Exception e){
 

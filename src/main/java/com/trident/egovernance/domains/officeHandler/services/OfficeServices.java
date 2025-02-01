@@ -38,6 +38,6 @@ public interface OfficeServices {
 
     List<StudentBasicDTO>  fetchStudentDataWithRollSheet(Courses course, String branch, Integer currentYear);
 
-    void initializeSection(SectionFetcher sectionFetcher, String mode);
+    Boolean initializeSection(SectionFetcher sectionFetcher, String mode);
     SectionFetcher getSectionList(String course, Integer sem, String branchCode, String section);
 }

@@ -11,6 +11,7 @@ import com.trident.egovernance.global.repositories.views.ResultsRepository;
 import com.trident.egovernance.global.repositories.views.SemesterResultRepository;
 import com.trident.egovernance.global.repositories.views.StudAttViewRepository;
 import com.trident.egovernance.global.services.MapperService;
+import com.trident.egovernance.global.services.MicrosoftGraphService;
 import com.trident.egovernance.global.services.MiscellaniousServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,8 +40,9 @@ public class StudentDashBoardsServiceImpl implements StudentDashBoardsService {
     private final SemesterResultRepository semesterResultRepository;
     private final StudentCareerRepository studentCareerRepository;
     private final StudAttViewRepository studAttViewRepository;
+    private final MicrosoftGraphService microsoftGraphService;
 
-    public StudentDashBoardsServiceImpl(MapperService mapperService, DuesDetailsRepository duesDetailsRepository, MiscellaniousServices miscellaniousServices, StudentRepository studentRepository, ResultsRepository resultsRepository, AttendanceRepository attendanceRepository, SemesterResultRepository semesterResultRepository, StudentCareerRepository studentCareerRepository, StudAttViewRepository studAttViewRepository) {
+    public StudentDashBoardsServiceImpl(MapperService mapperService, DuesDetailsRepository duesDetailsRepository, MiscellaniousServices miscellaniousServices, StudentRepository studentRepository, ResultsRepository resultsRepository, AttendanceRepository attendanceRepository, SemesterResultRepository semesterResultRepository, StudentCareerRepository studentCareerRepository, StudAttViewRepository studAttViewRepository, MicrosoftGraphService microsoftGraphService) {
         this.mapperService = mapperService;
         this.duesDetailsRepository = duesDetailsRepository;
         this.miscellaniousServices = miscellaniousServices;
@@ -52,13 +54,13 @@ public class StudentDashBoardsServiceImpl implements StudentDashBoardsService {
         this.executorService = Executors.newVirtualThreadPerTaskExecutor();
         this.attendanceRepository = attendanceRepository;
         this.studAttViewRepository = studAttViewRepository;
+        this.microsoftGraphService = microsoftGraphService;
     }
 
 
     public StudentProfileDTO getStudentProfile(UserJobInformationDto userJobInformationDto) {
         // Fetch user job information using the username from the claims
-
-
+        UserIdAndOriginalToken userIdAndOriginalToken = miscellaniousServices.getUserJobInformation().getRight();
         logger.info("Get student profile : {}", userJobInformationDto);
         // Fetch the student profile using employee ID
         Student student = studentRepository.findStudentProfileData(userJobInformationDto.employeeId());

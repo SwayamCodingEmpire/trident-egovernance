@@ -416,20 +416,34 @@ public class OfficeServicesImpl implements OfficeServices {
 
     @Override
     @Transactional
-    public void initializeSection(SectionFetcher sectionFetcher, String mode) {
+    public Boolean initializeSection(SectionFetcher sectionFetcher, String mode) {
         Long sectionId;
         if(mode.equals("create")){
             sectionId = sectionsRepository.getMaxId();
         }
         else if(mode.equals("update")){
-            sectionId = sectionsRepository.findSectionIdByCourseAndSemAndBranchCodeAndSection(sectionFetcher.course().getDisplayName(), sectionFetcher.sem(), sectionFetcher.branchCode(), sectionFetcher.section());
+            logger.info("Updating section");
+            sectionId = sectionsRepository.findSectionIdByCourseAndSemAndBranchCodeAndSection(sectionFetcher.course().getDisplayName(), sectionFetcher.sem(), sectionFetcher.branchCode(), sectionFetcher.section()).orElseThrow(() -> new RecordNotFoundException("Section Not Found"));
         }
         else{
             throw new InvalidInputsException("Invalid mode");
         }
         Sections sections = new Sections(sectionFetcher);
         sections.setSectionId(sectionId);
+
+        // Set Roll_Sheet entities
+        List<Roll_Sheet> newStudentSectionData = new ArrayList<>();
+        for (StudentSectionData studentSectionData : sectionFetcher.studentSectionData()) {
+            Roll_Sheet rollSheet = new Roll_Sheet(studentSectionData);
+            rollSheet.setSections(sections);  // Maintain bidirectional relationship
+            newStudentSectionData.add(rollSheet);
+        }
+        sections.setRollSheets(newStudentSectionData);
+
+        // Log and Save
+//        logger.info("Saving section: {}", sections);
         sectionsRepository.saveAndFlush(sections);
+        return true;
     }
 
     @Override

@@ -152,9 +152,9 @@ class NSRController {
     @Operation(summary = "Final Submit in multi step form of NSR")
     @PostMapping("/postByStudent/{jeeApplicationNo}")
     public ResponseEntity<Boolean> finalSubmit(@PathVariable("jeeApplicationNo") String jeeApplicationNo){
-        CustomUserDetails customUserDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        NSRDto nsrDto1 = mapperService.convertToNSRDto(customUserDetails.getNsr());
-//        NSRDto nsrDto1 = nsrService.getNSRDataByJeeApplicationNo(jeeApplicationNo);
+//        CustomUserDetails customUserDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        NSRDto nsrDto1 = mapperService.convertToNSRDto(customUserDetails.getNsr());
+        NSRDto nsrDto1 = nsrService.getNSRDataByJeeApplicationNo(jeeApplicationNo);
         if(nsrDto1.getJeeApplicationNo().compareTo(jeeApplicationNo)!=0){
             throw new AccessDeniedException("You are not allowed to post data for this application number");
         }

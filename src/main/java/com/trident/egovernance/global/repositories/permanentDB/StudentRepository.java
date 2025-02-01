@@ -35,7 +35,8 @@ public interface StudentRepository extends JpaRepository<Student, String> {
     List<DuesDetailsInitiationDTO> findByRegdNoIn(Set<String> regdNo);
 
     Long countAllByStatus(StudentStatus status);
-    List<StudentOnlyDTO> findAllByAdmissionYearAndCourseAndCurrentYearAndStudentType(String admissionYear, Courses course, Integer currentYear, StudentType studentType);
+    @Query
+    List<StudentCourse> findAllByAdmissionYearAndCourseAndCurrentYearAndStudentType(String admissionYear, Courses course, Integer currentYear, StudentType studentType);
     List<Student> findAllByCourseAndCurrentYear(Courses course, Integer currentYear);
     @Query("SELECT DISTINCT s FROM STUDENT s " +
     "LEFT JOIN FETCH STUDENT_ADMISSION_DETAILS " +
@@ -109,8 +110,9 @@ SELECT DISTINCT
             String oldRegdNo
     ) throws DataIntegrityViolationException, ConstraintViolationException, SQLException;
 
+    @Modifying
     @Query("UPDATE STUDENT s SET s.currentYear = s.currentYear+1 WHERE s.regdNo IN :regdNos")
-    int updateStudentCurrentYearByRegdNo(Set<String> regdNos);
+    void updateStudentCurrentYearByRegdNo(Set<String> regdNos);
 
     @Query("SELECT new com.trident.egovernance.dto.DuesDetailsInitiationDTO(s.regdNo, s.studentType, s.indortrng, s.plpoolm, s.studentAdmissionDetails.tfw, s.transport.transportOpted, s.hostel.hostelOption, s.hostel.hostelChoice, s.currentYear, s.course, s.batchId) FROM STUDENT s LEFT JOIN s.studentCareer LEFT JOIN s.studentAdmissionDetails LEFT JOIN s.transport LEFT JOIN s.hostel WHERE s.regdNo IN :regdNo")
     List<DuesDetailsInitiationDTO> findStudentByRegdNo(Set<String> regdNo);
@@ -272,5 +274,9 @@ SELECT DISTINCT
 
     @Query("SELECT new com.trident.egovernance.dto.StudentBasicDTO(s.regdNo, s.course, s.studentName, s.gender, s.branchCode, s.admissionYear, s.currentYear, s.email) FROM STUDENT s WHERE s.course = :course AND s.currentYear = :currentYear AND s.branchCode = :branchCode ORDER BY s.studentName")
     List<StudentBasicDTO> findStudentWithCourseAndCurrentYearAndBranchCode(Courses course, Integer currentYear, String branchCode);
+
+    @Modifying
+    @Query("UPDATE STUDENT S SET S.msUserPrincipalName = :msUserPrincipalName WHERE S.regdNo = :regdNo")
+    void updateMsUserPrincipalName(String regdNo, String msUserPrincipalName);
 }
 

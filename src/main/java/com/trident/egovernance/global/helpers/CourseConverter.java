@@ -12,8 +12,8 @@ public class CourseConverter implements AttributeConverter<Courses,String> {
 
     @Override
     public String convertToDatabaseColumn(Courses attribute) {
-        logger.info("Converting to database column");
         if(attribute==null){
+            logger.error("attribute is null");
             return null;
         }
         logger.info(attribute.toString());
@@ -23,8 +23,6 @@ public class CourseConverter implements AttributeConverter<Courses,String> {
 
     @Override
     public Courses convertToEntityAttribute(String dbData) {
-        logger.info("Converting to entity attribute");
-        logger.info(dbData);
         if (dbData == null || dbData.isEmpty()) {
             logger.info("dbData is null or empty");
             return null;
@@ -33,7 +31,6 @@ public class CourseConverter implements AttributeConverter<Courses,String> {
         if (course == null) {
             throw new IllegalArgumentException("Unknown value: " + dbData);
         }
-        logger.info(course.toString());
         return course;
     }
 }

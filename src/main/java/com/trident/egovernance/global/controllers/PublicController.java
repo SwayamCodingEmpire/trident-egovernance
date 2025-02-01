@@ -3,6 +3,7 @@ package com.trident.egovernance.global.controllers;
 import com.trident.egovernance.config.security.CustomUserDetails;
 import com.trident.egovernance.domains.accountsSectionHandler.services.FeeCollectionTransactionsServiceImpl;
 import com.trident.egovernance.dto.*;
+import com.trident.egovernance.global.helpers.Courses;
 import com.trident.egovernance.global.repositories.permanentDB.BranchRepository;
 import com.trident.egovernance.global.repositories.permanentDB.DuesDetailsRepository;
 import com.trident.egovernance.global.repositories.permanentDB.FeesRepository;
@@ -43,9 +44,10 @@ public class PublicController {
     private final URLService urlService;
     private final FeeCollectionTransactionsServiceImpl feeCollectionTransactionsServiceImpl;
     private final MicrosoftGraphService microsoftGraphService;
+    private final MasterTableServices masterTableServices;
 
     public PublicController(S3ServiceImpl s3Service, DuesDetailsRepository duesDetailsRepository, AppBearerTokenService appBearerTokenService, AuthenticationServiceImpl authenticationService, EntityManager entityManager, StudentRepository studentRepository, CustomJwtServiceImpl customJwtService,
-                            FeesRepository feesRepository, BranchRepository branchRepository, URLService urlService, FeeCollectionTransactionsServiceImpl feeCollectionTransactionsServiceImpl, MicrosoftGraphService microsoftGraphService) {
+                            FeesRepository feesRepository, BranchRepository branchRepository, URLService urlService, FeeCollectionTransactionsServiceImpl feeCollectionTransactionsServiceImpl, MicrosoftGraphService microsoftGraphService, MasterTableServices masterTableServices) {
         this.s3Service = s3Service;
         this.duesDetailsRepository = duesDetailsRepository;
         this.appBearerTokenService = appBearerTokenService;
@@ -61,6 +63,7 @@ public class PublicController {
                 .baseUrl("https://graph.microsoft.com/v1.0/users")
                 .build();
         this.microsoftGraphService = microsoftGraphService;
+        this.masterTableServices = masterTableServices;
     }
 
     @PostMapping("/login")
@@ -71,18 +74,18 @@ public class PublicController {
         return ResponseEntity.ok(new LoginResponse(customJwtService.generateToken(customUserDetails), customJwtService.getExpirationTime()));
     }
 
-    @GetMapping("/count")
-    public long count(){
-        return feesRepository.count();
-    }
-    @GetMapping("/view")
-    public ResponseEntity<List<CurrentSessionDto>> view(){
-        String sql = "SELECT SESSIONID " +
-                "FROM FEECDEMO.CURRENT_SESSION WHERE REGDNO = :regdNo";
-        Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("regdNo","REGD1234");
-        return query.getResultList().isEmpty() ? ResponseEntity.ok(null) : ResponseEntity.ok(query.getResultList());
-    }
+//    @GetMapping("/count")
+//    public long count(){
+//        return feesRepository.count();
+//    }
+//    @GetMapping("/view")
+//    public ResponseEntity<List<CurrentSessionDto>> view(){
+//        String sql = "SELECT SESSIONID " +
+//                "FROM FEECDEMO.CURRENT_SESSION WHERE REGDNO = :regdNo";
+//        Query query = entityManager.createNativeQuery(sql);
+//        query.setParameter("regdNo","REGD1234");
+//        return query.getResultList().isEmpty() ? ResponseEntity.ok(null) : ResponseEntity.ok(query.getResultList());
+//    }
 
     @GetMapping("/branches")
     public ResponseEntity<List<BranchGroup>> getAllBranches(){
@@ -98,34 +101,34 @@ public class PublicController {
         return branchGroups.isEmpty() ? ResponseEntity.ok(null) : ResponseEntity.ok(branchGroups);
     }
 
-    @PostMapping("/profile-test/{regdNo}")
-    public void setProfilePicture(@PathVariable("regdNo") String regdNo) {
-        String userId = "sweety.dash.csaiml2028@codingEmpire.onmicrosoft.com";
-        String appToken = appBearerTokenService.getAppBearerToken("defaultKey");
-        try {
-            String key = regdNo + "/" + regdNo + "-Passport-Photo";
-            logger.info(key);
-            byte[] profilePicture = s3Service.getFileAsBytes("nsrdocbucket",key);
-            logger.info(profilePicture.toString());
-            webClientGraph.put()
-                    .uri("/{userId}/photo/$value", userId)
-                    .header("Authorization", "Bearer " + appToken)
-                    .header("Content-Type", "image/jpeg")
-                    .bodyValue(profilePicture)
-                    .retrieve()
-                    .onStatus(HttpStatusCode::isError, response -> response.bodyToMono(String.class).flatMap(body -> {
-                        logger.error("Error setting profile picture: {}", body);
-                        return Mono.error(new RuntimeException("Failed to set profile picture"));
-                    }))
-                    .toBodilessEntity()
-                    .block();
-
-            logger.info("Profile picture set successfully for user ID: {}", userId);
-        } catch (Exception e) {
-            logger.error("Error setting profile picture for user ID: {}", userId, e);
-            throw new IllegalStateException("Error setting profile picture for user ID: " + userId, e);
-        }
-    }
+//    @PostMapping("/profile-test/{regdNo}")
+//    public void setProfilePicture(@PathVariable("regdNo") String regdNo) {
+//        String userId = "sweety.dash.csaiml2028@codingEmpire.onmicrosoft.com";
+//        String appToken = appBearerTokenService.getAppBearerToken("defaultKey");
+//        try {
+//            String key = regdNo + "/" + regdNo + "-Passport-Photo";
+//            logger.info(key);
+//            byte[] profilePicture = s3Service.getFileAsBytes("nsrdocbucket",key);
+//            logger.info(profilePicture.toString());
+//            webClientGraph.put()
+//                    .uri("/{userId}/photo/$value", userId)
+//                    .header("Authorization", "Bearer " + appToken)
+//                    .header("Content-Type", "image/jpeg")
+//                    .bodyValue(profilePicture)
+//                    .retrieve()
+//                    .onStatus(HttpStatusCode::isError, response -> response.bodyToMono(String.class).flatMap(body -> {
+//                        logger.error("Error setting profile picture: {}", body);
+//                        return Mono.error(new RuntimeException("Failed to set profile picture"));
+//                    }))
+//                    .toBodilessEntity()
+//                    .block();
+//
+//            logger.info("Profile picture set successfully for user ID: {}", userId);
+//        } catch (Exception e) {
+//            logger.error("Error setting profile picture for user ID: {}", userId, e);
+//            throw new IllegalStateException("Error setting profile picture for user ID: " + userId, e);
+//        }
+//    }
 
     @PostMapping("/resource")
     public ResponseEntity<MoneyReceipt> uploadFile(@RequestBody LoginResponse key) {
@@ -147,4 +150,10 @@ public class PublicController {
 //    public void printFileName() {
 //        microsoftGraphService.getAllFileNames();
 //    }
+
+    @GetMapping("/get-ongoing-sessions")
+    public ResponseEntity<List<String>> getSessions(@RequestParam("course")Courses course, @RequestParam("sem") Integer sem) {
+        Integer year = Math.ceilDivExact(sem,2);
+        return ResponseEntity.ok(masterTableServices.getSessionIdsByRegdyearAndCourse(year, course));
+    }
 }

@@ -45,6 +45,16 @@ public class MasterTableServicesImpl implements MasterTableServices {
         return feeTypesRepository.findAllBySemesterIn(sem);
     }
 
+    @Override
+    public List<String> getSessionIdsByRegdyearAndCourse(Integer regdYear, Courses course) {
+        return sessionsRepository.findAllByCourseAndRegdyear(regdYear, course.getDisplayName());
+    }
+
+    @Override
+    public List<Sessions> getOngoingSessionsData() {
+        return sessionsRepository.findAllByAndRegdYearEndDateIsNull(0);
+    }
+
 
     @Override
     public List<FeeTypesOnly> getFines() {
@@ -100,9 +110,11 @@ public class MasterTableServicesImpl implements MasterTableServices {
         }
     }
 
-    public boolean endSession(Date endDate, String sessionId, Courses course, int regdYear, StudentType studentType) {
+
+    @Override
+    public boolean endSession(Date endDate, String sessionId, Courses course, int regdYear, StudentType studentType, int admissionYear){
         try {
-            if (sessionsRepository.updateSessionsForEndingSession(endDate, sessionId, course.getDisplayName(), regdYear, studentType.getEnumName()) == 1) {
+            if (sessionsRepository.updateSessionsForEndingSession(endDate, sessionId, course.getDisplayName(), regdYear, studentType.getEnumName(), admissionYear) == 1) {
                 return true;
             } else {
                 return false;

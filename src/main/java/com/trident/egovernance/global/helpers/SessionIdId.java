@@ -15,6 +15,7 @@ public class SessionIdId implements Serializable {
     private String course;
     private int regdYear;
     private int admissionYear;
+    private String studentType;
     @Override
     public boolean equals(Object o){
         if(this==o){
@@ -24,11 +25,11 @@ public class SessionIdId implements Serializable {
             return false;
         }
         SessionIdId sessionIdId = (SessionIdId)o;
-        return course.equals(sessionIdId.course) && regdYear==sessionIdId.regdYear && admissionYear==sessionIdId.admissionYear && sessionId.equals(sessionIdId.sessionId);
+        return course.equals(sessionIdId.course) && regdYear==sessionIdId.regdYear && admissionYear==sessionIdId.admissionYear && sessionId.equals(sessionIdId.sessionId) && studentType.equals(sessionIdId.studentType);
     }
 
     @Override
     public int hashCode(){
-        return Objects.hash(course,regdYear,admissionYear, sessionId);
+        return Objects.hash(course,regdYear,admissionYear, sessionId, studentType);
     }
 }

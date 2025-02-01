@@ -206,6 +206,7 @@ public class MiscellaniousServicesImpl implements MiscellaniousServices {
                         authentication.getAuthorities().stream().toList();
 
                 if (!authorities.isEmpty() && authorities.size() > 0) {
+
                     // First authority is jobTitle with "ROLE_" prefix
                     return Pair.of(new UserJobInformationDto(jwt.getClaimAsString("name"), authorities.get(0).getAuthority().substring(5), authorities.get(1).getAuthority(), authorities.get(2).getAuthority(),authorities.get(3).getAuthority()),new UserIdAndOriginalToken(authorities.get(4).getAuthority(), authorities.get(5).getAuthority()));
                 }

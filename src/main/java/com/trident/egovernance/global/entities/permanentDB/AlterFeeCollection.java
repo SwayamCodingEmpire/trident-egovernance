@@ -1,10 +1,12 @@
 package com.trident.egovernance.global.entities.permanentDB;
 
+import com.trident.egovernance.global.helpers.FeeProcessingMode;
 import com.trident.egovernance.global.helpers.PaymentMode;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Setter
 @Getter
@@ -36,6 +38,12 @@ public class AlterFeeCollection {
     private String paymentDate;
     @Column(name = "PAYMENTRECEIVER")
     private String paymentReceiver;
+    @Column(name = "FEEPROCESSINGMODE")
+    @Enumerated(EnumType.STRING)
+    private FeeProcessingMode feeProcessingMode;
+    @Transient
+    @ToString.Exclude
+    private Set<MrDetails> mrDetails;
     @Column(name = "COMMENTS")
     private String comments;
 }

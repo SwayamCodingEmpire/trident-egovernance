@@ -71,9 +71,9 @@ public class PaymentController {
 
     @Operation(summary = "Fee Collection endpoint", description = "Insert into FeeCollection Entity along with path variable of regdNo")
     @PostMapping("/fees-payment/{regdNo}")
-    public ResponseEntity<MoneyReceipt> feesPayment(@RequestBody FeeCollection feeCollection, @PathVariable("regdNo") String regdNo){
+    public ResponseEntity<MoneyReceipt> feesPayment(@RequestBody FeeCollection feeCollection, @PathVariable("regdNo") String regdNo, @RequestHeader("oboToken") String oboToken){
         logger.info("feesPayment");
-        return ResponseEntity.ok(paymentProcessingService.processPaymentInterface(feeCollection,regdNo,false));
+        return ResponseEntity.ok(paymentProcessingService.processPaymentInterface(feeCollection,regdNo, oboToken.substring(7),false, null));
     }
 
 //    @GetMapping("/fees-payment/{mrNo}")
@@ -99,14 +99,14 @@ public class PaymentController {
 
     @Operation(summary = "Other Fee Collection endpoint", description = "Insert into Other FeeCollection Entity along with path variable of regdNo")
     @PostMapping("/other-fees-payment/{regdNo}")
-    public ResponseEntity<MoneyReceipt> otherFeesPayment(@RequestBody OtherFeesPayment otherFeesPayment, @PathVariable("regdNo") String regdNo){
+    public ResponseEntity<MoneyReceipt> otherFeesPayment(@RequestBody OtherFeesPayment otherFeesPayment, @PathVariable("regdNo") String regdNo, @RequestHeader("oboToken") String oboToken){
         logger.info("otherFeesPayment");
         logger.info(otherFeesPayment.toString());
-        return ResponseEntity.ok(paymentProcessingService.processOtherFessPaymentInterface(otherFeesPayment,regdNo, false));
+        return ResponseEntity.ok(paymentProcessingService.processOtherFessPaymentInterface(otherFeesPayment,regdNo, false, oboToken.substring(7), null));
     }
 
-    @PostMapping("/edit-fee-collection-accept")
-    public ResponseEntity<Boolean> editFeeCollection(@RequestBody AlterFeeCollection feeCollection){
-        return ResponseEntity.ok(accountSectionService.addToAlterQueue(feeCollection));
+    @PostMapping("/accept-fee-collection-edit")
+    public ResponseEntity<MoneyReceipt> editFeeCollection(@RequestBody AlterFeeCollection feeCollection, @RequestHeader("oboToken") String oboToken){
+        return ResponseEntity.ok(paymentProcessingService.acceptPaymentEditRequest(feeCollection, oboToken));
     }
 }

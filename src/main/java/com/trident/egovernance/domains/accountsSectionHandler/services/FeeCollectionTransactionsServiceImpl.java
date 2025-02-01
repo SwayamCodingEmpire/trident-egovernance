@@ -181,6 +181,9 @@ public class FeeCollectionTransactionsServiceImpl implements FeeCollectionTransa
                 .map(mrDetails -> generateKey(oldFeeCollection.getStudent().getRegdNo(), mrDetails.getParticulars()))
                 .collect(Collectors.toSet());
         List<DuesDetails> duesDetailsList = duesDetailsRepository.fetchDuesDetailsByRegdNoAndDescription(uniqueKeys);
+        if(duesDetailsList.isEmpty() || duesDetailsList==null) {
+            return feeCollectionRepository.deleteByMrNo(oldFeeCollection.getMrNo());
+        }
         Map<String, DuesDetails> duesDetailsMap = duesDetailsList.stream()
                 .collect(Collectors.toMap(
                         duesDetails -> generateKey(oldFeeCollection.getStudent().getRegdNo(), duesDetails.getDescription()),

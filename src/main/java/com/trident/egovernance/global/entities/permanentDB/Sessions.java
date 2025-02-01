@@ -17,6 +17,7 @@ import java.sql.Date;
 @Entity(name = "SESSIONS")
 @Table(name = "SESSIONS")
 public class Sessions implements Serializable {
+
     @Id
     @Column(name = "SESSIONID")
     private String sessionId;
@@ -35,5 +36,17 @@ public class Sessions implements Serializable {
     @Column(name = "ADMISSIONYEAR")
     @Id
     private int admissionYear;
+    @Id
     private String studentType;
+
+    public Sessions(Date startDate, String sessionId, String course, int regdYear, String prevSessionId, int admissionYear, String studentType) {
+        this.startDate = startDate;
+        this.endDate = null;
+        this.sessionId = sessionId;
+        this.course = course;
+        this.regdYear = regdYear;
+        this.prevSessionId = prevSessionId;
+        this.admissionYear = admissionYear;
+        this.studentType = studentType;
+    }
 }

@@ -101,7 +101,7 @@ public class DuesInitiationServiceImpl implements DuesInitiationService {
             duesDetails.setAmountDue(fee.getAmount());
             duesDetails.setDeductionOrder(deductionFormatMap.get(fee.getDescription()).getDeductionOrder());
             duesDetails.setDueYear(student.currentYear());
-            duesDetails.setSessionId(masterTableServicesImpl.getSessionId(student.course(), duesDetails.getDueYear(), 2024, student.studentType()));
+            duesDetails.setSessionId(masterTableServicesImpl.getSessionId(student.course(), duesDetails.getDueYear(), admissionYear, student.studentType()));
             duesDetails.setAmountPaidToJee(BigDecimal.ZERO);
             duesDetails.setDueDate(Date.valueOf(LocalDate.now()));
             return duesDetails;

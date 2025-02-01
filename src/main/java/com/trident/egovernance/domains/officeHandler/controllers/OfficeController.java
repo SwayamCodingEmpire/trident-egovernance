@@ -143,7 +143,8 @@ public class OfficeController {
     }
 
     @PostMapping("/sections/{mode}")
-    public void createSections(@RequestBody SectionFetcher sectionFetcher, @PathVariable String mode){
-        officeServices.initializeSection(sectionFetcher, mode);
+    public ResponseEntity<Boolean> createSections(@RequestBody SectionFetcher sectionFetcher, @PathVariable String mode){
+        logger.info(sectionFetcher.toString());
+        return ResponseEntity.ok(officeServices.initializeSection(sectionFetcher, mode));
     }
 }

@@ -15,11 +15,11 @@ import java.util.Set;
 
 public interface MasterTableServices {
     List<Fees> getFeesByBatchIdAndRegdYear(String batchId, Integer regdYear);
-    public List<FeeTypesOnly> getFines();
+    List<FeeTypesOnly> getFines();
     List<StandardDeductionFormat> getStandardDeductionformatByDescriptions(Set<String> descriptions);
     String getSessionId(Courses course, int regdYear, int admissionYear, StudentType studentType);
     int getAdmissionYearFromSession(String sessionId, Courses course, int regdYear, StudentType studentType);
-    boolean endSession(Date endDate, String sessionId, Courses course, int regdYear, StudentType studentType);
+    boolean endSession(Date endDate, String sessionId, Courses course, int regdYear, StudentType studentType, int admissionYear);
     Optional<StandardDeductionFormat> getStandardDeductionFormat(String description);
     List<FeeTypesMrHead> getFeeTypesMrHeadByDescriptions(List<String> descriptions);
     HashMap<String, MrHead> convertFeeTypesMrHeadToHashMap(List<String> descriptions);
@@ -36,4 +36,7 @@ public interface MasterTableServices {
     List<Fees> updateFees(FeesCRUDDto feesCRUDDto);
     Set<FeeTypesOnly> createNewFeeTypes(Set<FeeTypesOnly> feeTypes);
     Set<FeeTypesOnly> getDescriptionByYear(Integer year);
+    List<String> getSessionIdsByRegdyearAndCourse(Integer regdYear, Courses course);
+
+    List<Sessions> getOngoingSessionsData();
 }
