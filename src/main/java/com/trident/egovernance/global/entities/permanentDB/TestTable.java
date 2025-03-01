@@ -17,7 +17,6 @@ import java.sql.Date;
 @Entity(name = "TEST_TABLE")
 @Table(name = "TEST_TABLE")
 public class TestTable {
-    @Id
     @Column(name = "SESSIONID")
     private String sessionId;
     @Column(name = "STARTDATE")

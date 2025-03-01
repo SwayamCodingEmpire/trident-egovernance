@@ -11,6 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -35,6 +37,7 @@ public class DuesDetailBackupServiceImpl {
         this.masterTableServices = masterTableServices;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     public Boolean transferToOldDuesDetails(Set<String> regdNos,String session) {
         try{
             List<DuesDetails> duesDetails = duesDetailsRepository.findAllByRegdNoIn(regdNos);

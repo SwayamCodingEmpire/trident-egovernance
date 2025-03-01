@@ -230,4 +230,16 @@ public class MiscellaniousServicesImpl implements MiscellaniousServices {
             default -> throw new InvalidInputsException("Invalid role: " + role);
         };
     }
+
+    public String incrementYearRange(String yearRange) {
+        String[] years = yearRange.split("-");
+        if (years.length != 2) {
+            throw new IllegalArgumentException("Invalid format. Expected format: YYYY-YYYY");
+        }
+
+        int startYear = Integer.parseInt(years[0]);
+        int endYear = Integer.parseInt(years[1]);
+
+        return (startYear + 1) + "-" + (endYear + 1);
+    }
 }

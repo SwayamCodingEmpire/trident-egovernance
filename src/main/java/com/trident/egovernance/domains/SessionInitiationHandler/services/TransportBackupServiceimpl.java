@@ -8,6 +8,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
@@ -26,6 +28,7 @@ public class TransportBackupServiceimpl {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     public Boolean transferToOldTransport(Set<String> regdNos) {
         try{
             oldTransportRepository.saveTransportToOld(regdNos);

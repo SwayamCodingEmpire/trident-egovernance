@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
@@ -112,13 +113,10 @@ public class MasterTableServicesImpl implements MasterTableServices {
 
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     public boolean endSession(Date endDate, String sessionId, Courses course, int regdYear, StudentType studentType, int admissionYear){
         try {
-            if (sessionsRepository.updateSessionsForEndingSession(endDate, sessionId, course.getDisplayName(), regdYear, studentType.getEnumName(), admissionYear) == 1) {
-                return true;
-            } else {
-                return false;
-            }
+            return sessionsRepository.updateSessionsForEndingSession(endDate, course.getDisplayName(), regdYear, studentType.getEnumName(), admissionYear) == 1;
         } catch (Exception e) {
             throw new RecordNotFoundException("Course not found");
         }

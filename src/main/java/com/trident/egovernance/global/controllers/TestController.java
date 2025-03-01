@@ -3,14 +3,13 @@ package com.trident.egovernance.global.controllers;
 import com.trident.egovernance.config.security.CustomUserDetails;
 import com.trident.egovernance.domains.student.services.StudentDashBoardsServiceImpl;
 import com.trident.egovernance.dto.*;
+import com.trident.egovernance.exceptions.DatabaseException;
+import com.trident.egovernance.exceptions.RecordAlreadyExistsException;
 import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.global.entities.views.Attendance;
 import com.trident.egovernance.global.entities.views.RollSheet;
 import com.trident.egovernance.global.entities.views.Student_Test;
-import com.trident.egovernance.global.helpers.BranchId;
-import com.trident.egovernance.global.helpers.Courses;
-import com.trident.egovernance.global.helpers.StringRecordTemp;
-import com.trident.egovernance.global.helpers.SubjectInfo;
+import com.trident.egovernance.global.helpers.*;
 import com.trident.egovernance.global.repositories.permanentDB.*;
 import com.trident.egovernance.global.repositories.views.RollSheetRepository;
 import com.trident.egovernance.global.repositories.views.StudentTestRepository;
@@ -24,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +33,7 @@ import java.util.Set;
 @RequestMapping("/test")
 public class TestController {
     private final StudentRepository studentRepository;
+    private final SessionsRepository sessionsRepository;
     private final SectionsRepository sectionsRepository;
     private final PersonalDetailsRepository personalDetailsRepository;
     private final RollSheetRepository rollSheetRepository;
@@ -49,8 +50,9 @@ public class TestController {
     private final SessionUpdateService sessionUpdateService;
     private final StudentTestRepository studentTestRepository;
 
-    public TestController(StudentRepository studentRepository, SectionsRepository sectionsRepository, PersonalDetailsRepository personalDetailsRepository, RollSheetRepository rollSheetRepository, SubjectDataFetcherService subjectDataFetcherService, MiscellaniousServices miscellaniousServices, MasterTableServicesImpl masterTableServicesImpl, StudentDashBoardsServiceImpl studentDashBoardsServiceImpl, StudentAdmissionDetailsRepository studentAdmissionDetailsRepository, StudentCareerRepository studentCareerRepository, HostelRepository hostelRepository, TransportRepository transportRepository, BranchRepository branchRepository, SessionUpdateService sessionUpdateService, StudentTestRepository studentTestRepository) {
+    public TestController(StudentRepository studentRepository, SessionsRepository sessionsRepository, SectionsRepository sectionsRepository, PersonalDetailsRepository personalDetailsRepository, RollSheetRepository rollSheetRepository, SubjectDataFetcherService subjectDataFetcherService, MiscellaniousServices miscellaniousServices, MasterTableServicesImpl masterTableServicesImpl, StudentDashBoardsServiceImpl studentDashBoardsServiceImpl, StudentAdmissionDetailsRepository studentAdmissionDetailsRepository, StudentCareerRepository studentCareerRepository, HostelRepository hostelRepository, TransportRepository transportRepository, BranchRepository branchRepository, SessionUpdateService sessionUpdateService, StudentTestRepository studentTestRepository) {
         this.studentRepository = studentRepository;
+        this.sessionsRepository = sessionsRepository;
         this.sectionsRepository = sectionsRepository;
         this.personalDetailsRepository = personalDetailsRepository;
         this.rollSheetRepository = rollSheetRepository;
@@ -186,6 +188,37 @@ public class TestController {
             output.add(st2);
         }
         return ResponseEntity.ok(output);
+    }
+
+    @PostMapping("/insert-sessions")
+    public Sessions testSessions(@RequestBody SessionInitiationData sessionInitiationData){
+        try{
+            String newSessionId = incrementYearRange(sessionInitiationData.sessionId());
+            Sessions newSession = new Sessions(new Date(System.currentTimeMillis()), newSessionId, sessionInitiationData.course().getDisplayName(), sessionInitiationData.currentYear()+1, sessionInitiationData.sessionId(), sessionInitiationData.admYear(), sessionInitiationData.studentType().getEnumName());
+            logger.info(newSession.toString());
+            if(sessionsRepository.existsById(new SessionIdId(sessionInitiationData.course().getDisplayName(), sessionInitiationData.currentYear()+1, sessionInitiationData.admYear(), sessionInitiationData.studentType().getEnumName()))){
+                Sessions chSessions = sessionsRepository.findById(new SessionIdId(sessionInitiationData.course().getDisplayName(), sessionInitiationData.currentYear()+1, sessionInitiationData.admYear(), sessionInitiationData.studentType().getEnumName())).orElse(null);
+                logger.info(chSessions.toString());
+                throw new RecordAlreadyExistsException("The session already exists");
+            }
+            logger.info(sessionInitiationData.toString());
+            return sessionsRepository.saveAndFlush(newSession);
+        }catch (Exception e){
+            logger.error(e.toString());
+            throw new DatabaseException("Could not create new session");
+        }
+    }
+
+    public String incrementYearRange(String yearRange) {
+        String[] years = yearRange.split("-");
+        if (years.length != 2) {
+            throw new IllegalArgumentException("Invalid format. Expected format: YYYY-YYYY");
+        }
+
+        int startYear = Integer.parseInt(years[0]);
+        int endYear = Integer.parseInt(years[1]);
+
+        return (startYear + 1) + "-" + (endYear + 1);
     }
 }
 

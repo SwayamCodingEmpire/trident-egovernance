@@ -14,7 +14,9 @@ public record SessionInitiationData(
         Courses course,
         Set<String> regdNos,
         StudentType studentType,
-        int currentYear
+        int currentYear,
+        boolean promotionType,
+        Set<String> notPromoted
 ) {
     public SessionInitiationData {
         // Check if prevSessionId is provided, otherwise set sessionId to a generated value

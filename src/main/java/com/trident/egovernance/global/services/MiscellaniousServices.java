@@ -22,4 +22,5 @@ public interface MiscellaniousServices {
     String getMoneyIntoWords(BigDecimal input);
     MoneyDTO convertMoneyToWords(BigDecimal input);
     RoleDetails getMenuItems();
+    String incrementYearRange(String yearRange);
 }

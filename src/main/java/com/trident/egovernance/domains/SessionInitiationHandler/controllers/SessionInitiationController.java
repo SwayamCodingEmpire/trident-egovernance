@@ -6,6 +6,7 @@ import com.trident.egovernance.dto.SessionInitiationDTO;
 import com.trident.egovernance.dto.SessionInitiationData;
 import com.trident.egovernance.dto.StudentCourse;
 import com.trident.egovernance.dto.StudentOnlyDTO;
+import com.trident.egovernance.global.entities.permanentDB.Notpromoted;
 import com.trident.egovernance.global.entities.permanentDB.Sessions;
 import com.trident.egovernance.global.helpers.Courses;
 import com.trident.egovernance.global.helpers.StudentType;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/office/initiate-session")
@@ -34,10 +36,10 @@ public class SessionInitiationController {
         return ResponseEntity.ok(sessionInitiationService.getStudentsForPromotion(new SessionInitiationDTO(admYear, course, regdYear, studentType)));
     }
 
-    @PostMapping("/create-new-session")
-    public ResponseEntity<Sessions> createNewSession(@RequestBody SessionInitiationData sessionInitiationDTO) {
-        return ResponseEntity.ok(sessionInitiationService.createNewSession(sessionInitiationDTO));
-    }
+//    @PostMapping("/create-new-session")
+//    public ResponseEntity<Sessions> createNewSession(@RequestBody SessionInitiationData sessionInitiationDTO) {
+//        return ResponseEntity.ok(sessionInitiationService.createNewSession(sessionInitiationDTO));
+//    }
 
 //    @PostMapping("/create-new-session")
 //    public boolean createNewSession(@RequestBody SessionInitiationDTO sessionInitiationDTO) {}
@@ -49,6 +51,26 @@ public class SessionInitiationController {
     @GetMapping("/get-complete-ongoing-sessions")
     public ResponseEntity<List<Sessions>> getCompleteOngoingSessions() {
         return ResponseEntity.ok(masterTableServices.getOngoingSessionsData());
+    }
+
+    @GetMapping("/get-not-promoted")
+    public ResponseEntity<List<Notpromoted>> getNotPromotedList(
+            @RequestParam(required = false) String regdNo,
+            @RequestParam(required = false) Integer currentYear,
+            @RequestParam(required = false) String sessionId) {
+
+        List<Notpromoted> notPromotedList = sessionInitiationService.getNotPromoted(
+                Optional.ofNullable(regdNo),
+                Optional.ofNullable(currentYear),
+                Optional.ofNullable(sessionId)
+        );
+
+        return ResponseEntity.ok(notPromotedList);
+    }
+
+    @PostMapping("/promote-not-promoted-students")
+    public ResponseEntity<Boolean> promoteNotPromotedStudents(@RequestBody SessionInitiationData sessionInitiationData){
+        return ResponseEntity.ok(sessionInitiationService.backUpAndPromoteStudent(sessionInitiationData));
     }
 
 //    @GetMapping("/student-to-promote")

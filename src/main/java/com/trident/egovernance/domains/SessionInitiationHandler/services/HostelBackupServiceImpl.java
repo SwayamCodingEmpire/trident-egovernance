@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
@@ -25,6 +27,7 @@ public class HostelBackupServiceImpl {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     public Boolean transferToOldHostel(Set<String> regdNos) {
         try {
             oldHostelRepository.saveHostelToOld(regdNos);

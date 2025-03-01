@@ -7,12 +7,14 @@ import com.trident.egovernance.exceptions.DatabaseException;
 import com.trident.egovernance.exceptions.RecordAlreadyExistsException;
 import com.trident.egovernance.exceptions.RecordNotFoundException;
 import com.trident.egovernance.global.entities.permanentDB.FeeTypes;
+import com.trident.egovernance.global.entities.permanentDB.Notpromoted;
 import com.trident.egovernance.global.entities.permanentDB.Sessions;
 import com.trident.egovernance.global.helpers.BooleanString;
 import com.trident.egovernance.global.helpers.HostelChoice;
 import com.trident.egovernance.global.helpers.SessionIdId;
 import com.trident.egovernance.global.repositories.permanentDB.*;
 import com.trident.egovernance.global.services.MasterTableServicesImpl;
+import com.trident.egovernance.global.services.MiscellaniousServices;
 import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,10 +28,13 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class SessionInitiationServiceImpl implements SessionInitiationService {
+    private final MiscellaniousServices miscellaniousServices;
     private final PlatformTransactionManager platformTransactionManager;
     private final DuesDetailBackupServiceImpl duesDetailBackupService;
     private final AdjustmentBackupServiceImpl adjustmentBackupService;
@@ -49,7 +54,8 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
     private final DuesInitiationServiceImpl duesInitiationServiceImpl;
     private final DuesDetailsReInitiationServiceImpl duesDetailsReInitiationServiceImpl;
 
-    public SessionInitiationServiceImpl(PlatformTransactionManager platformTransactionManager, DuesDetailBackupServiceImpl duesDetailBackupService, AdjustmentBackupServiceImpl adjustmentBackupService, DiscountBackUpServiceImpl discountBackUpService, HostelBackupServiceImpl hostelBackupService, StudentRepository studentRepository, TransportBackupServiceimpl transportBackupServiceimpl, NotpromotedRepository notpromotedRepository, HostelRepository hostelRepository, FeeCollectionRepository feeCollectionRepository, MrDetailsRepository mrDetailsRepository, MasterTableServicesImpl masterTableServicesImpl, EntityManager entityManager, TransportRepository transportRepository, SessionsRepository sessionsRepository, DuesInitiationServiceImpl duesInitiationServiceImpl, DuesDetailsReInitiationServiceImpl duesDetailsReInitiationServiceImpl) {
+    public SessionInitiationServiceImpl(MiscellaniousServices miscellaniousServices, PlatformTransactionManager platformTransactionManager, DuesDetailBackupServiceImpl duesDetailBackupService, AdjustmentBackupServiceImpl adjustmentBackupService, DiscountBackUpServiceImpl discountBackUpService, HostelBackupServiceImpl hostelBackupService, StudentRepository studentRepository, TransportBackupServiceimpl transportBackupServiceimpl, NotpromotedRepository notpromotedRepository, HostelRepository hostelRepository, FeeCollectionRepository feeCollectionRepository, MrDetailsRepository mrDetailsRepository, MasterTableServicesImpl masterTableServicesImpl, EntityManager entityManager, TransportRepository transportRepository, SessionsRepository sessionsRepository, DuesInitiationServiceImpl duesInitiationServiceImpl, DuesDetailsReInitiationServiceImpl duesDetailsReInitiationServiceImpl) {
+        this.miscellaniousServices = miscellaniousServices;
         this.platformTransactionManager = platformTransactionManager;
         this.duesDetailBackupService = duesDetailBackupService;
         this.adjustmentBackupService = adjustmentBackupService;
@@ -77,11 +83,24 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
     @Transactional
     public Boolean initiateNewSession(SessionInitiationData sessionInitiationData){
         try{
-            Sessions sessions = sessionsRepository.findById(new SessionIdId(sessionInitiationData.sessionId(), sessionInitiationData.course().getDisplayName(), sessionInitiationData.currentYear(), sessionInitiationData.admYear(), sessionInitiationData.studentType().getEnumName())).orElseThrow(()-> new RecordNotFoundException("Session Not Found"));
-            Sessions savedSessions = sessionsRepository.saveAndFlush(new Sessions(sessionInitiationData.sessionId(), Date.valueOf(LocalDate.now()), null, sessionInitiationData.course().getDisplayName(), sessionInitiationData.currentYear()+1, sessionInitiationData.prevSessionId(), sessionInitiationData.admYear(), sessionInitiationData.studentType().getEnumName()));
+            String newSessionId = miscellaniousServices.incrementYearRange(sessionInitiationData.sessionId());
+            Sessions sessions = sessionsRepository.findById(new SessionIdId(sessionInitiationData.course().getDisplayName(), sessionInitiationData.currentYear(), sessionInitiationData.admYear(), sessionInitiationData.studentType().getEnumName())).orElseThrow(()-> new RecordNotFoundException("Session Not Found"));
+            Sessions savedSessions = sessionsRepository.saveAndFlush(new Sessions(newSessionId, Date.valueOf(LocalDate.now()), null, sessionInitiationData.course().getDisplayName(), sessionInitiationData.currentYear()+1, sessionInitiationData.sessionId(), sessionInitiationData.admYear(), sessionInitiationData.studentType().getEnumName()));
             if(savedSessions == null){
                 throw new DatabaseException("Session Not Found");
             }
+            logger.info(sessionInitiationData.toString());
+            return backUpAndPromoteStudent(sessionInitiationData);
+        }catch (Exception e){
+            logger.error(e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public Boolean backUpAndPromoteStudent(SessionInitiationData sessionInitiationData){
+        try
+        {
             logger.info(sessionInitiationData.toString());
             Set<String> regdNos = sessionInitiationData.regdNos();
             Boolean transportbackUp = transportBackupServiceimpl.transferToOldTransport(regdNos);
@@ -94,10 +113,13 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
             logger.info("Dues Details completed");
 //            duesDetailBackupService.saveToDuesDetails(previousYearDues);
             logger.info("Transaction Commited Successfully");
-            if(promoteStudent(sessionInitiationData)){
+            if(!sessionInitiationData.promotionType()){
+                promoteNotPromotedStudent(sessionInitiationData);
+            }
+            else if(promoteStudent(sessionInitiationData)){
                 return true;
             }
-            throw new RuntimeException("Promotion failed");
+            throw new RuntimeException("Backup And Promotion failed");
         }catch (Exception e){
             logger.error(e.getMessage());
             throw new RuntimeException(e);
@@ -105,15 +127,18 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public boolean promoteStudent(SessionInitiationData sessionInitiationData){
+    public boolean promoteNotPromotedStudent(SessionInitiationData sessionInitiationData){
         try {
-            if(!masterTableServicesImpl.endSession(new Date(System.currentTimeMillis()), sessionInitiationData.prevSessionId(), sessionInitiationData.course(), sessionInitiationData.currentYear(), sessionInitiationData.studentType(), sessionInitiationData.admYear())){
-                throw new RuntimeException("Session Ending Failed");
-            }
-            Sessions sessions = createNewSession(sessionInitiationData);
-            if(sessions == null){
-                throw new RuntimeException("Session could not be created");
-            }
+            return studentPromotion(sessionInitiationData);
+        }catch (Exception e){
+            logger.error(e.toString());
+            throw new RuntimeException("Session promotion failed");
+        }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public boolean studentPromotion(SessionInitiationData sessionInitiationData){
+        try{
             Set<FeeCollectionDTOWithRegdNo> feeCollectionDTOWithRegdNos = feeCollectionRepository.findAllByMrDetails_ParticularsAndSessionIdNew("HOSTEL ADVANCE", sessionInitiationData.prevSessionId(), sessionInitiationData.regdNos());
 
             Set<String> hostelNotOpted = new HashSet<>(sessionInitiationData.regdNos());
@@ -149,6 +174,9 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
                                 )
                 );
             }
+            if(!sessionInitiationData.notPromoted().isEmpty()){
+                addToNotPromotedList(sessionInitiationData);
+            }
             return duesDetailsReInitiationServiceImpl.reInitiateDuesDetails(duesDetailsInitiationDTOS,feeCollectionDTOWithRegdNos);
         }catch (Exception e){
             logger.error(e.toString());
@@ -156,18 +184,38 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
         }
     }
 
-    @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public Sessions createNewSession(SessionInitiationData sessionInitiationData) {
-        try{
-            if(sessionsRepository.existsById(new SessionIdId(sessionInitiationData.sessionId(), sessionInitiationData.course().getDisplayName(), sessionInitiationData.currentYear(), sessionInitiationData.admYear(), sessionInitiationData.studentType().getEnumName()))){
-                throw new RecordAlreadyExistsException("The session already exists");
+    public boolean promoteStudent(SessionInitiationData sessionInitiationData){
+        try {
+            if(!masterTableServicesImpl.endSession(new Date(System.currentTimeMillis()), sessionInitiationData.sessionId(), sessionInitiationData.course(), sessionInitiationData.currentYear(), sessionInitiationData.studentType(), sessionInitiationData.admYear())){
+                throw new RuntimeException("Session Ending Failed");
             }
-            Sessions newSession = new Sessions(new Date(System.currentTimeMillis()), sessionInitiationData.sessionId(), sessionInitiationData.course().getDisplayName(), sessionInitiationData.currentYear()+1, sessionInitiationData.prevSessionId(), sessionInitiationData.admYear(), sessionInitiationData.studentType().getEnumName());
-            return sessionsRepository.saveAndFlush(newSession);
+//            Sessions sessions = createNewSession(sessionInitiationData);
+//            if(sessions == null){
+//                throw new RuntimeException("Session could not be created");
+//            }
+            return studentPromotion(sessionInitiationData);
         }catch (Exception e){
             logger.error(e.toString());
-            throw new DatabaseException("Could not create new session");
+            throw new RuntimeException("Session promotion failed");
         }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void addToNotPromotedList(SessionInitiationData sessionInitiationData){
+        List<Notpromoted> notPromotedSet = sessionInitiationData.notPromoted().stream()
+                .map(regdNo -> new Notpromoted(regdNo, sessionInitiationData.currentYear(), sessionInitiationData.sessionId()))
+                .toList();
+        notpromotedRepository.saveAllAndFlush(notPromotedSet);
+    }
+
+    public List<Notpromoted> getNotPromoted(Optional<String> regdNo,
+                                            Optional<Integer> currentYear,
+                                            Optional<String> sessionId) {
+        return notpromotedRepository.findNotPromoted(
+                regdNo.orElse(null),
+                currentYear.orElse(null),
+                sessionId.orElse(null)
+        );
     }
 }

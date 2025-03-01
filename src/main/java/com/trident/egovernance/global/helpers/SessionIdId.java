@@ -11,7 +11,6 @@ import java.util.Objects;
 @NoArgsConstructor
 @ToString
 public class SessionIdId implements Serializable {
-    private String sessionId;
     private String course;
     private int regdYear;
     private int admissionYear;
@@ -25,11 +24,11 @@ public class SessionIdId implements Serializable {
             return false;
         }
         SessionIdId sessionIdId = (SessionIdId)o;
-        return course.equals(sessionIdId.course) && regdYear==sessionIdId.regdYear && admissionYear==sessionIdId.admissionYear && sessionId.equals(sessionIdId.sessionId) && studentType.equals(sessionIdId.studentType);
+        return course.equals(sessionIdId.course) && regdYear==sessionIdId.regdYear && admissionYear==sessionIdId.admissionYear && studentType.equals(sessionIdId.studentType);
     }
 
     @Override
     public int hashCode(){
-        return Objects.hash(course,regdYear,admissionYear, sessionId, studentType);
+        return Objects.hash(course,regdYear,admissionYear, studentType);
     }
 }

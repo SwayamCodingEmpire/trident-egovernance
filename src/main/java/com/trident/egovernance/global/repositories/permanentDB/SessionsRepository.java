@@ -11,6 +11,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.util.List;
@@ -21,14 +23,14 @@ import java.util.Set;
 public interface SessionsRepository extends JpaRepository<Sessions, SessionIdId> {
     Sessions findBySessionIdAndCourseAndRegdYearAndStudentType(String sessionId, String course, int regdYear, String studentType);
     @Modifying
+    @Transactional(propagation = Propagation.REQUIRED)
     @Query("UPDATE SESSIONS s " +
             "SET s.endDate = :endDate " +
-            "WHERE s.sessionId = :sessionId AND " +
-            "s.course = :course AND " +
+            "WHERE s.course = :course AND " +
             "s.regdYear = :regdyear AND " +
             "s.admissionYear = :admissionYear AND " +
             "s.studentType = :studentType")
-    int updateSessionsForEndingSession(Date endDate, String sessionId, String course, int regdyear, String studentType, int admissionYear);
+    int updateSessionsForEndingSession(Date endDate, String course, int regdyear, String studentType, int admissionYear);
 
     @Query("SELECT DISTINCT(s.sessionId) FROM SESSIONS s")
     Set<String> findAllSessionIds();

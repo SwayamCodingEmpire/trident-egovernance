@@ -18,7 +18,6 @@ import java.sql.Date;
 @Table(name = "SESSIONS")
 public class Sessions implements Serializable {
 
-    @Id
     @Column(name = "SESSIONID")
     private String sessionId;
     @Column(name = "STARTDATE")
