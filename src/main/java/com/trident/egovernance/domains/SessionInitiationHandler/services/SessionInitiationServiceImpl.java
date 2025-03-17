@@ -75,8 +75,8 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
         this.duesDetailsReInitiationServiceImpl = duesDetailsReInitiationServiceImpl;
     }
 
-    public List<StudentCourse> getStudentsForPromotion(SessionInitiationDTO sessionInitiationDTO) {
-        return studentRepository.findAllByAdmissionYearAndCourseAndCurrentYearAndStudentType(sessionInitiationDTO.admYear(), sessionInitiationDTO.course(), sessionInitiationDTO.regdYear(), sessionInitiationDTO.studentType());
+    public List<StudentCourse> getStudentsForPromotion(SessionInitiationDto sessionInitiationDTO) {
+        return studentRepository.findAllByAdmissionYearAndCourseAndCurrentYearAndStudentType(String.valueOf(sessionInitiationDTO.admYear()), sessionInitiationDTO.courses(), sessionInitiationDTO.regdYear(), sessionInitiationDTO.studentType());
 
     }
 

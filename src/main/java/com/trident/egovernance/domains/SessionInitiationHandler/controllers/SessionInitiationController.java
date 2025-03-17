@@ -2,7 +2,7 @@ package com.trident.egovernance.domains.SessionInitiationHandler.controllers;
 
 import com.trident.egovernance.domains.SessionInitiationHandler.services.SessionInitiationServiceImpl;
 import com.trident.egovernance.domains.officeHandler.services.OfficeServicesImpl;
-import com.trident.egovernance.dto.SessionInitiationDTO;
+import com.trident.egovernance.dto.SessionInitiationDto;
 import com.trident.egovernance.dto.SessionInitiationData;
 import com.trident.egovernance.dto.StudentCourse;
 import com.trident.egovernance.dto.StudentOnlyDTO;
@@ -32,8 +32,8 @@ public class SessionInitiationController {
     }
 
     @GetMapping("/get-student-for-promotion")
-    public ResponseEntity<List<StudentCourse>> getStudentForPromotion(@RequestParam("admYear") String admYear, @RequestParam("course")Courses course, @RequestParam("regdyear") Integer regdYear, @RequestParam("studentType") StudentType studentType) {
-        return ResponseEntity.ok(sessionInitiationService.getStudentsForPromotion(new SessionInitiationDTO(admYear, course, regdYear, studentType)));
+    public ResponseEntity<List<StudentCourse>> getStudentForPromotion(@RequestParam("admYear") int admYear, @RequestParam("course")Courses course, @RequestParam("regdyear") Integer regdYear, @RequestParam("studentType") StudentType studentType) {
+        return ResponseEntity.ok(sessionInitiationService.getStudentsForPromotion(new SessionInitiationDto(admYear, course, regdYear, studentType)));
     }
 
 //    @PostMapping("/create-new-session")

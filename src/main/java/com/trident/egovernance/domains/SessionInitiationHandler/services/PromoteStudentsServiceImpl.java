@@ -1,7 +1,7 @@
 package com.trident.egovernance.domains.SessionInitiationHandler.services;
 
 import com.trident.egovernance.dto.FeeCollectionDTO;
-import com.trident.egovernance.dto.SessionInitiationDTO;
+import com.trident.egovernance.dto.SessionInitiationDto;
 import com.trident.egovernance.dto.SessionInitiationData;
 import com.trident.egovernance.global.repositories.permanentDB.FeeCollectionRepository;
 import com.trident.egovernance.global.repositories.permanentDB.StudentRepository;
