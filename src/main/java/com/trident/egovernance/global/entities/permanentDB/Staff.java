@@ -20,23 +20,18 @@ public class Staff {
     @Column(name = "STAFF_NAME", nullable = false, length = 30)
     private String staffName;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "STAFF_DEPT", nullable = false, length = 15)
     private String staffDept;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "STAFF_DESIGNATION", nullable = false, length = 50)
     private String staffDesignation;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "STAFF_CATEGORY", nullable = false, length = 11)
     private String staffCategory;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "STATUS", nullable = false, length = 10)
     private String status;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "ROLE", nullable = false, length = 15)
     private String role;
 
@@ -55,7 +50,6 @@ public class Staff {
     @Column(name = "EMAIL", nullable = false, length = 100)
     private String email;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "SECQ", nullable = false, length = 150)
     private String securityQuestion;
 

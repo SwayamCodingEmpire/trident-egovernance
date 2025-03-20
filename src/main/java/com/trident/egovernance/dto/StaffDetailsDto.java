@@ -1,15 +1,7 @@
 package com.trident.egovernance.dto;
 
 import com.trident.egovernance.global.entities.permanentDB.Staff;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 public record StaffDetailsDto(
         Long staffId,
         String staffName,

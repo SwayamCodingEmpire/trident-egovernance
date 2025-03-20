@@ -60,7 +60,7 @@ public class OfficeController {
         return ResponseEntity.ok(officeServices.getStudentByRegdNo(regdNo));
     }
 
-    @Operation(summary = "Updates student datain the table", description = "Replaces the data in the table with the inputted data")
+    @Operation(summary = "Updates student detail the table", description = "Replaces the data in the table with the inputted data")
     @PutMapping("/update-student-data/{table}/{regdNo}")
     public ResponseEntity<Boolean> updateStudentData(@PathVariable("table") String table, @RequestBody Object data,@PathVariable("regdNo")String regdNo){
         logger.info("Method for individual Student called");

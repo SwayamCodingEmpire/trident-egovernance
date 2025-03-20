@@ -72,6 +72,7 @@ public class SecurityConfig {
             "/actuator/**",
 //            "/accounts-section/**",
             "/api/refresh-menu-data",
+            "/staff/**"
 //            "/office/**"
     };
 

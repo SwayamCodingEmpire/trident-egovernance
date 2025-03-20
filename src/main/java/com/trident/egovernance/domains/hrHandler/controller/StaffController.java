@@ -4,12 +4,13 @@ import com.trident.egovernance.domains.hrHandler.services.StaffServiceImpl;
 import com.trident.egovernance.dto.StaffDetailsDto;
 import com.trident.egovernance.global.entities.permanentDB.Staff;
 import com.trident.egovernance.global.repositories.permanentDB.StaffRepository;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/staff")
@@ -23,6 +24,7 @@ public class StaffController {
         this.staffServiceImpl = staffServiceImpl;
     }
 
+    @Operation(summary = "Create new staff", description = "Return a response String to indicate that the staff is added successfully or not")
     @PostMapping("/create")
     public ResponseEntity<String> createStaff(@RequestBody StaffDetailsDto staffDetailsDto){
         try {
@@ -36,7 +38,35 @@ public class StaffController {
         }
     }
 
-    public ResponseEntity<String> updateStaff(@RequestBody StaffDetailsDto staffDetailsDto){
+    @Operation(summary = "Update the existing staff details in the table", description = "Replace the previous data with the new data input to the table using username to find the staff")
+    @PutMapping("/update/{username}")
+    public ResponseEntity<String> updateStaffDetails(
+            @PathVariable String username,
+            @RequestBody StaffDetailsDto updatedStaff) {
+        boolean isUpdated = staffServiceImpl.updateStaffDetails(updatedStaff, username);
 
+        if (isUpdated) {
+            return ResponseEntity.ok("Staff details updated successfully for username: " + username);
+        } else {
+            return ResponseEntity.badRequest().body("Failed to update staff details for username: " + username);
+        }
+    }
+
+    @Operation(summary = "Get a full list of the total staffs present in the table", description = "Return a list of staff entity from the table using repository queries")
+    @GetMapping("/view")
+    public ResponseEntity<List<Staff>> getAllStaff() {
+        return ResponseEntity.ok(staffRepository.getAllStaffs());
+    }
+
+    @Operation(summary = "Get the data from the backend to the frontend for dynamic input 'select type option'", description = "Return a hashMap of String and List of Objects values")
+    @GetMapping("/dynamic-input")
+    public Map<String, List<Object>> getAllStaffDetails(@RequestParam String entityName) {
+        return staffServiceImpl.getAllStaffDetailsForInput(entityName);
+    }
+
+    @Operation(summary = "Get each staff data specifically by using the username", description = "return a list of staff entity of the particular staff from the table")
+    @GetMapping("/get-profile/{username}")
+    public List<Staff> getStaffProfile(@PathVariable String username) {
+        return staffServiceImpl.getStaffByUsername(username);
     }
 }
