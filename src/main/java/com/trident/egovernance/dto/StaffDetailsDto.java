@@ -2,6 +2,7 @@ package com.trident.egovernance.dto;
 
 import com.trident.egovernance.global.entities.permanentDB.Staff;
 
+
 public record StaffDetailsDto(
         Long staffId,
         String staffName,
@@ -38,5 +39,6 @@ public record StaffDetailsDto(
                 staffDetailsEntity.getCollegeName()
         );
     }
+
 }
 

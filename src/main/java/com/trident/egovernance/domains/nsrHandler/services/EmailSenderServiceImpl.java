@@ -2,6 +2,7 @@ package com.trident.egovernance.domains.nsrHandler.services;
 
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.services.*;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
@@ -109,6 +110,62 @@ public class EmailSenderServiceImpl {
         mailSender.send(message);
         return CompletableFuture.completedFuture(null);
     }
+
+//    @Operation(summary = "This is the staff email sender that will send the login credentials of staff", description = "Only for staff email sender")
+//    @Async
+//    public CompletableFuture<Void> sendTridentCredentialsEmailToStaff(String microsoftMail, String password)
+//            throws MessagingException, IOException {
+//
+//        logger.info("Sending Trident credentials email to staff");
+//        MimeMessage message = mailSender.createMimeMessage();
+//        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+//
+//        String joiningDate = "1st November 2024";
+//        String trainingStart = "5th November 2024";
+//        String trainingEnd = "10th November 2024";
+//        String trainingTimeStart = "10AM";
+//        String trainingTimeEnd = "4PM";
+//
+//        // Sender and Recipient
+//        helper.setFrom("ronakraj1789@gmail.com");
+//        helper.setTo("gamerhorizon1789@gmail.com");
+//        helper.setSubject("Trident: Microsoft Teams Credentials for Staff");
+//
+//        // HTML Content with colored text
+//        String emailContent =
+//                "<html><body>" +
+//                        "<p>Dear Staff Member,</p>" +
+//
+//                        "<p>Welcome to Trident Group of Institutions! Your official communication and online meetings will be conducted via " +
+//                        "<span style='color:blue;'>Microsoft Teams</span>. Below are your credentials for accessing Microsoft Teams.</p>" +
+//
+//                        "<p>Your Username: <b style='color:blue;'><a href = \"mailto:" + microsoftMail + "\">" + microsoftMail + "</a></b><br>" +
+//                        "Your Password: <b style='color:blue;'>" + password + "</b></p>" +
+//
+//                        "<p><span style='color:red;'>*Please do not share your login credentials with anyone. " +
+//                        "Unauthorized access using your credentials will be considered your responsibility.</span></p>" +
+//
+//                        "<p>A step-by-step guide is attached to help you log in and set up Microsoft Teams.</p>" +
+//
+//                        "<p>Your official joining date is <b>" + joiningDate + "</b>. " +
+//                        "Mandatory staff training will be conducted from <b>" + trainingStart + "</b> to <b>" + trainingEnd + "</b>, " +
+//                        "with daily sessions from <b>" + trainingTimeStart + " to " + trainingTimeEnd + "</b>.</p>" +
+//
+//                        "<p>For any login-related issues, please contact the IT Support team.</p>" +
+//
+//                        "<p>Best Regards,<br>HR Team<br>Trident Group of Institutions</p>" +
+//
+//                        "<p>For immediate support, please reach out to IT Helpdesk:<br>" +
+//                        "<a href='tel:9124078910'>9124078910</a></p>" +
+//
+//                        "</body></html>";
+//
+//        helper.setText(emailContent, true);
+//
+//        mailSender.send(message);
+//        return CompletableFuture.completedFuture(null);
+//    }
+
 
     @Async
     public CompletableFuture<Void> sendPaymentReceiptEditEmail(

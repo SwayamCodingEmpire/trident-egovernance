@@ -1,6 +1,7 @@
 package com.trident.egovernance.domains.hrHandler.controller;
 
 import com.trident.egovernance.domains.hrHandler.services.StaffServiceImpl;
+import com.trident.egovernance.domains.nsrHandler.services.EmailSenderServiceImpl;
 import com.trident.egovernance.dto.StaffDetailsDto;
 import com.trident.egovernance.global.entities.permanentDB.Staff;
 import com.trident.egovernance.global.repositories.permanentDB.StaffRepository;
@@ -18,17 +19,21 @@ public class StaffController {
 
     private final StaffRepository staffRepository;
     private final StaffServiceImpl staffServiceImpl;
+    private final EmailSenderServiceImpl emailSenderServiceImpl;
 
-    public StaffController(StaffRepository staffRepository, StaffServiceImpl staffServiceImpl) {
+    public StaffController(StaffRepository staffRepository, StaffServiceImpl staffServiceImpl, EmailSenderServiceImpl emailSenderServiceImpl) {
         this.staffRepository = staffRepository;
         this.staffServiceImpl = staffServiceImpl;
+        this.emailSenderServiceImpl = emailSenderServiceImpl;
     }
 
     @Operation(summary = "Create new staff", description = "Return a response String to indicate that the staff is added successfully or not")
     @PostMapping("/create")
-    public ResponseEntity<String> createStaff(@RequestBody StaffDetailsDto staffDetailsDto){
+    public ResponseEntity<String> createStaff(@RequestBody StaffDetailsDto staffDetailsDto) {
         try {
             staffServiceImpl.addStaff(staffDetailsDto);
+//            Here I want just after adding the staff the email sender method will send the login credentials to the staff email.
+//            That login credentials are to be extracted from the createStaff method and use in the email sender method.
             return ResponseEntity.ok("Staff added successfully.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

@@ -3,6 +3,7 @@ package com.trident.egovernance.global.services;
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.exceptions.InvalidInputsException;
 import com.trident.egovernance.global.entities.permanentDB.Fees;
+import com.trident.egovernance.global.entities.permanentDB.Staff;
 import com.trident.egovernance.global.helpers.BooleanString;
 import com.trident.egovernance.global.helpers.FeeTypesType;
 import com.trident.egovernance.global.helpers.TFWType;
@@ -241,5 +242,18 @@ public class MiscellaniousServicesImpl implements MiscellaniousServices {
         int endYear = Integer.parseInt(years[1]);
 
         return (startYear + 1) + "-" + (endYear + 1);
+    }
+
+    @Override
+    public String generateStaffUsername(UsernamePurposeOfStaff user){
+        StringBuilder code = new StringBuilder();
+        String newDes = user.staffDesignation().replace(" ","_");
+        String newRole = user.staffRole().replace(" ", "_");
+        String[] nameParts = user.staffName().trim().toLowerCase().split("\\s+");
+        String firstName = nameParts[0];
+        code.append(firstName);
+        code.append(newDes);
+        code.append(newRole);
+        return code.toString();
     }
 }

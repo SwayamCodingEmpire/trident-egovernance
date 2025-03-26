@@ -8,8 +8,14 @@ import java.util.Map;
 
 public interface StaffService {
     void addStaff(StaffDetailsDto staffDetailsDto);
+
     List<List<Staff>> getALlStaff();
+
     List<Staff> getStaffByUsername(String username);
+
     Boolean updateStaffDetails(StaffDetailsDto updatedStudent, String username);
+
     Map<String, List<Object>> getAllStaffDetailsForInput(String entityName);
+
+    Boolean finalSubmitStaff(String staffId);
 }

@@ -2,6 +2,7 @@ package com.trident.egovernance.global.services;
 
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.permanentDB.Fees;
+import com.trident.egovernance.global.entities.permanentDB.Staff;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.math.BigDecimal;
@@ -23,4 +24,5 @@ public interface MiscellaniousServices {
     MoneyDTO convertMoneyToWords(BigDecimal input);
     RoleDetails getMenuItems();
     String incrementYearRange(String yearRange);
+    String generateStaffUsername(UsernamePurposeOfStaff user);
 }
