@@ -207,6 +207,13 @@ public class MapperServiceImpl implements MapperService {
     }
 
     @Override
+    public List<FeeTypes> convertToFeeTypesListFromDTO(Set<FeeTypesWithDeductionOrder> feeTypeList) {
+        return feeTypeList.stream()
+                .map(FeeTypes::new)
+                .toList();
+    }
+
+    @Override
     public Set<FeeTypesOnly> convertToFeeTypesOnlySet(List<FeeTypes> feesList) {
         return feesList.stream()
                 .map(FeeTypesOnly::new)
@@ -241,5 +248,19 @@ public class MapperServiceImpl implements MapperService {
         return mrDetailsList.stream()
                 .map(MrDetailsDTOMinimal::new)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Set<FeeTypesWithDeductionOrder> convertToFeeTypesDeductionSet(List<FeeTypes> feeTypes) {
+        return feeTypes.stream()
+                .map(FeeTypesWithDeductionOrder::new)
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public List<StandardDeductionFormat> convertToStandardDeductionEntity(Set<FeeTypesWithDeductionOrder> feeTypesEntities) {
+        return feeTypesEntities.stream()
+                .map(StandardDeductionFormat::new)
+                .toList();
     }
 }

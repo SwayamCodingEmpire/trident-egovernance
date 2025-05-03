@@ -76,7 +76,7 @@ public class DuesDetailsReInitiationServiceImpl {
                                 plPool,
                                 indusTraining)
                         )
-                        .map(fee -> duesInitiationServiceImpl.createDuesDetails(fee, student, deductionFormatMap))
+                        .map(fee -> duesInitiationServiceImpl.createDuesDetails(fee, student))
                         .filter(Objects::nonNull)
                         .toList();
 

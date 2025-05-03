@@ -220,6 +220,7 @@ public class MiscellaniousServicesImpl implements MiscellaniousServices {
     public RoleDetails getMenuItems() {
         UserJobInformationDto userJobInformationDto = getUserJobInformation().getLeft();
         NavigationMenu navigationMenu = menuBladeFetcherService.getNavigationMenu();
+        logger.info("Navigation menu  : {}", navigationMenu);
         String role = userJobInformationDto.jobTitle();
 
         logger.info(navigationMenu.toString());

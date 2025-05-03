@@ -1,5 +1,6 @@
 package com.trident.egovernance.domains.officeHandler.controllers;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trident.egovernance.domains.officeHandler.services.OfficeServices;
 import com.trident.egovernance.dto.*;
@@ -78,6 +79,16 @@ public class OfficeController {
 //                        ResponseEntity.ok(officeServices.updateHostelTable(new ObjectMapper().convertValue(data, HostelOnlyDTO.class),regdNo));
 //                case "transport" ->
 //                        ResponseEntity.ok(officeServices.updateTransportTable(new ObjectMapper().convertValue(data, TransportOnlyDTO.class),regdNo));
+                case "student-docs" ->
+                        ResponseEntity.ok(
+                                officeServices.updateStudentDocsTable(
+                                        new ObjectMapper().convertValue(
+                                                data, new TypeReference<>() {
+                                                }
+                                        ),
+                                        regdNo
+                                )
+                        );
                 default -> throw new InvalidInputsException("Invalid table specified: " + table);
             };
         } catch (RuntimeException e) {
@@ -87,12 +98,12 @@ public class OfficeController {
     }
 
 
-    @Operation(summary = "Update the student docs table")
-    @PutMapping("/update-student-data/student-docs/{regdNo}")
-    public ResponseEntity<Boolean> updateStudentDocs(@RequestBody List<StudentDocsOnlyDTO> studentDocsOnlyDTOS, @PathVariable String regdNo){
-        logger.info("Method for individual Student called");
-        return ResponseEntity.ok(officeServices.updateStudentDocsTable(studentDocsOnlyDTOS,regdNo));
-    }
+//    @Operation(summary = "Update the student docs table")
+//    @PutMapping("/update-student-data/student-docs/{regdNo}")
+//    public ResponseEntity<Boolean> updateStudentDocs(@RequestBody List<StudentDocsOnlyDTO> studentDocsOnlyDTOS, @PathVariable String regdNo){
+//        logger.info("Method for individual Student called");
+//        return ResponseEntity.ok(officeServices.updateStudentDocsTable(studentDocsOnlyDTOS,regdNo));
+//    }
 
 //    @PatchMapping("/update-student-data/student-docs-add/{regdNo}")
 //    public ResponseEntity<Boolean> updateStudentDocsTable(@RequestBody List<StudentDocsOnlyDTO> studentDocsOnlyDTOS, @PathVariable String regdNo){

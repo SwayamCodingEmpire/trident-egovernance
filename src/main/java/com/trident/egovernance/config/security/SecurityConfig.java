@@ -4,6 +4,7 @@ import com.trident.egovernance.filters.CustomAuthorityAssignerFilter;
 import com.trident.egovernance.filters.NSRJwtFilter;
 import com.trident.egovernance.global.helpers.AppConstants;
 import io.netty.channel.ChannelOption;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +12,7 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
@@ -71,9 +73,14 @@ public class SecurityConfig {
 //            "/subjects/**",
             "/actuator/**",
 //            "/accounts-section/**",
-            "/api/refresh-menu-data",
+            "/api/refresh-menu-data"
 //            "/office/**"
     };
+
+    @PostConstruct
+    public void configureSecurityContextPropagation() {
+        SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -85,7 +92,7 @@ public class SecurityConfig {
             authorize.requestMatchers(PUBLIC_URLS).permitAll();
             authorize.requestMatchers("/test/hello").hasAnyRole("NSR", "ADMIN");
             authorize.requestMatchers("/NSR/post").hasAnyRole("OFFICE","ADMIN");
-            authorize.requestMatchers("/NSR/**").hasAnyRole("ADMIN","NSR");
+            authorize.requestMatchers("/NSR/**").hasAnyRole("ADMIN","NSR","OFFICE");
             authorize.requestMatchers("/api/**").authenticated();
         }).sessionManagement(session -> {
             session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);

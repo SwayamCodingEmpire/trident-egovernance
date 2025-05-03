@@ -2,6 +2,7 @@ package com.trident.egovernance.global.entities.permanentDB;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.trident.egovernance.dto.FeeTypesOnly;
+import com.trident.egovernance.dto.FeeTypesWithDeductionOrder;
 import com.trident.egovernance.global.helpers.FeeTypeTypeConverter;
 import com.trident.egovernance.global.helpers.FeeTypesType;
 import com.trident.egovernance.global.helpers.MrHead;
@@ -47,7 +48,23 @@ public class FeeTypes implements Serializable {
     @OneToMany(mappedBy = "feeType", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<MrDetails> mrDetails;
 
+
+    @OneToOne(optional = true, fetch = FetchType.EAGER)
+    @JoinColumn(name = "DESCRIPTION", referencedColumnName = "DESCRIPTION", insertable = false, updatable = false)
+    private StandardDeductionFormat standardDeductionFormat;
+
+
     public FeeTypes(FeeTypesOnly feeTypesOnly){
+        this.description=feeTypesOnly.description();
+        this.type=feeTypesOnly.type();
+        this.feeGroup=feeTypesOnly.feeGroup();
+        this.mrHead=feeTypesOnly.mrHead();
+        this.partOf=feeTypesOnly.partOf();
+        this.semester=feeTypesOnly.semester() == null ? -1 : feeTypesOnly.semester();
+    }
+
+    public FeeTypes(FeeTypesWithDeductionOrder feeTypesOnly){
+        System.out.println("FeeTypes constructor" + feeTypesOnly);
         this.description=feeTypesOnly.description();
         this.type=feeTypesOnly.type();
         this.feeGroup=feeTypesOnly.feeGroup();

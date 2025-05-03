@@ -34,19 +34,38 @@ public record FeesOnly(
                 fees.getPayType()
         );
     }
-
     private static BasicFeeBatchDetails extractBasicFeeBatchDetails(String batchId) {
-        // Extract the course part
-        String courseString = batchId.replaceAll("\\d.*", ""); // Get part before digits
-        Courses course = Courses.valueOf(courseString); // Map to enum
+        // Extract course (before digits)
+        String courseString = batchId.replaceAll("\\d.*", "");
+        Courses course = Courses.valueOf(courseString);
 
-        // Extract the rest of batchId
-        String yearBranchStudent = batchId.replace(courseString, ""); // Remove course part
-        int admYear = Integer.parseInt(yearBranchStudent.substring(0, 4)); // Admission year
-        String branchCode = yearBranchStudent.substring(4, 7); // Branch code
-        StudentType studentType = StudentType.valueOf(yearBranchStudent.substring(7)); // Student type
+        // Remove course from batchId
+        String remaining = batchId.substring(courseString.length());
 
-        // Construct BasicFeeBatchDetails
+        // Extract admission year (first 4 digits)
+        int admYear = Integer.parseInt(remaining.substring(0, 4));
+
+        // Remaining after year
+        String afterYear = remaining.substring(4);
+
+        // Determine studentType from the end
+        StudentType studentType;
+        String studentTypeStr;
+
+        if (afterYear.endsWith("REGULAR")) {
+            studentType = StudentType.REGULAR;
+            studentTypeStr = "REGULAR";
+        } else if (afterYear.endsWith("LE")) {
+            studentType = StudentType.LE;
+            studentTypeStr = "LE";
+        } else {
+            throw new IllegalArgumentException("Invalid student type in batchId: " + batchId);
+        }
+
+        // Extract branch code (between year and student type)
+        String branchCode = afterYear.substring(0, afterYear.length() - studentTypeStr.length());
+
         return new BasicFeeBatchDetails(admYear, course, branchCode, studentType);
     }
+
 }

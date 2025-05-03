@@ -268,7 +268,7 @@ public class EmailSenderServiceImpl {
 
         // Set the email content
 //        helper.setText(emailContent, true);
-        microsoftGraphService.sendEmailWithAttachment("elitecracker25@gmail.com",mrNumber + " : Trident Payment Receipt" ,emailContent, receiptPdfBytes, graphToken);
+        microsoftGraphService.sendEmailWithAttachment("debika.pradhan.csit2029@tactbbsr.onmicrosoft.com",mrNumber + " : Trident Payment Receipt" ,emailContent, receiptPdfBytes, graphToken);
 //
 //        // Attach the PDF receipt
 //        helper.addAttachment("Payment_Receipt.pdf", new ByteArrayResource(receiptPdfBytes));

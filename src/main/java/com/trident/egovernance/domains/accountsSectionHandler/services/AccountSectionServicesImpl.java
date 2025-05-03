@@ -7,10 +7,7 @@ import com.trident.egovernance.exceptions.RecordNotFoundException;
 import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
 import com.trident.egovernance.global.entities.views.FeeCollectionView;
-import com.trident.egovernance.global.helpers.Courses;
-import com.trident.egovernance.global.helpers.DuesDetailsId;
-import com.trident.egovernance.global.helpers.ExcessRefundID;
-import com.trident.egovernance.global.helpers.FeeTypesType;
+import com.trident.egovernance.global.helpers.*;
 import com.trident.egovernance.global.repositories.permanentDB.*;
 import com.trident.egovernance.global.repositories.views.CollectionReportRepository;
 import com.trident.egovernance.global.repositories.views.DailyCollectionSummaryRepository;
@@ -322,5 +319,18 @@ public class AccountSectionServicesImpl implements AccountSectionService {
             feeId++;
         }
         feesRepository.saveAllAndFlush(feesCRUDDto.feesList());
+    }
+
+    public Map<Integer,Map<TFWType,List<FeesOnly>>> getFeeStructure(String batchId){
+        Set<FeesOnly> fees = mapperService.convertToFeesOnly(feesRepository.findAllByBatchId(batchId));
+        if(!fees.isEmpty()){
+            Map<Integer,Map<TFWType,List<FeesOnly>>> result = fees.stream()
+                    .collect(Collectors.groupingBy(
+                            FeesOnly::regdYear,
+                            Collectors.groupingBy(FeesOnly::tfwType)
+                    ));
+            return result;
+        }
+        throw new RecordNotFoundException("No such batch exists");
     }
 }

@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/public")
 public class PublicController {
+    private final MenuBladeFetcherService menuBladeFetcherService;
     private final S3ServiceImpl s3Service;
     private final WebClient webClientGraph;
     private final DuesDetailsRepository duesDetailsRepository;
@@ -46,8 +47,9 @@ public class PublicController {
     private final MicrosoftGraphService microsoftGraphService;
     private final MasterTableServices masterTableServices;
 
-    public PublicController(S3ServiceImpl s3Service, DuesDetailsRepository duesDetailsRepository, AppBearerTokenService appBearerTokenService, AuthenticationServiceImpl authenticationService, EntityManager entityManager, StudentRepository studentRepository, CustomJwtServiceImpl customJwtService,
+    public PublicController(MenuBladeFetcherService menuBladeFetcherService, S3ServiceImpl s3Service, DuesDetailsRepository duesDetailsRepository, AppBearerTokenService appBearerTokenService, AuthenticationServiceImpl authenticationService, EntityManager entityManager, StudentRepository studentRepository, CustomJwtServiceImpl customJwtService,
                             FeesRepository feesRepository, BranchRepository branchRepository, URLService urlService, FeeCollectionTransactionsServiceImpl feeCollectionTransactionsServiceImpl, MicrosoftGraphService microsoftGraphService, MasterTableServices masterTableServices) {
+        this.menuBladeFetcherService = menuBladeFetcherService;
         this.s3Service = s3Service;
         this.duesDetailsRepository = duesDetailsRepository;
         this.appBearerTokenService = appBearerTokenService;
@@ -98,6 +100,8 @@ public class PublicController {
                 .map(entry -> new BranchGroup(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
         logger.info(branchGroups.toString());
+        NavigationMenu navigationMenu = menuBladeFetcherService.getNavigationMenu();
+        logger.info("Navigation menu  : {}", navigationMenu);
         return branchGroups.isEmpty() ? ResponseEntity.ok(null) : ResponseEntity.ok(branchGroups);
     }
 

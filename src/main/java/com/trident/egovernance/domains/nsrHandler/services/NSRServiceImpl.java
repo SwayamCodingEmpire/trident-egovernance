@@ -81,7 +81,7 @@ class NSRServiceImpl implements NSRService {
 
     @Override
     public void bulkSaveNSRData(Set<NSR> nsrs){
-        Set<NSR> savedNSRs = (Set<NSR>) nsrRepository.saveAll(nsrs);
+        nsrRepository.saveAll(nsrs);
     }
 
     @Override
@@ -166,6 +166,7 @@ class NSRServiceImpl implements NSRService {
             }
             hostel.setRegdyear(nsr.getStudentType().equals(StudentType.REGULAR) ? 1 : 2);
             transport.setRegdYear(nsr.getStudentType().equals(StudentType.REGULAR) ? 1 : 2);
+            student.setStatus(StudentStatus.CONTINUING);
             student.setTransport(transport);
             transport.setStudent(student);
             hostel.setHostelier(BooleanString.NO);

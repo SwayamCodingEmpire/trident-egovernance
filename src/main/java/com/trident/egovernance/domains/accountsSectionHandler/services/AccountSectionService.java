@@ -6,6 +6,7 @@ import com.trident.egovernance.global.entities.permanentDB.ExcessRefund;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
 import com.trident.egovernance.global.helpers.Courses;
 import com.trident.egovernance.global.helpers.FeeTypesType;
+import com.trident.egovernance.global.helpers.TFWType;
 
 import java.sql.Date;
 import java.util.List;
@@ -39,4 +40,5 @@ public interface AccountSectionService {
     void insertRefundData(ExcessRefund excessRefund);
 
     void insertFees(FeesCRUDDto feesCRUDDto);
+    Map<Integer,Map<TFWType,List<FeesOnly>>> getFeeStructure(String batchId);
 }

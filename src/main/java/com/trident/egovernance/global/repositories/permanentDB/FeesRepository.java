@@ -19,4 +19,6 @@ public interface FeesRepository extends JpaRepository<Fees,Long> {
     Long getMaxIdForFees();
     List<Fees> findAllByBatchId(String batchId);
 
+
+
 }

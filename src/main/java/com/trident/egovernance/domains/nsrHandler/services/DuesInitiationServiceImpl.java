@@ -51,9 +51,9 @@ public class DuesInitiationServiceImpl implements DuesInitiationService {
                     .map(Fees::getDescription)
                     .collect(Collectors.toCollection(TreeSet::new));
 
-            Map<String, StandardDeductionFormat> deductionFormatMap = masterTableServicesImpl.getStandardDeductionformatByDescriptions(descriptions)
-                    .stream()
-                    .collect(Collectors.toMap(StandardDeductionFormat::getDescription, standardDeductionFormat -> standardDeductionFormat));
+//            Map<String, StandardDeductionFormat> deductionFormatMap = masterTableServicesImpl.getStandardDeductionformatByDescriptions(descriptions)
+//                    .stream()
+//                    .collect(Collectors.toMap(StandardDeductionFormat::getDescription, standardDeductionFormat -> standardDeductionFormat));
 
             Boolean plPool = BooleanString.YES.equals(student.plpoolm());
             Boolean indusTraining = BooleanString.YES.equals(student.indortrng());
@@ -69,7 +69,7 @@ public class DuesInitiationServiceImpl implements DuesInitiationService {
                             plPool,
                             indusTraining)
                     )
-                    .map(fee -> createDuesDetails(fee, student, deductionFormatMap))
+                    .map(fee -> createDuesDetails(fee, student))
                     .filter(Objects::nonNull)
                     .toList();
 
@@ -89,7 +89,7 @@ public class DuesInitiationServiceImpl implements DuesInitiationService {
 
 
     // Helper method to create DuesDetails for each fee
-    public DuesDetails createDuesDetails(Fees fee, DuesDetailsInitiationDTO student, Map<String, StandardDeductionFormat> deductionFormatMap) {
+    public DuesDetails createDuesDetails(Fees fee, DuesDetailsInitiationDTO student) {
         try {
             int admissionYear = Year.now().getValue();
             DuesDetails duesDetails = new DuesDetails();
@@ -99,7 +99,7 @@ public class DuesInitiationServiceImpl implements DuesInitiationService {
             duesDetails.setBalanceAmount(fee.getAmount());
             duesDetails.setAmountPaid(BigDecimal.ZERO);
             duesDetails.setAmountDue(fee.getAmount());
-            duesDetails.setDeductionOrder(deductionFormatMap.get(fee.getDescription()).getDeductionOrder());
+            duesDetails.setDeductionOrder(fee.getFeeType().getStandardDeductionFormat().getDeductionOrder());
             duesDetails.setDueYear(student.currentYear());
             duesDetails.setSessionId(masterTableServicesImpl.getSessionId(student.course(), duesDetails.getDueYear(), admissionYear, student.studentType()));
             duesDetails.setAmountPaidToJee(BigDecimal.ZERO);

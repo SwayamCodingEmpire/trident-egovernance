@@ -3,6 +3,7 @@ package com.trident.egovernance.global.services;
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.exceptions.ImproperProcedureException;
 import com.trident.egovernance.exceptions.InvalidInputsException;
+import com.trident.egovernance.exceptions.RecordAlreadyExistsException;
 import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.exceptions.RecordNotFoundException;
 import com.trident.egovernance.global.entities.permanentDB.PaymentMode;
@@ -54,6 +55,11 @@ public class MasterTableServicesImpl implements MasterTableServices {
     @Override
     public List<Sessions> getOngoingSessionsData() {
         return sessionsRepository.findAllByAndRegdYearEndDateIsNull(0);
+    }
+
+    @Override
+    public FeeTypesWithDeductionOrder getFeeTypesWithDeductionOrder(String description) {
+        return new FeeTypesWithDeductionOrder(feeTypesRepository.findById(description).orElseThrow(()->new RecordNotFoundException("Fee type not found")));
     }
 
 
@@ -232,10 +238,32 @@ public class MasterTableServicesImpl implements MasterTableServices {
 
     @Override
     @Transactional
-    public Set<FeeTypesOnly> createNewFeeTypes(Set<FeeTypesOnly> feeTypes) {
-        List<FeeTypes> feeTypesList = mapperService.convertToFeeTypesList(feeTypes);
-        logger.info(feeTypesList.toString());
-        return mapperService.convertToFeeTypesOnlySet(feeTypesRepository.saveAllAndFlush(feeTypesList));
+    public void createNewFeeTypes(Set<FeeTypesWithDeductionOrder> feeTypes) {
+        for(FeeTypesWithDeductionOrder  feeTypesWithDeductionOrder : feeTypes){
+            if(feeTypesRepository.existsById(feeTypesWithDeductionOrder.description())){
+                throw new RecordAlreadyExistsException("Description already exists");
+            }
+        }
+        persistToDatabase(feeTypes);
+    }
+
+    @Override
+    @Transactional
+    public void updateFeeTypes(Set<FeeTypesWithDeductionOrder> feeTypes) {
+        for(FeeTypesWithDeductionOrder  feeTypesWithDeductionOrder : feeTypes){
+            if(!feeTypesRepository.existsById(feeTypesWithDeductionOrder.description())){
+                throw new RecordNotFoundException("Description Does Not Exist");
+            }
+        }
+        persistToDatabase(feeTypes);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void persistToDatabase(Set<FeeTypesWithDeductionOrder> feeTypes) {
+        List<FeeTypes> feeTypesEntities = mapperService.convertToFeeTypesListFromDTO(feeTypes);
+        List<StandardDeductionFormat> standardDeductionFormatList = mapperService.convertToStandardDeductionEntity(feeTypes);
+        feeTypesRepository.saveAll(feeTypesEntities);
+        standardDeductionFormatRepository.saveAll(standardDeductionFormatList);
     }
 
     public FeeGroupAndPartOfDTO getFeeGroupAndPartOfDTO() {
