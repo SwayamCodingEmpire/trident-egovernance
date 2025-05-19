@@ -3,6 +3,8 @@ package com.trident.egovernance.domains.nsrHandler.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trident.egovernance.domains.hrHandler.services.StaffServiceImpl;
 import com.trident.egovernance.global.services.AppBearerTokenService;
+import com.trident.egovernance.global.services.MiscellaniousServices;
+import com.trident.egovernance.global.services.MiscellaniousServicesImpl;
 import com.trident.egovernance.global.services.S3ServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,16 +23,67 @@ public class UserCreationServiceImpl implements UserCreationService {
     private final WebClient webClientGraph;
     private final S3ServiceImpl s3Service;
     private final AppBearerTokenService appBearerTokenService;
+    private final MiscellaniousServices staffService;
     private final Logger logger = LoggerFactory.getLogger(UserCreationServiceImpl.class);
 
-    public UserCreationServiceImpl(S3ServiceImpl s3Service, AppBearerTokenService appBearerTokenService) {
+
+    public UserCreationServiceImpl(S3ServiceImpl s3Service, AppBearerTokenService appBearerTokenService, MiscellaniousServices staffService) {
         this.s3Service = s3Service;
         this.appBearerTokenService = appBearerTokenService;
+        this.staffService = staffService;
         this.webClientGraph = WebClient.builder()
                 .baseUrl("https://graph.microsoft.com/v1.0/users")
                 .build();
     }
 
+    @Override
+    public String createStaffUser(String displayName, String staffDesignation, String department, String username, String password, String email, Long staffId, String collegeName) {
+        String appToken = appBearerTokenService.getAppBearerToken("defaultKey");
+        String userPrincipalName = staffService.generateStaffUserPrincipalName(displayName, collegeName, department);
+
+        logger.info("Creating user using app token: " + appToken);
+        logger.info("Creating user using user principal: " + userPrincipalName);
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("accountEnabled", true);
+        requestBody.put("displayName", displayName + "(" + staffId + ")");
+        requestBody.put("mailNickname", userPrincipalName.split("@")[0]);
+        requestBody.put("jobTitle", staffDesignation);
+        requestBody.put("employeeId", staffId);
+        requestBody.put("department", department);
+        requestBody.put("userPrincipalName", userPrincipalName);
+
+        Map<String, Object> passwordProfile = new HashMap<>();
+        passwordProfile.put("forceChangePasswordNextSignIn", true);
+        passwordProfile.put("password", password);
+
+        requestBody.put("passwordProfile", passwordProfile);
+
+        logger.info("Creating user using request body: " + requestBody);
+
+        String userPayload = "";
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            userPayload = objectMapper.writeValueAsString(requestBody);
+
+            webClientGraph.post()
+                    .header("Authorization", "Bearer " + appToken)
+                    .header("Content-Type", "application/json")
+                    .bodyValue(userPayload)
+                    .retrieve()
+                    .onStatus(HttpStatusCode::isError, response -> response.bodyToMono(String.class).flatMap(body -> {
+                        logger.error("Error creating user: " + body);
+                        return Mono.error(new RuntimeException("Failed to create user"));
+                    }))
+                    .bodyToMono(String.class)
+                    .block();
+
+            return userPrincipalName;
+        } catch (Exception e) {
+            logger.error("Error generating JSON payload", e);
+            throw new RuntimeException("Error generating JSON payload");
+        }
+    }
 
     @Override
     public String createUser(String displayName, String jobTitle, String department, String employeeId, String password, String email, long yop, String jeeApplicationNo) {
@@ -144,6 +197,9 @@ public class UserCreationServiceImpl implements UserCreationService {
         }
     }
 
+    public String generateStaffUserPrincipalName(String displayName, String collegeName, String department) {
+        return staffService.generateStaffUserPrincipalName(displayName, collegeName, department);
+    }
 //    @Override
 //    public String createStaff(String displayName, String jobTitle, String department, String employeeId,
 //                              String password, String email, Long staffId, String collegeName) {

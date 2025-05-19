@@ -1,13 +1,19 @@
 package com.trident.egovernance.domains.hrHandler.services;
 
+import com.trident.egovernance.domains.nsrHandler.services.EmailSenderServiceImpl;
+import com.trident.egovernance.domains.nsrHandler.services.UserCreationService;
+import com.trident.egovernance.domains.nsrHandler.services.UserCreationServiceImpl;
 import com.trident.egovernance.dto.StaffDetailsDto;
 import com.trident.egovernance.dto.UsernamePurposeOfStaff;
 import com.trident.egovernance.exceptions.InvalidInputsException;
+import com.trident.egovernance.exceptions.RecordNotFoundException;
 import com.trident.egovernance.global.entities.permanentDB.Staff;
 import com.trident.egovernance.global.repositories.permanentDB.StaffRepository;
 import com.trident.egovernance.global.services.AppBearerTokenService;
+import com.trident.egovernance.global.services.MiscellaniousServices;
 import com.trident.egovernance.global.services.MiscellaniousServicesImpl;
 import com.trident.egovernance.global.services.S3ServiceImpl;
+import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
@@ -17,6 +23,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.sql.SQLException;
 import java.util.*;
@@ -30,16 +37,18 @@ public class StaffServiceImpl implements StaffService {
     private final String LOWALPHASET = "abcdefghijklmnopqrstuvwxyz";
     private final String NUMSET = "0123456789";
     private final SecureRandom random = new SecureRandom();
-    private final MiscellaniousServicesImpl miscellaniousServices;
-//    private final UserCreationServiceImpl userCreationServiceImpl;
+    private final MiscellaniousServices miscellaniousServices;
+    private final UserCreationService userCreationService;
 
     @Autowired
     private final GenericStaffRepoImpl genericStaffRepository;
+    @Autowired
+    private EmailSenderServiceImpl emailSenderServiceImpl;
 
-    public StaffServiceImpl(StaffRepository staffRepository, MiscellaniousServicesImpl miscellaniousServices, GenericStaffRepoImpl genericStaffRepository) {
+    public StaffServiceImpl(StaffRepository staffRepository, MiscellaniousServices miscellaniousServices, UserCreationService userCreationService, GenericStaffRepoImpl genericStaffRepository) {
         this.staffRepository = staffRepository;
         this.miscellaniousServices = miscellaniousServices;
-//        this.userCreationServiceImpl = userCreationServiceImpl;
+        this.userCreationService = userCreationService;
         this.genericStaffRepository = genericStaffRepository;
     }
 
@@ -73,24 +82,6 @@ public class StaffServiceImpl implements StaffService {
             password.append(LOWALPHASET.charAt(random.nextInt(LOWALPHASET.length())));
         }
         return password.toString();
-    }
-
-    public String generatePrincipleStaffName(String staffName, String collegeName, String staffDept) {
-        if (staffName == null || staffName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Full name cannot be null or empty");
-        }
-
-        // Split the name into parts
-        String[] nameParts = staffName.trim().toLowerCase().split("\\s+");
-        if (nameParts.length == 0) {
-            throw new IllegalArgumentException("Full name must contain at least a first name");
-        }
-
-        String firstName = nameParts[0]; // Always at least the first name
-        String lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : ""; // Optional last name
-
-        // Combine parts to form UPN
-        return lastName.isEmpty() ? String.format("%s.%s@%s.onmicrosoft.com", firstName.replace(" ", ""), collegeName, staffDept) : String.format("%s.%s.%s@%s.onmicrosoft.com", firstName.replace(" ", ""), lastName, collegeName, staffDept);
     }
 
     @Transactional
@@ -173,15 +164,35 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public Boolean finalSubmitStaff(String staffId) {
-//        String password = generatePassword();
-//        String response = userCreationServiceImpl.createStaff(
-//                staffDetailsDto.staffName(),
-//                "STAFF",
-//                staffDetailsDto.staffDept(),
-//                password,
-//                staffDetailsDto.email(),
-//        );
+    public Boolean finalSubmitStaff(Long staffId) {
+        logger.info("Entered inside to finalSubmitStaff");
+        Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new RecordNotFoundException("Record Now found"));
+        logger.info("Fetched staff data from Database for employeeId: {}", staffId);
+//        staff.setStaffName(staff.getStaffName());
+//        staff.setStaffDept(staff.getStaffDept());
+//        staff.setStaffDesignation(staff.getStaffDesignation());
+//        staff.setStaffCategory(staff.getStaffCategory());
+
+        String password = generatePassword();
+        // Use the injected userCreationService (interface)
+        String response = userCreationService.createStaffUser(
+                staff.getStaffName(),
+                staff.getStaffDesignation(),
+                staff.getUsername(),
+                staff.getStaffDept(),
+                password,
+                staff.getEmail(),
+                staff.getStaffId(),
+                staff.getCollegeName()
+        );
+        logger.info("Response for Microsoft : {}",response);
+        try {
+            emailSenderServiceImpl.sendTridentCredentialsEmailToStaff(response, password);
+        } catch (MessagingException e) {
+            logger.error(e.getMessage());
+        }catch (IOException e) {
+            logger.error(e.getMessage());
+        }
         return true;
     }
 

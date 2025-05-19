@@ -17,5 +17,5 @@ public interface StaffService {
 
     Map<String, List<Object>> getAllStaffDetailsForInput(String entityName);
 
-    Boolean finalSubmitStaff(String staffId);
+    Boolean finalSubmitStaff(Long staffId);
 }

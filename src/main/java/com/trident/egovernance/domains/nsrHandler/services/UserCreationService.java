@@ -5,6 +5,5 @@ import java.util.concurrent.CompletableFuture;
 public interface UserCreationService {
     String createUser(String displayName, String jobTitle, String department, String employeeId, String password, String email, long yop, String jeeApplicationNo);
     CompletableFuture<Void> setProfilePicture(String regdNo, String userId);
-//    String createStaff(String displayName, String jobTitle, String department, String employeeId,
-//                       String password, String email, Long staffId, String collegeName);
+    String createStaffUser(String displayName, String staffDesignation, String department, String username, String password, String email, Long staffId, String collegeName);
 }

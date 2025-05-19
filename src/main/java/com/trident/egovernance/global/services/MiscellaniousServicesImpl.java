@@ -247,13 +247,38 @@ public class MiscellaniousServicesImpl implements MiscellaniousServices {
     @Override
     public String generateStaffUsername(UsernamePurposeOfStaff user){
         StringBuilder code = new StringBuilder();
-        String newDes = user.staffDesignation().replace(" ","_");
-        String newRole = user.staffRole().replace(" ", "_");
+        String newDes = user.staffDesignation().toLowerCase().replace(" ",".");
+        String newRole = user.staffRole().toLowerCase().replace(" ", ".");
         String[] nameParts = user.staffName().trim().toLowerCase().split("\\s+");
         String firstName = nameParts[0];
         code.append(firstName);
         code.append(newDes);
         code.append(newRole);
         return code.toString();
+    }
+
+    @Override
+    public String generateStaffUserPrincipalName(String displayName, String collegeName, String department) {
+        if (displayName == null || displayName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Full name cannot be null or empty");
+        }
+
+        // Split the name into parts
+        String[] nameParts = displayName.trim().toLowerCase().split("\\s+");
+        if (nameParts.length == 0) {
+            throw new IllegalArgumentException("Full name must contain at least a first name");
+        }
+
+        String firstName = nameParts[0]; // Always at least the first name
+        String lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : ""; // Optional last name
+
+        // Combine parts to form UPN
+        return lastName.isEmpty()
+                ? String.format("%s@%s.onmicrosoft.com", firstName.replace(" ", ""), collegeName.toLowerCase())
+                : String.format(
+                "%s.%s@%s.onmicrosoft.com",
+                firstName.replace(" ", ""),
+                lastName,
+                collegeName.toLowerCase());
     }
 }

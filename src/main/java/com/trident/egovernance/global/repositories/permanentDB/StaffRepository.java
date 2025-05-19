@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.sql.SQLException;
 import java.util.List;
 
-public interface StaffRepository extends JpaRepository<Staff, Integer> {
+public interface StaffRepository extends JpaRepository<Staff, Long> {
 
     @Query("SELECT COALESCE(MAX(s.staffId), 99) + 1 FROM STAFFDETAILS s")
     Long getStaffId();

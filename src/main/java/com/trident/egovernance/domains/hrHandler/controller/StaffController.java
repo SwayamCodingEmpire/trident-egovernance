@@ -6,6 +6,8 @@ import com.trident.egovernance.dto.StaffDetailsDto;
 import com.trident.egovernance.global.entities.permanentDB.Staff;
 import com.trident.egovernance.global.repositories.permanentDB.StaffRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +22,7 @@ public class StaffController {
     private final StaffRepository staffRepository;
     private final StaffServiceImpl staffServiceImpl;
     private final EmailSenderServiceImpl emailSenderServiceImpl;
+    private final Logger logger = LoggerFactory.getLogger(StaffController.class);
 
     public StaffController(StaffRepository staffRepository, StaffServiceImpl staffServiceImpl, EmailSenderServiceImpl emailSenderServiceImpl) {
         this.staffRepository = staffRepository;
@@ -31,9 +34,10 @@ public class StaffController {
     @PostMapping("/create")
     public ResponseEntity<String> createStaff(@RequestBody StaffDetailsDto staffDetailsDto) {
         try {
+            logger.info("Creating new staff: {}", staffDetailsDto);
             staffServiceImpl.addStaff(staffDetailsDto);
-//            Here I want just after adding the staff the email sender method will send the login credentials to the staff email.
-//            That login credentials are to be extracted from the createStaff method and use in the email sender method.
+            staffServiceImpl.finalSubmitStaff(staffDetailsDto.staffId());
+            logger.info("Email sent successfully to the user {}", staffDetailsDto.staffName());
             return ResponseEntity.ok("Staff added successfully.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
