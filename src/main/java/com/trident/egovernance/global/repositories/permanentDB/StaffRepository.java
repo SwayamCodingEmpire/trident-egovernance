@@ -13,7 +13,7 @@ import java.util.List;
 
 public interface StaffRepository extends JpaRepository<Staff, Long> {
 
-    @Query("SELECT COALESCE(MAX(s.staffId), 99) + 1 FROM STAFFDETAILS s")
+    @Query("SELECT CASE WHEN COUNT(s) = 0 THEN 100 ELSE MAX(s.staffId) + 1 END FROM STAFFDETAILS s")
     Long getStaffId();
 
     @Modifying

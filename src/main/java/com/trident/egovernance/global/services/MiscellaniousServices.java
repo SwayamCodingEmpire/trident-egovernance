@@ -25,5 +25,5 @@ public interface MiscellaniousServices {
     RoleDetails getMenuItems();
     String incrementYearRange(String yearRange);
     String generateStaffUsername(UsernamePurposeOfStaff user);
-    String generateStaffUserPrincipalName(String displayName, String collegeName, String department);
+    String generateStaffUserPrincipalName(String displayName);
 }

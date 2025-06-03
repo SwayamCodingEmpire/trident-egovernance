@@ -2,26 +2,22 @@ package com.trident.egovernance.domains.hrHandler.services;
 
 import com.trident.egovernance.domains.nsrHandler.services.EmailSenderServiceImpl;
 import com.trident.egovernance.domains.nsrHandler.services.UserCreationService;
-import com.trident.egovernance.domains.nsrHandler.services.UserCreationServiceImpl;
 import com.trident.egovernance.dto.StaffDetailsDto;
 import com.trident.egovernance.dto.UsernamePurposeOfStaff;
 import com.trident.egovernance.exceptions.InvalidInputsException;
 import com.trident.egovernance.exceptions.RecordNotFoundException;
 import com.trident.egovernance.global.entities.permanentDB.Staff;
 import com.trident.egovernance.global.repositories.permanentDB.StaffRepository;
-import com.trident.egovernance.global.services.AppBearerTokenService;
 import com.trident.egovernance.global.services.MiscellaniousServices;
-import com.trident.egovernance.global.services.MiscellaniousServicesImpl;
-import com.trident.egovernance.global.services.S3ServiceImpl;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import org.hibernate.exception.ConstraintViolationException;
+import org.hibernate.service.spi.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
 import java.security.SecureRandom;
@@ -54,19 +50,24 @@ public class StaffServiceImpl implements StaffService {
 
     @Transactional
     @Override
-    public void addStaff(StaffDetailsDto staff) {
+    public Staff addStaff(StaffDetailsDto staff) {
         Objects.requireNonNull(staff, "Staff details cannot be null");
+        if (staff.staffName() == null || staff.staffName().isEmpty()) {
+            throw new IllegalArgumentException("Staff name cannot be empty");
+        }
 
         Staff staffEntity = new Staff(staff);
         staffEntity.setStaffId(staffRepository.getStaffId());
         staffEntity.setUsername(miscellaniousServices.generateStaffUsername(new UsernamePurposeOfStaff(staff.staffDesignation(), staff.role(), staff.staffName())));
         staffEntity.setPassword(generatePassword());
+        staffEntity.setEmail(staff.email());
 
         staffEntity.setSecurityQuestion(Optional.ofNullable(staff.securityQuestion()).orElseThrow(() -> new IllegalArgumentException("Security question cannot be null")));
         staffEntity.setSecurityAnswer(Optional.ofNullable(staff.securityAnswer()).orElse("Not Provided"));
 
-        staffRepository.save(staffEntity);
-        logger.info("Staff added successfully: {}", staff.staffId());
+        Staff savedStaff = staffRepository.save(staffEntity);
+        logger.info("Staff added successfully - ID: {}, Email: {}", savedStaff.getStaffId(), savedStaff.getEmail());
+        return savedStaff;
     }
 
     private String generatePassword() {
@@ -165,35 +166,57 @@ public class StaffServiceImpl implements StaffService {
 
     @Override
     public Boolean finalSubmitStaff(Long staffId) {
-        logger.info("Entered inside to finalSubmitStaff");
-        Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new RecordNotFoundException("Record Now found"));
-        logger.info("Fetched staff data from Database for employeeId: {}", staffId);
-//        staff.setStaffName(staff.getStaffName());
-//        staff.setStaffDept(staff.getStaffDept());
-//        staff.setStaffDesignation(staff.getStaffDesignation());
-//        staff.setStaffCategory(staff.getStaffCategory());
-
-        String password = generatePassword();
-        // Use the injected userCreationService (interface)
-        String response = userCreationService.createStaffUser(
-                staff.getStaffName(),
-                staff.getStaffDesignation(),
-                staff.getUsername(),
-                staff.getStaffDept(),
-                password,
-                staff.getEmail(),
-                staff.getStaffId(),
-                staff.getCollegeName()
-        );
-        logger.info("Response for Microsoft : {}",response);
         try {
-            emailSenderServiceImpl.sendTridentCredentialsEmailToStaff(response, password);
-        } catch (MessagingException e) {
-            logger.error(e.getMessage());
-        }catch (IOException e) {
-            logger.error(e.getMessage());
+            logger.info("Entered inside to finalSubmitStaff for staffId: {}", staffId);
+
+            // 1. Fetch staff record with null check
+            Staff staff = staffRepository.findById(staffId)
+                    .orElseThrow(() -> {
+                        logger.error("Staff not found with ID: {}", staffId);
+                        return new RecordNotFoundException("Staff record not found for ID: " + staffId);
+                    });
+
+            logger.info("Fetched staff data from Database for employeeId: {}", staffId);
+            logger.debug("Staff details: {}", staff);  // Add debug logging for staff object
+
+            // 2. Generate password
+            String password = generatePassword();
+            logger.info("Generated temporary password");
+
+            // 3. Create Microsoft account
+            String microsoftEmail;
+            try {
+                microsoftEmail = userCreationService.createStaffUser(
+                        staff.getStaffName(),
+                        staff.getStaffDesignation(),
+                        staff.getUsername(),
+                        staff.getStaffDept(),
+                        password,
+                        staff.getEmail(),
+                        staff.getStaffId(),
+                        staff.getCollegeName()
+                );
+                logger.info("Microsoft account created successfully. Response: {}", microsoftEmail);
+            } catch (Exception e) {
+                logger.error("Failed to create Microsoft account for staff ID: {}", staffId, e);
+                throw new ServiceException("Microsoft account creation failed", e);
+            }
+
+            // 4. Send email
+            try {
+                emailSenderServiceImpl.sendTridentCredentialsEmailToStaff(microsoftEmail, password);
+                logger.info("Credentials email sent successfully to: {}", microsoftEmail);
+            } catch (MessagingException | IOException e) {
+                logger.error("Failed to send email to staff ID: {}", staffId, e);
+                throw new ServiceException("Email sending failed", e);
+            }
+
+            return true;
+
+        } catch (Exception e) {
+            logger.error("Error in finalSubmitStaff for staffId: {}", staffId, e);
+            throw e; // Or return false if you prefer not to throw
         }
-        return true;
     }
 
 }

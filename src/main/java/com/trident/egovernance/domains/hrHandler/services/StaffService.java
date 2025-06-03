@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface StaffService {
-    void addStaff(StaffDetailsDto staffDetailsDto);
+    Staff addStaff(StaffDetailsDto staffDetailsDto);
 
     List<List<Staff>> getALlStaff();
 

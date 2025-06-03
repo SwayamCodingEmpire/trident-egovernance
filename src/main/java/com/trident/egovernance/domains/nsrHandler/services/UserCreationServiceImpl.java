@@ -1,5 +1,6 @@
 package com.trident.egovernance.domains.nsrHandler.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trident.egovernance.domains.hrHandler.services.StaffServiceImpl;
 import com.trident.egovernance.global.services.AppBearerTokenService;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -37,51 +39,76 @@ public class UserCreationServiceImpl implements UserCreationService {
     }
 
     @Override
-    public String createStaffUser(String displayName, String staffDesignation, String department, String username, String password, String email, Long staffId, String collegeName) {
-        String appToken = appBearerTokenService.getAppBearerToken("defaultKey");
-        String userPrincipalName = staffService.generateStaffUserPrincipalName(displayName, collegeName, department);
-
-        logger.info("Creating user using app token: " + appToken);
-        logger.info("Creating user using user principal: " + userPrincipalName);
-
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("accountEnabled", true);
-        requestBody.put("displayName", displayName + "(" + staffId + ")");
-        requestBody.put("mailNickname", userPrincipalName.split("@")[0]);
-        requestBody.put("jobTitle", staffDesignation);
-        requestBody.put("employeeId", staffId);
-        requestBody.put("department", department);
-        requestBody.put("userPrincipalName", userPrincipalName);
-
-        Map<String, Object> passwordProfile = new HashMap<>();
-        passwordProfile.put("forceChangePasswordNextSignIn", true);
-        passwordProfile.put("password", password);
-
-        requestBody.put("passwordProfile", passwordProfile);
-
-        logger.info("Creating user using request body: " + requestBody);
-
-        String userPayload = "";
+    public String createStaffUser(String displayName, String staffDesignation, String department,
+                                  String username, String password, String email, Long staffId,
+                                  String collegeName) {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            userPayload = objectMapper.writeValueAsString(requestBody);
+            // Validate required parameters
+            if (displayName == null || displayName.isEmpty() ||
+                    staffDesignation == null || staffDesignation.isEmpty() ||
+                    department == null || department.isEmpty() ||
+                    password == null || password.isEmpty() ||
+                    staffId == null || collegeName == null || collegeName.isEmpty()) {
+                throw new IllegalArgumentException("Required parameters cannot be null or empty");
+            }
 
-            webClientGraph.post()
-                    .header("Authorization", "Bearer " + appToken)
-                    .header("Content-Type", "application/json")
-                    .bodyValue(userPayload)
-                    .retrieve()
-                    .onStatus(HttpStatusCode::isError, response -> response.bodyToMono(String.class).flatMap(body -> {
-                        logger.error("Error creating user: " + body);
-                        return Mono.error(new RuntimeException("Failed to create user"));
-                    }))
-                    .bodyToMono(String.class)
-                    .block();
+            String appToken = appBearerTokenService.getAppBearerToken("defaultKey");
+            if (appToken == null || appToken.isEmpty()) {
+                throw new RuntimeException("Failed to get application token");
+            }
 
-            return userPrincipalName;
+            String userPrincipalName = staffService.generateStaffUserPrincipalName(displayName);
+            if (userPrincipalName == null || !userPrincipalName.contains("@")) {
+                throw new RuntimeException("Invalid user principal name generated");
+            }
+
+            logger.info("Creating user with principal: {}", userPrincipalName);
+
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("accountEnabled", true);
+            requestBody.put("displayName", String.format("%s(%d)", displayName, staffId));
+            requestBody.put("mailNickname", userPrincipalName.split("@")[0]);
+            requestBody.put("jobTitle", staffDesignation);
+            requestBody.put("employeeId", staffId.toString());
+            requestBody.put("department", department);
+            requestBody.put("userPrincipalName", userPrincipalName);
+
+            Map<String, Object> passwordProfile = new HashMap<>();
+            passwordProfile.put("forceChangePasswordNextSignIn", true);
+            passwordProfile.put("password", password);
+
+            requestBody.put("passwordProfile", passwordProfile);
+
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                String userPayload = objectMapper.writeValueAsString(requestBody);
+
+                String response = webClientGraph.post()
+                        .header("Authorization", "Bearer " + appToken)
+                        .header("Content-Type", "application/json")
+                        .bodyValue(userPayload)
+                        .retrieve()
+                        .onStatus(HttpStatusCode::isError, clientResponse ->
+                                clientResponse.bodyToMono(String.class)
+                                        .flatMap(body -> {
+                                            logger.error("Error creating user - Status: {}, Body: {}", clientResponse.statusCode(), body);
+                                            return Mono.error(new RuntimeException("Failed to create user: " + body));
+                                        }))
+                        .bodyToMono(String.class)
+                        .block(Duration.ofSeconds(30)); // Add timeout
+
+                logger.info("User created successfully: {}", userPrincipalName);
+                return userPrincipalName;
+            } catch (JsonProcessingException e) {
+                logger.error("Error generating JSON payload", e);
+                throw new RuntimeException("Error generating JSON payload", e);
+            } catch (RuntimeException e) {
+                logger.error("Error creating user via API", e);
+                throw e;
+            }
         } catch (Exception e) {
-            logger.error("Error generating JSON payload", e);
-            throw new RuntimeException("Error generating JSON payload");
+            logger.error("Error in createStaffUser", e);
+            throw new RuntimeException("Failed to create staff user", e);
         }
     }
 
@@ -198,7 +225,7 @@ public class UserCreationServiceImpl implements UserCreationService {
     }
 
     public String generateStaffUserPrincipalName(String displayName, String collegeName, String department) {
-        return staffService.generateStaffUserPrincipalName(displayName, collegeName, department);
+        return staffService.generateStaffUserPrincipalName(displayName);
     }
 //    @Override
 //    public String createStaff(String displayName, String jobTitle, String department, String employeeId,

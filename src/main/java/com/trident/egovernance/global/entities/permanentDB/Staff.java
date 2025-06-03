@@ -25,19 +25,19 @@ public class Staff {
     @Column(name = "STAFF_DESIGNATION", nullable = false, length = 50)
     private String staffDesignation;
 
-    @Column(name = "STAFF_CATEGORY", nullable = false, length = 11)
+    @Column(name = "STAFF_CATEGORY", nullable = false, length = 20)
     private String staffCategory;
 
-    @Column(name = "STATUS", nullable = false, length = 10)
+    @Column(name = "STATUS", nullable = false, length = 15)
     private String status;
 
-    @Column(name = "ROLE", nullable = false, length = 15)
+    @Column(name = "ROLE", nullable = false, length = 20)
     private String role;
 
-    @Column(name = "USERNAME", nullable = false, length = 4)
+    @Column(name = "USERNAME", nullable = false, length = 30)
     private String username;
 
-    @Column(name = "PASSWORD", nullable = false, length = 50)
+    @Column(name = "PASSWORD", nullable = false, length = 20)
     private String password;
 
     @Column(name = "PHNO", nullable = false, length = 300)

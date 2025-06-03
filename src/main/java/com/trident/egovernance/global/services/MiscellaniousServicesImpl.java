@@ -258,7 +258,7 @@ public class MiscellaniousServicesImpl implements MiscellaniousServices {
     }
 
     @Override
-    public String generateStaffUserPrincipalName(String displayName, String collegeName, String department) {
+    public String generateStaffUserPrincipalName(String displayName) {
         if (displayName == null || displayName.trim().isEmpty()) {
             throw new IllegalArgumentException("Full name cannot be null or empty");
         }
@@ -274,11 +274,10 @@ public class MiscellaniousServicesImpl implements MiscellaniousServices {
 
         // Combine parts to form UPN
         return lastName.isEmpty()
-                ? String.format("%s@%s.onmicrosoft.com", firstName.replace(" ", ""), collegeName.toLowerCase())
+                ? String.format("%s@tridentbbsr.onmicrosoft.com", firstName.replace(" ", ""))
                 : String.format(
-                "%s.%s@%s.onmicrosoft.com",
+                "%s.%s@tridentbbsr.onmicrosoft.com",
                 firstName.replace(" ", ""),
-                lastName,
-                collegeName.toLowerCase());
+                lastName);
     }
 }

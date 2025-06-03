@@ -3,9 +3,11 @@ package com.trident.egovernance.domains.hrHandler.controller;
 import com.trident.egovernance.domains.hrHandler.services.StaffServiceImpl;
 import com.trident.egovernance.domains.nsrHandler.services.EmailSenderServiceImpl;
 import com.trident.egovernance.dto.StaffDetailsDto;
+import com.trident.egovernance.exceptions.RecordNotFoundException;
 import com.trident.egovernance.global.entities.permanentDB.Staff;
 import com.trident.egovernance.global.repositories.permanentDB.StaffRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -30,21 +32,28 @@ public class StaffController {
         this.emailSenderServiceImpl = emailSenderServiceImpl;
     }
 
-    @Operation(summary = "Create new staff", description = "Return a response String to indicate that the staff is added successfully or not")
+    @Operation(summary = "Create new staff",
+            description = "Creates staff record and Microsoft account, sends credentials email")
     @PostMapping("/create")
-    public ResponseEntity<String> createStaff(@RequestBody StaffDetailsDto staffDetailsDto) {
+    public ResponseEntity<String> createStaff(@Valid @RequestBody StaffDetailsDto staffDetailsDto) {
         try {
-            logger.info("Creating new staff: {}", staffDetailsDto);
-            staffServiceImpl.addStaff(staffDetailsDto);
-            staffServiceImpl.finalSubmitStaff(staffDetailsDto.staffId());
-            logger.info("Email sent successfully to the user {}", staffDetailsDto.staffName());
-            return ResponseEntity.ok("Staff added successfully.");
+            logger.info("Creating new staff: {}", staffDetailsDto.staffName());
+            Staff createdStaff = staffServiceImpl.addStaff(staffDetailsDto);
+            logger.info("Staff record created with ID: {}", createdStaff.getStaffId());
+
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            logger.error("Validation error: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (RecordNotFoundException e) {
+            logger.error("Staff record not found: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred while adding staff.");
+            logger.error("Unexpected error creating staff: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError()
+                    .body("Failed to create staff: " + e.getMessage());
         }
+
+        return ResponseEntity.ok("Successfully created staff");
     }
 
     @Operation(summary = "Update the existing staff details in the table", description = "Replace the previous data with the new data input to the table using username to find the staff")

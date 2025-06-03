@@ -111,55 +111,87 @@ public class EmailSenderServiceImpl {
         return CompletableFuture.completedFuture(null);
     }
 
-    @Operation(summary = "This is the staff email sender that will send the login credentials of staff", description = "Only for staff email sender")
+    @Operation(summary = "Send Microsoft Teams login credentials to staff",
+            description = "Async email service for staff credential delivery")
     @Async
     public CompletableFuture<Void> sendTridentCredentialsEmailToStaff(String microsoftMail, String password)
             throws MessagingException, IOException {
 
-        logger.info("Sending Trident credentials email to staff");
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        // Input validation
+        if (microsoftMail == null || microsoftMail.isEmpty() ||
+                password == null || password.isEmpty()) {
+            throw new IllegalArgumentException("Email and password cannot be null or empty");
+        }
 
-//        String joiningDate = "1st November 2024";
-//        String trainingStart = "5th November 2024";
-//        String trainingEnd = "10th November 2024";
-//        String trainingTimeStart = "10AM";
-//        String trainingTimeEnd = "4PM";
+        try {
+            logger.info("Sending Trident credentials to: {}", microsoftMail);
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            String receiverEmail = "gamerhorizon1789@gmail.com";
 
-        // Sender and Recipient
-        helper.setFrom("mohantyswayam2001@gmail.com");
-        helper.setTo("gamerhorizon1789@gmail.com");
-        helper.setSubject("Trident: Microsoft Teams Credentials for Staff");
+            // Configure email
+            helper.setFrom("mohantyswayam2001@gmail.com"); // Use institutional email
+            helper.setTo(receiverEmail); // Send to staff's actual email
+            helper.setSubject("Trident: Microsoft Teams Credentials");
 
-        // HTML Content with colored text
-        String emailContent =
-                "<html><body>" +
-                        "<p>Dear Staff Member,</p>" +
+            // HTML Content
+            String emailContent = String.format("""
+            <html>
+                <body>
+                    <p>Dear Staff Member,</p>
+            
+                    <p>Welcome to Trident Group of Institutions! Your official communication 
+                    will be conducted via <span style='color:blue;'>Microsoft Teams</span>. 
+                    Below are your credentials:</p>
+                    
+                    <p>Username: <b style='color:blue;'><a href="mailto:%s">%s</a></b><br>
+                    Temporary Password: <b style='color:blue;'>%s</b></p>
+                    
+                    <p style='color:red;'>*Please change your password after first login 
+                    and don't share your credentials.</p>
+                    
+                    %s
+                    
+                    <p>Best Regards,<br>IT Support Team<br>
+                    Trident Group of Institutions</p>
+                    
+                    <p>Contact IT Helpdesk:<br>
+                    Phone: <a href='tel:9124078910'>9124078910</a><br>
+                    Email: <a href='mailto:it-support@trident.edu'>it-support@trident.edu</a></p>
+                </body>
+            </html>
+            """,
+                    receiverEmail,
+                    microsoftMail,
+                    password,
+                    getAttachmentSection() // Add attachment if exists
+            );
 
-                        "<p>Welcome to Trident Group of Institutions! Your official communication and online meetings will be conducted via " +
-                        "<span style='color:blue;'>Microsoft Teams</span>. Below are your credentials for accessing Microsoft Teams.</p>" +
+            helper.setText(emailContent, true);
 
-                        "<p>Your Username: <b style='color:blue;'><a href = \"mailto:" + microsoftMail + "\">" + microsoftMail + "</a></b><br>" +
-                        "Your Password: <b style='color:blue;'>" + password + "</b></p>" +
+            // Add attachment if needed
+            // helper.addAttachment("Teams_Setup_Guide.pdf", new ClassPathResource("pdf/teams-guide.pdf"));
 
-                        "<p><span style='color:red;'>*Please do not share your login credentials with anyone. " +
-                        "Unauthorized access using your credentials will be considered your responsibility.</span></p>" +
+            mailSender.send(message);
+            logger.info("Credentials email sent successfully to: {}", microsoftMail);
+            return CompletableFuture.completedFuture(null);
 
-                        "<p>A step-by-step guide is attached to help you log in and set up Microsoft Teams.</p>" +
+        } catch (Exception e) {
+            logger.error("Failed to send credentials to: {}", microsoftMail, e);
+            throw e; // Or handle differently based on requirements
+        }
+    }
 
-                        "<p>For any login-related issues, please contact the IT Support team.</p>" +
-
-                        "<p>Best Regards,<br>HR Team<br>Trident Group of Institutions</p>" +
-
-                        "<p>For immediate support, please reach out to IT Helpdesk:<br>" +
-                        "<a href='tel:9124078910'>9124078910</a></p>" +
-
-                        "</body></html>";
-
-        helper.setText(emailContent, true);
-
-        mailSender.send(message);
-        return CompletableFuture.completedFuture(null);
+    private String getAttachmentSection() {
+        return """
+        <p>Please find attached the Teams setup guide for reference.</p>
+        <p>First-time setup instructions:</p>
+        <ol>
+            <li>Download Microsoft Teams</li>
+            <li>Login with the credentials above</li>
+            <li>Change your password when prompted</li>
+        </ol>
+        """;
     }
 
 
