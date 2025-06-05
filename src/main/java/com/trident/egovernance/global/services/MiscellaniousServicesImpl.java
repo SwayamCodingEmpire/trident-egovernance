@@ -274,9 +274,9 @@ public class MiscellaniousServicesImpl implements MiscellaniousServices {
 
         // Combine parts to form UPN
         return lastName.isEmpty()
-                ? String.format("%s@tridentbbsr.onmicrosoft.com", firstName.replace(" ", ""))
+                ? String.format("%s@tactbbsr.onmicrosoft.com", firstName.replace(" ", ""))
                 : String.format(
-                "%s.%s@tridentbbsr.onmicrosoft.com",
+                "%s.%s@tactbbsr.onmicrosoft.com",
                 firstName.replace(" ", ""),
                 lastName);
     }

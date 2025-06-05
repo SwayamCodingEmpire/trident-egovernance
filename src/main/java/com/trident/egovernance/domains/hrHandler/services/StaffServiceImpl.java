@@ -65,7 +65,8 @@ public class StaffServiceImpl implements StaffService {
         staffEntity.setSecurityQuestion(Optional.ofNullable(staff.securityQuestion()).orElseThrow(() -> new IllegalArgumentException("Security question cannot be null")));
         staffEntity.setSecurityAnswer(Optional.ofNullable(staff.securityAnswer()).orElse("Not Provided"));
 
-        Staff savedStaff = staffRepository.save(staffEntity);
+        Staff savedStaff = staffRepository.saveAndFlush(staffEntity);
+        finalSubmitStaff(staffEntity.getStaffId());
         logger.info("Staff added successfully - ID: {}, Email: {}", savedStaff.getStaffId(), savedStaff.getEmail());
         return savedStaff;
     }
