@@ -45,22 +45,22 @@
             <scope>runtime</scope>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>redis.clients</groupId>-->
-<!--            <artifactId>jedis</artifactId>-->
-<!--            <version>5.1.0</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>redis.clients</groupId>-->
+        <!--            <artifactId>jedis</artifactId>-->
+        <!--            <version>5.1.0</version>-->
+        <!--        </dependency>-->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>com.github.librepdf</groupId>-->
-<!--            <artifactId>openpdf</artifactId>-->
-<!--            <version>1.3.30</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>com.github.librepdf</groupId>-->
+        <!--            <artifactId>openpdf</artifactId>-->
+        <!--            <version>1.3.30</version>-->
+        <!--        </dependency>-->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -71,20 +71,18 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>com.azure.spring</groupId>-->
-<!--            <artifactId>spring-cloud-azure-starter-active-directory</artifactId>-->
-<!--            <version>4.5.0</version>-->
-<!--        </dependency>-->
-
-
+        <!--        <dependency>-->
+        <!--            <groupId>com.azure.spring</groupId>-->
+        <!--            <artifactId>spring-cloud-azure-starter-active-directory</artifactId>-->
+        <!--            <version>4.5.0</version>-->
+        <!--        </dependency>-->
 
 
         <!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-oauth2-client -->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.security</groupId>-->
-<!--            <artifactId>spring-security-oauth2-client</artifactId>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.security</groupId>-->
+        <!--            <artifactId>spring-security-oauth2-client</artifactId>-->
+        <!--        </dependency>-->
 
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -97,6 +95,17 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>5.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.3</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
@@ -104,11 +113,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.postgresql</groupId>-->
-<!--            <artifactId>postgresql</artifactId>-->
-<!--            <scope>runtime</scope>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.postgresql</groupId>-->
+        <!--            <artifactId>postgresql</artifactId>-->
+        <!--            <scope>runtime</scope>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -127,12 +136,11 @@
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.opencsv/opencsv -->
-<!--        <dependency>-->
-<!--            <groupId>com.opencsv</groupId>-->
-<!--            <artifactId>opencsv</artifactId>-->
-<!--            <version>5.9</version>-->
-<!--        </dependency>-->
-
+        <!--        <dependency>-->
+        <!--            <groupId>com.opencsv</groupId>-->
+        <!--            <artifactId>opencsv</artifactId>-->
+        <!--            <version>5.9</version>-->
+        <!--        </dependency>-->
 
 
         <!-- https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-impl -->
@@ -201,6 +209,7 @@
             <scope>test</scope>
         </dependency>
 
+
         <dependency>
             <groupId>pl.allegro.finance</groupId>
             <artifactId>tradukisto</artifactId>
@@ -215,27 +224,27 @@
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
-<!--            <dependency>-->
-<!--                &lt;!&ndash; Include the sdk as a dependency &ndash;&gt;-->
-<!--                <groupId>com.microsoft.graph</groupId>-->
-<!--                <artifactId>microsoft-graph</artifactId>-->
-<!--                &lt;!&ndash;x-release-please-start-version&ndash;&gt;-->
-<!--                <version>6.24.0</version>-->
-<!--                &lt;!&ndash;x-release-please-end&ndash;&gt;-->
-<!--            </dependency>-->
-<!--            <dependency>-->
-<!--                &lt;!&ndash; This dependency is only needed if you are using a TokenCredential object for authentication &ndash;&gt;-->
-<!--                <groupId>com.azure</groupId>-->
-<!--                <artifactId>azure-identity</artifactId>-->
-<!--                <version>1.12.2</version>-->
-<!--            </dependency>-->
+        <!--            <dependency>-->
+        <!--                &lt;!&ndash; Include the sdk as a dependency &ndash;&gt;-->
+        <!--                <groupId>com.microsoft.graph</groupId>-->
+        <!--                <artifactId>microsoft-graph</artifactId>-->
+        <!--                &lt;!&ndash;x-release-please-start-version&ndash;&gt;-->
+        <!--                <version>6.24.0</version>-->
+        <!--                &lt;!&ndash;x-release-please-end&ndash;&gt;-->
+        <!--            </dependency>-->
+        <!--            <dependency>-->
+        <!--                &lt;!&ndash; This dependency is only needed if you are using a TokenCredential object for authentication &ndash;&gt;-->
+        <!--                <groupId>com.azure</groupId>-->
+        <!--                <artifactId>azure-identity</artifactId>-->
+        <!--                <version>1.12.2</version>-->
+        <!--            </dependency>-->
 
-<!--        &lt;!&ndash; https://mvnrepository.com/artifact/com.microsoft.graph/microsoft-graph-core &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>com.microsoft.graph</groupId>-->
-<!--            <artifactId>microsoft-graph-core</artifactId>-->
-<!--            <version>3.4.0</version>-->
-<!--        </dependency>-->
+        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/com.microsoft.graph/microsoft-graph-core &ndash;&gt;-->
+        <!--        <dependency>-->
+        <!--            <groupId>com.microsoft.graph</groupId>-->
+        <!--            <artifactId>microsoft-graph-core</artifactId>-->
+        <!--            <version>3.4.0</version>-->
+        <!--        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/s3 -->
         <dependency>
