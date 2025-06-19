@@ -20,6 +20,10 @@ public class ResultUploadController {
     @Autowired
     private ResultProcessingImpl resultProcessingImpl;
 
+    public ResultUploadController(ResultProcessingImpl resultProcessingImpl) {
+        this.resultProcessingImpl = resultProcessingImpl;
+    }
+
     private Logger logger = LoggerFactory.getLogger(ResultUploadController.class);
 
     @PostMapping("/upload")

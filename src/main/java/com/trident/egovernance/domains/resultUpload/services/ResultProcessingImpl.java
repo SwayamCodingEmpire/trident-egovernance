@@ -24,8 +24,6 @@ public class ResultProcessingImpl implements ResultProcessingService, ResultCust
 
     private static Logger logger = LoggerFactory.getLogger(ResultProcessingImpl.class);
 
-    private excelToCsvConverter converter;
-
     @PersistenceContext
     private EntityManager entityManager;
     @Override
