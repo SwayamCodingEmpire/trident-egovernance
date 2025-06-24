@@ -1,6 +1,7 @@
 package com.trident.egovernance.global.entities.examDB;
 
 import com.trident.egovernance.dto.StudentExamResultsDTO;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

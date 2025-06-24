@@ -22,7 +22,7 @@ public class CsvHelper {
     // Define CSV Headers - these must match the column names in your CSV file
     // and ideally correspond to the fields in StudentExamResultsDTO record.
     public static final String[] HEADERS_ORDER = {
-            "regdNo", "semester", "subjectCode", "credits", "grade"
+            "regdNo", "semester", "subjectCode1","subjectCode2","subjectCode3","subjectCode4","subjectCode5","subjectCode6","subjectCode7","subjectCode8","subjectCode9","subjectCode10", "credits", "grade"
             // If your CSV has more columns, add them here.
             // For the current INSSEMRESULT procedure, these are the relevant ones.
     };
