@@ -20,7 +20,7 @@ import java.util.Map;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(basePackages = "com.trident.egovernance.global.repositories.examDB",
-        entityManagerFactoryRef = "permanentExamEntityManagerFactory",
+        entityManagerFactoryRef = "examEntityManagerFactory",
         transactionManagerRef = "examTransactionManager")
 public class examDBConfig {
     @Bean(name = "permanentExamDBDataSource")
@@ -29,7 +29,7 @@ public class examDBConfig {
         return DataSourceBuilder.create().build();
     }
 
-    @Bean(name = "permanentExamEntityManagerFactory")
+    @Bean(name = "examEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(EntityManagerFactoryBuilder builder, @Qualifier("permanentExamDBDataSource") DataSource dataSource){
         Map<String, Object> properties = new HashMap<>();
         properties.put("hibernate.hbm2ddl.auto", "validate");
@@ -40,8 +40,8 @@ public class examDBConfig {
                 .build();
     }
 
-    @Bean(name = "permanentExamTransactionManager")
-    public PlatformTransactionManager transactionManager(@Qualifier("permanentExamEntityManagerFactory") EntityManagerFactory entityManagerFactory){
+    @Bean(name = "examTransactionManager")
+    public PlatformTransactionManager transactionManager(@Qualifier("examEntityManagerFactory") EntityManagerFactory entityManagerFactory){
         return new JpaTransactionManager(entityManagerFactory);
     }
 }

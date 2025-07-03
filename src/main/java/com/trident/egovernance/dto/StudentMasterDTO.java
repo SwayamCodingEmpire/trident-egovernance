@@ -1,17 +1,17 @@
 package com.trident.egovernance.dto;
 
-import com.trident.egovernance.global.entities.examDB.StudentMaster;
+import com.trident.egovernance.global.entities.examDB.SubjectMaster;
 
 public record StudentMasterDTO(
-        String subcode,
+        String subjectCode,
         String subjectName,
         Integer credit,
         String semester,
         String branch
 ) {
-    public StudentMasterDTO(StudentMaster studentMaster){
+    public StudentMasterDTO(SubjectMaster studentMaster){
         this(
-                studentMaster.getSubcode(),
+                studentMaster.getSubjectCode(),
                 studentMaster.getSubjectName(),
                 studentMaster.getCredit(),
                 studentMaster.getSemester(),

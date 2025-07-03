@@ -23,7 +23,7 @@ public class StudentExamResults {
     @Column(name = "REGDNO", length = 15)
     String regdno;
 
-    @Column(name = "SEMESTER", length = 5)
+    @Column(name = "SEMESTER")
     int semester;
 
     @Column(name = "SUBJECTCODE", length = 20)
@@ -32,7 +32,7 @@ public class StudentExamResults {
     @Column(name = "GRADE", length = 10)
     String grade;
 
-    @Column(name = "CREDITS", length = 10)
+    @Column(name = "CREDITS")
     int credits;
 
     @Column(name = "RESPUBDATE", length = 20)

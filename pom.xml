@@ -42,8 +42,13 @@
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
             <artifactId>ojdbc11</artifactId>
-            <scope>runtime</scope>
+            <scope>compile</scope>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.monitorjbl</groupId>-->
+<!--            <artifactId>xlsx-streamer</artifactId>-->
+<!--            <version>2.2.0</version>-->
+<!--        </dependency>-->
 
         <!--        <dependency>-->
         <!--            <groupId>redis.clients</groupId>-->

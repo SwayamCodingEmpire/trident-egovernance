@@ -14,10 +14,10 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class StudentMaster {
+public class SubjectMaster {
     @Id
-    @Column(name = "SUBCODE", length = 15)
-    String subcode;
+    @Column(name = "SUBJECTCODE", length = 15)
+    String subjectCode;
 
     @Column(name = "SUBJECTNAME", length = 100)
     String subjectName;
@@ -31,8 +31,8 @@ public class StudentMaster {
     @Column(name = "BRANCH", length = 70)
     String branch;
 
-    public StudentMaster(StudentMasterDTO studentMasterDTO) {
-        this.subcode = studentMasterDTO.subcode();
+    public SubjectMaster(StudentMasterDTO studentMasterDTO) {
+        this.subjectCode = studentMasterDTO.subjectCode();
         this.subjectName = studentMasterDTO.subjectName();
         this.credit = studentMasterDTO.credit();
         this.semester = studentMasterDTO.semester();

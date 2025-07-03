@@ -20,7 +20,8 @@ import java.util.Map;
 
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(entityManagerFactoryRef = "permanentEntityManagerFactory",
+@EnableJpaRepositories(
+        entityManagerFactoryRef = "permanentEntityManagerFactory",
         transactionManagerRef = "permanentTransactionManager",
         basePackages = {"com.trident.egovernance.global.repositories.permanentDB","com.trident.egovernance.global.repositories.views"})
 public class permanentDBConfig {
