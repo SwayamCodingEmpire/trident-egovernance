@@ -44,4 +44,15 @@ public class examDBConfig {
     public PlatformTransactionManager transactionManager(@Qualifier("examEntityManagerFactory") EntityManagerFactory entityManagerFactory){
         return new JpaTransactionManager(entityManagerFactory);
     }
+
+    @Bean(name = "dataSource")
+    public DataSource springBatchDataSource(@Qualifier("permanentExamDBDataSource") DataSource examDataSource) {
+        return examDataSource;
+    }
+
+    @Bean(name = "transactionManager")
+    public PlatformTransactionManager springBatchTransactionManager(
+            @Qualifier("examEntityManagerFactory") EntityManagerFactory entityManagerFactory) {
+        return new JpaTransactionManager(entityManagerFactory);
+    }
 }

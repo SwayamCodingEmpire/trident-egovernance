@@ -6,5 +6,5 @@ import java.sql.SQLException;
 
 public interface BatchProcessingService {
 
-    void processResultCSV(MultipartFile file, String exmaType, int semester, String branch, String resultPublishDate) throws SQLException;
+    void startResultProcessingJob(MultipartFile file, String examType, int semester, String branch, String academicYear, String userMail);
 }

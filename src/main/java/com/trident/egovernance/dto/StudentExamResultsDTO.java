@@ -1,6 +1,9 @@
 package com.trident.egovernance.dto;
 
 import com.trident.egovernance.global.entities.examDB.StudentExamResults;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 public record StudentExamResultsDTO(
         String regdno,

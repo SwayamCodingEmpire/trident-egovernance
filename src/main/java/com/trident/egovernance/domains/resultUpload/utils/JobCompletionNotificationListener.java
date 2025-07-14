@@ -8,70 +8,116 @@ import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
+@Component
 public class JobCompletionNotificationListener implements JobExecutionListener {
 
     private static final Logger logger = LoggerFactory.getLogger(JobCompletionNotificationListener.class);
 
-    private JavaMailSender mailSender;
+    private final JavaMailSender mailSender;
 
+    public JobCompletionNotificationListener(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
+
+    @Override
     public void beforeJob(JobExecution jobExecution) {
         logger.info("Job '{}' started with ID: {}", jobExecution.getJobInstance().getJobName(), jobExecution.getJobId());
     }
 
+    @Override
     public void afterJob(JobExecution jobExecution) {
-        String userMail = jobExecution.getJobParameters().getString("userMail");
+        String filePath = jobExecution.getJobParameters().getString("filePath");
         String originalFileName = jobExecution.getJobParameters().getString("originalFileName");
-        String tempFilePath = jobExecution.getJobParameters().getString("tempFilePath");
+        String userEmail = jobExecution.getJobParameters().getString("userEmail");
 
+        // Prepare email subject and body based on job status
         String subject;
         String emailBody;
 
         if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
-            subject = "Exam Results Processing Completed Successfully";
-            emailBody = String.format("Your Excel file '%s' has been processed successfully. Job ID: %d",
-                    originalFileName != null ? originalFileName : "N/A", jobExecution.getJobId());
-            logger.info("Job '{}' with ID {} completed successfully.", jobExecution.getJobInstance().getJobName(), jobExecution.getJobId());
-        } else {
-            subject = "Exam Result Processing Failed";
-            String failureReason = jobExecution.getAllFailureExceptions().stream().map(Throwable::getMessage).collect(Collectors.joining("\n"));
-            emailBody = String.format("There was an error processing your Excel file '%s'. Job ID: %d\nStatus: %s\nReason: %s",
-                    originalFileName != null ? originalFileName : "N/A", jobExecution.getJobId(), jobExecution.getStatus(), failureReason);
-            logger.error("Job '{}' with ID {} failed. Status: {}. Errors: {}", jobExecution.getJobInstance().getJobName(), jobExecution.getJobId(), jobExecution.getStatus(), failureReason);
-        }
-
-        if(userMail != null) {
-            sendEmail(userMail, subject, emailBody);
-        } else {
-            logger.warn("No user email found in JobParameters for notification. Job ID: {}", jobExecution.getJobId());
-        }
-
-        if(tempFilePath != null) {
-            try {
-                Files.deleteIfExists(Paths.get(tempFilePath));
-                logger.info("Cleaned up temporary file: {}", tempFilePath);
-            } catch (IOException e){
-                logger.error("Failed to delete temporary file {}: {}", tempFilePath, e.getMessage(), e);
+            logger.info("Job '{}' with ID {} COMPLETED successfully for file '{}'.",
+                    jobExecution.getJobInstance().getJobName(), jobExecution.getId(), originalFileName);
+            subject = "Exam Results Upload Completed Successfully";
+            emailBody = String.format("Dear User,\n\nThe upload of exam results for file '%s' has been completed successfully.\n\nJob ID: %s\nStatus: %s\n\nThank you.",
+                    originalFileName, jobExecution.getId(), jobExecution.getStatus());
+            // ⭐ CALL sendEmail HERE for COMPLETED status ⭐
+            if (userEmail != null && !userEmail.isEmpty()) {
+                sendEmail(userEmail, subject, emailBody);
+            } else {
+                logger.warn("No user email found for successful job notification. Job ID: {}", jobExecution.getId());
             }
+
+        } else if (jobExecution.getStatus() == BatchStatus.FAILED) {
+            logger.error("Job '{}' with ID {} FAILED. Status: FAILED. Errors: {}",
+                    jobExecution.getJobInstance().getJobName(), jobExecution.getId(),
+                    jobExecution.getAllFailureExceptions().isEmpty() ? "No specific error message found." : jobExecution.getAllFailureExceptions().get(0).getMessage());
+
+            String failureMessages = jobExecution.getAllFailureExceptions().stream()
+                    .map(Throwable::getMessage)
+                    .collect(Collectors.joining("\n- ", "\nErrors:\n- ", ""));
+
+            subject = "Exam Results Upload Failed!";
+            emailBody = String.format("Dear User,\n\nThe upload of exam results for file '%s' has FAILED.\n\nJob ID: %s\nStatus: %s%s\n\nPlease check the application logs for more details or contact support.\n\nTrident eGovernance Team",
+                    originalFileName, jobExecution.getId(), jobExecution.getStatus(), failureMessages);
+            // ⭐ CALL sendEmail HERE for FAILED status ⭐
+            if (userEmail != null && !userEmail.isEmpty()) {
+                sendEmail(userEmail, subject, emailBody);
+            } else {
+                logger.warn("No user email found for failed job notification. Job ID: {}", jobExecution.getId());
+            }
+
+        } else {
+            logger.warn("Job '{}' with ID {} finished with status: {}",
+                    jobExecution.getJobInstance().getJobName(), jobExecution.getId(), jobExecution.getStatus());
+            subject = "Exam Results Upload Status Update";
+            emailBody = String.format("Dear User,\n\nThe upload of exam results for file '%s' has completed with status: %s.\n\nJob ID: %s\n\nPlease check the application logs for more details if the status is not COMPLETED or FAILED.\n\nThank you.\nTrident eGovernance Team",
+                    originalFileName, jobExecution.getId(), jobExecution.getId());
+            // ⭐ CALL sendEmail HERE for OTHER statuses if you want notifications ⭐
+            if (userEmail != null && !userEmail.isEmpty()) {
+                sendEmail(userEmail, subject, emailBody);
+            } else {
+                logger.warn("No user email found for job status update notification. Job ID: {}", jobExecution.getId());
+            }
+        }
+
+        // ⭐ The file deletion logic remains outside the email sending if/else, as it should always run. ⭐
+        if (filePath != null) {
+            Path pathToDelete = Paths.get(filePath);
+            if (Files.exists(pathToDelete)) {
+                try {
+                    Files.delete(pathToDelete);
+                    logger.info("Successfully deleted temporary file: {}", filePath);
+                } catch (IOException e) {
+                    logger.warn("Failed to delete temporary file {}: {}", filePath, e.getMessage());
+                }
+            } else {
+                logger.warn("Temporary file not found for deletion (already gone?): {}", filePath);
+            }
+        } else {
+            logger.warn("No file path found in JobParameters for deletion. Job ID: {}", jobExecution.getId());
         }
     }
 
-    private void sendEmail(String userEmail, String subject, String emailBody) {
+    private void sendEmail(String recipientEmail, String subject, String emailBody) {
         try{
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("mohantyswayam2001@gmail.com");
-            message.setTo(userEmail);
+            message.setFrom("mohantyswayam2001@gmail.com"); // Your sender email
+            message.setTo(recipientEmail); // Use the dynamic recipientEmail
             message.setSubject(subject);
             message.setText(emailBody);
             mailSender.send(message);
-            logger.info("Notification email sent to {} for subject: {}", userEmail, subject);
+            logger.info("Notification email sent to {} for subject: {}", recipientEmail, subject);
         } catch (MailException e){
-            logger.error("Failed to send email notification to {}: {}", userEmail, e.getMessage(), e);
+            // Log the full stack trace for better debugging of mail issues
+            logger.error("Failed to send email notification to {}: {}", recipientEmail, e.getMessage(), e);
         }
     }
 }

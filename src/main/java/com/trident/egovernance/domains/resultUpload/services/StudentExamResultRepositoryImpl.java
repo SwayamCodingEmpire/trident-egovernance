@@ -14,14 +14,18 @@ import org.hibernate.Session;
 import org.hibernate.jdbc.ReturningWork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
+import java.sql.CallableStatement; // Keep this import for CallableStatement type
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException; // Import for the specific exception
 import java.util.ArrayList;
 import java.util.List;
 
 @Repository
+@Primary
 public class StudentExamResultRepositoryImpl implements ResultCustomDatabase {
 
     @PersistenceContext
@@ -42,24 +46,19 @@ public class StudentExamResultRepositoryImpl implements ResultCustomDatabase {
         }
 
         OracleCallableStatement callableStatement = null;
-        Connection jdbcConnection = null; // This will be the unwrapped OracleConnection
+        Connection jdbcConnection = null;
 
         try {
-            // Get the Hibernate Session from the EntityManager
             Session hibernateSession = entityManager.unwrap(Session.class);
 
-            // Unwrap to get the native JDBC Connection, specifically OracleConnection
             jdbcConnection = hibernateSession.doReturningWork(
                     new ReturningWork<Connection>() {
                         @Override
                         public Connection execute(Connection connection) throws SQLException {
                             logger.info("Inside doReturningWork: Actual connection class: {}", connection.getClass().getName());
-                            // It's safer to check if it's a wrapper for OracleConnection
                             if (connection.isWrapperFor(OracleConnection.class)) {
                                 return connection.unwrap(OracleConnection.class);
                             } else {
-                                // If not an OracleConnection, it might still work if underlying driver supports it
-                                // but direct cast will fail. Log a warning or throw error if strict
                                 logger.warn("Connection is not directly an OracleConnection. Attempting to proceed.");
                                 return connection;
                             }
@@ -69,18 +68,15 @@ public class StudentExamResultRepositoryImpl implements ResultCustomDatabase {
 
             logger.info("After doReturningWork: Returned jdbcConnection class: {}", jdbcConnection.getClass().getName());
 
-            // Ensure it's an OracleConnection for Oracle-specific types
             if (!(jdbcConnection instanceof OracleConnection)) {
                 throw new SQLException("Underlying connection is not an OracleConnection. Cannot use Oracle-Specific types for batching.");
             }
             OracleConnection oracleConnection = (OracleConnection) jdbcConnection;
 
 
-            // Create STRUCT descriptor for T_STUDENT_EXAM_RESULT_OBJ
-            StructDescriptor structDescriptor = StructDescriptor.createDescriptor("T_STUDENT_EXAM_RESULT_OBJ", oracleConnection);
+            StructDescriptor structDescriptor = StructDescriptor.createDescriptor("EXAM.T_STUDENT_EXAM_RESULT_OBJ", oracleConnection);
             List<STRUCT> structList = new ArrayList<>();
 
-            // Populate STRUCT list from StudentExamResults objects
             for (StudentExamResults result : studentExamResultsList) {
                 Object[] resultObject = new Object[]{
                         result.getRegdno(),
@@ -94,26 +90,42 @@ public class StudentExamResultRepositoryImpl implements ResultCustomDatabase {
                 structList.add(new STRUCT(structDescriptor, oracleConnection, resultObject));
             }
 
-            // Create ARRAY descriptor for T_STUDENT_EXAM_RESULTS_TAB
-            ArrayDescriptor arrayDescriptor = ArrayDescriptor.createDescriptor("T_STUDENT_EXAM_RESULTS_TAB", oracleConnection);
+            ArrayDescriptor arrayDescriptor = ArrayDescriptor.createDescriptor("EXAM.T_STUDENT_EXAM_RESULTS_TAB", oracleConnection);
             ARRAY oracleArray = new ARRAY(arrayDescriptor, oracleConnection, structList.toArray());
 
-            // Prepare and execute the CallableStatement
-            // The '?' corresponds to the single IN parameter (the ARRAY)
-            callableStatement = (OracleCallableStatement) oracleConnection.prepareCall("{call INSSEMRESULT_BATCH(?)}");
-            callableStatement.setARRAY(1, oracleArray); // Set the ARRAY as the first parameter
+            callableStatement = (OracleCallableStatement) oracleConnection.prepareCall("{call EXAM.INSSEMRESULT_BATCH(?)}");
+            callableStatement.setARRAY(1, oracleArray);
 
             callableStatement.execute();
 
             logger.info("Batch stored procedure 'INSSEMRESULT_BATCH' invoked successfully for {} records", studentExamResultsList.size());
 
-        } catch (SQLException e) {
-            logger.error("Error invoking 'INSSEMRESULT_BATCH' procedure: {}", e.getMessage(), e);
-            // Re-throw the SQLException to allow Spring Batch's transaction manager to handle rollback
+        } catch (SQLIntegrityConstraintViolationException e) {
+            // This block specifically catches unique constraint violations (ORA-00001)
+            logger.error("Unique constraint violation detected while invoking 'INSSEMRESULT_BATCH' procedure: {}", e.getMessage(), e);
+
+            // Log the regdno for all students in the failed batch.
+            // Note: This cannot pinpoint the single exact duplicate, but identifies the set of records that were attempted to be inserted.
+            StringBuilder regdNosInBatch = new StringBuilder("RegdNos in the failed batch: [");
+            for (int i = 0; i < studentExamResultsList.size(); i++) {
+                regdNosInBatch.append(studentExamResultsList.get(i).getRegdno());
+                if (i < studentExamResultsList.size() - 1) {
+                    regdNosInBatch.append(", ");
+                }
+            }
+            regdNosInBatch.append("]");
+            logger.error(regdNosInBatch.toString());
+
+            // Re-throw the exception to allow Spring Batch's transaction manager to handle rollback
             throw e;
+        }
+        catch (SQLException e) {
+            // This general catch-all handles other types of SQL exceptions
+            logger.error("Error invoking 'INSSEMRESULT_BATCH' procedure: {}", e.getMessage(), e);
+            // You might want to log all regdnos here too if other SQL errors should also list them
+            // Or refine to specific SQL states if needed.
+            throw e; // Re-throw to allow Spring Batch's transaction manager to handle rollback
         } finally {
-            // Note: The connection is managed by Hibernate/Spring and should not be closed here.
-            // Only close the CallableStatement.
             if (callableStatement != null) {
                 try {
                     callableStatement.close();

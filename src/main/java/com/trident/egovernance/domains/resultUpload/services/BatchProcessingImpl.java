@@ -10,47 +10,42 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.io.File;
 
 @Service
 public class BatchProcessingImpl {
     @Autowired
     private JobLauncher jobLauncher;
 
+    @Autowired
     private Job importExamResultsJob;
 
     private static final Logger logger = LoggerFactory.getLogger(BatchProcessingImpl.class);
 
     @Async
-    public void startResultProcessingJob(MultipartFile file, String examType, int semester, String branch, String academicYear, String userMail){
-        Path tempFile = null;
-        try{
-            tempFile = Files.createTempFile("exam_result", ".xlsx");
-            Files.copy(file.getInputStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
-
+    public void startResultProcessingJob(File file, String examType, int semester, String branch, String academicYear, String userMail, String originalFileName) {
+//        Path filePathToDelete = file.toPath(); // Store path for deletion in finally block
+        try {
             JobParameters jobParameters = new JobParametersBuilder()
-                    .addString("filePath", tempFile.toAbsolutePath().toString())
+                    // ⭐ CORRECTED LINE HERE ⭐
+                    .addString("filePath", file.getAbsolutePath())
                     .addString("examType", examType)
                     .addLong("semester", (long) semester)
                     .addString("branch", branch)
                     .addString("academicYear", academicYear)
                     .addString("userEmail", userMail)
-                    .addString("originalFileName", file.getOriginalFilename())
+                    .addString("originalFileName", originalFileName)
                     .addLong("time", System.currentTimeMillis())
                     .toJobParameters();
 
-            logger.info("Successfully loaded the file: {}" ,tempFile.toAbsolutePath().toString());
+            logger.info("Successfully received managed temporary file: {}", file.getAbsolutePath()); // Also correct this log
+            logger.info("Launching batch job with parameters for file: {}", originalFileName);
 
             jobLauncher.run(importExamResultsJob, jobParameters);
-        } catch (IOException e){
-            logger.error("Error saving temporary file or reading input stream: {} ",e.getMessage());
-        } catch (JobExecutionException e){
-            logger.error("Failed to launch batch job: {}", e.getMessage());
+
+        } catch (JobExecutionException e) {
+            logger.error("Failed to launch batch job for file {}. Error: {}", originalFileName, e.getMessage(), e);
         }
     }
 }
