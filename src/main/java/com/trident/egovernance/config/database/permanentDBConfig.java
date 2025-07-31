@@ -37,6 +37,8 @@ public class permanentDBConfig {
     public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(EntityManagerFactoryBuilder builder, @Qualifier("permanentDBDataSource") DataSource dataSource){
         Map<String, Object> properties = new HashMap<>();
         properties.put("hibernate.hbm2ddl.auto", "validate");
+        properties.put("hibernate.dialect", "org.hibernate.dialect.OracleDialect");
+
         return builder.dataSource(dataSource)
                 .properties(properties)
                 .packages("com.trident.egovernance.global.entities.permanentDB","com.trident.egovernance.global.entities.views")

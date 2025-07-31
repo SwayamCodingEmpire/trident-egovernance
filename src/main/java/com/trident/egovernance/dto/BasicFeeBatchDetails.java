@@ -1,5 +1,6 @@
 package com.trident.egovernance.dto;
 
+import com.trident.egovernance.global.helpers.CollegeName;
 import com.trident.egovernance.global.helpers.Courses;
 import com.trident.egovernance.global.helpers.StudentType;
 
@@ -7,7 +8,8 @@ public record BasicFeeBatchDetails(
         Integer admYear,
         Courses course,
         String branchCode,
-        StudentType studentType
+        StudentType studentType,
+        CollegeName collegeName
 ) {
     public BasicFeeBatchDetails {
         // Validate admYear
@@ -28,6 +30,10 @@ public record BasicFeeBatchDetails(
         // Validate studentType
         if (studentType == null) {
             throw new IllegalArgumentException("Student type cannot be null");
+        }
+
+        if (collegeName == null) {
+            throw new IllegalArgumentException("College name cannot be null");
         }
     }
 }

@@ -115,7 +115,7 @@ class NSRServiceImpl implements NSRService {
     public Boolean saveToPermanentDatabase(String jeeApplicationNo) {
 //        SharedStateAmongDueInitiationAndNSRService sharedState = new SharedStateAmongDueInitiationAndNSRService();
         NSR nsr = nsrRepository.findById(jeeApplicationNo).orElseThrow(() -> new RecordNotFoundException("Record not found"));
-        nsr.setBatchId(miscellaniousServices.generateBatchId(new BasicFeeBatchDetails(Integer.valueOf(nsr.getAdmissionYear()), nsr.getCourse(), nsr.getBranchCode(), nsr.getStudentType())));
+        nsr.setBatchId(miscellaniousServices.generateBatchId(new BasicFeeBatchDetails(Integer.valueOf(nsr.getAdmissionYear()), nsr.getCourse(), nsr.getBranchCode(), nsr.getStudentType(), nsr.getCollegeName())));
         nsr.setCurrentYear(((nsr.getStudentType().equals(StudentType.REGULAR)) ? 1 : 2));
         logger.info("Batch ID : {}", nsr.getBatchId());
         logger.info("Fetched from Redis");
@@ -123,6 +123,7 @@ class NSRServiceImpl implements NSRService {
         Student student = mapperService.convertToStudent(nsr);
         student.setHostelier(nsr.getHostelOption());
         student.setTransportAvailed(nsr.getTransportOpted());
+        student.setCollegeName(nsr.getCollegeName());
 
         logger.info("NSR object : {}", nsr);
         StudentAdmissionDetails studentAdmissionDetails = mapperService.convertToStudentAdmissionDetails(nsr);
@@ -153,8 +154,7 @@ class NSRServiceImpl implements NSRService {
         transport.setRegdYear(Year.now().getValue());
         Hostel hostel = mapperService.convertToHostel(nsr);
         if (nsr.getTransportOpted().equals(BooleanString.YES)) {
-            transport.setTransportAvailed(BooleanString.NO);
-            transport.setRoute("N/A");
+            transport.setTransportAvailed(BooleanString.YES);
         } else {
             transport.setTransportAvailed(BooleanString.NO);
             transport.setPickUpPoint("N/A");
@@ -165,7 +165,7 @@ class NSRServiceImpl implements NSRService {
         transport.setRegdYear(nsr.getStudentType().equals(StudentType.REGULAR) ? 1 : 2);
         student.setTransport(transport);
         transport.setStudent(student);
-        hostel.setHostelier(BooleanString.NO);
+//        hostel.setHostelier(BooleanString.NO);
         if (hostel.getHostelOption().equals(BooleanString.NO)) {
             hostel.setHostelChoice(HostelChoice.NONE);
         }

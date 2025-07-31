@@ -54,6 +54,7 @@ public class MiscellaniousServicesImpl implements MiscellaniousServices {
         batchId.append(basicFeeBatchDetails.admYear());
         batchId.append(basicFeeBatchDetails.branchCode());
         batchId.append(basicFeeBatchDetails.studentType().getEnumName());
+        batchId.append(basicFeeBatchDetails.collegeName());
         return batchId.toString();
     }
 //    private static final Pattern DATE_PATTERN = Pattern.compile("^(\\d{2}-\\d{2}-\\d{4})(?:_(\\d{2}-\\d{2}-\\d{4}))?$|^\\d{4}-\\d{4}$");

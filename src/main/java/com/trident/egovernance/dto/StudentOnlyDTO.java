@@ -25,7 +25,8 @@ public record StudentOnlyDTO(
         BooleanString plpoolm,
         CfPaymentMode cfPayMode,
         Religion religion,
-        String msUserPrincipalName
+        String msUserPrincipalName,
+        CollegeName collegeName
 //        Long sectionId
 ) implements StudentUpdateDTO {
     public StudentOnlyDTO(Student student) {
@@ -51,7 +52,8 @@ public record StudentOnlyDTO(
                 student.getPlpoolm(),
                 student.getCfPayMode(),
                 student.getReligion(),
-                student.getMsUserPrincipalName() == null ? "N/A" : student.getMsUserPrincipalName()
+                student.getMsUserPrincipalName() == null ? "N/A" : student.getMsUserPrincipalName(),
+                student.getCollegeName()
 //                student.getSection() == null ? null : student.getSection().getSectionId()
         );
     }

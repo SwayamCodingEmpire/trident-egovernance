@@ -1,10 +1,8 @@
 package com.trident.egovernance.dto;
 
 import com.trident.egovernance.global.entities.permanentDB.Fees;
-import com.trident.egovernance.global.helpers.CfPaymentMode;
-import com.trident.egovernance.global.helpers.Courses;
-import com.trident.egovernance.global.helpers.StudentType;
-import com.trident.egovernance.global.helpers.TFWType;
+import com.trident.egovernance.global.entities.permanentDB.Student;
+import com.trident.egovernance.global.helpers.*;
 
 import java.math.BigDecimal;
 
@@ -36,17 +34,37 @@ public record FeesOnly(
     }
 
     private static BasicFeeBatchDetails extractBasicFeeBatchDetails(String batchId) {
-        // Extract the course part
+        // Extract course part
         String courseString = batchId.replaceAll("\\d.*", ""); // Get part before digits
         Courses course = Courses.valueOf(courseString); // Map to enum
 
-        // Extract the rest of batchId
-        String yearBranchStudent = batchId.replace(courseString, ""); // Remove course part
-        int admYear = Integer.parseInt(yearBranchStudent.substring(0, 4)); // Admission year
-        String branchCode = yearBranchStudent.substring(4, 7); // Branch code
-        StudentType studentType = StudentType.valueOf(yearBranchStudent.substring(7)); // Student type
+        // Extract remaining part
+        String remaining = batchId.substring(courseString.length());
+        int admYear = Integer.parseInt(remaining.substring(0, 4)); // Admission year
+        String branchCode = remaining.substring(4, 7); // Branch code
 
-        // Construct BasicFeeBatchDetails
-        return new BasicFeeBatchDetails(admYear, course, branchCode, studentType);
+        // Identify student type
+        String studentTypeCode = remaining.substring(7, 9);
+        StudentType studentType = StudentType.valueOf(studentTypeCode);
+
+        // Parse college name based on student type
+        String collegeCode;
+        if (studentType == StudentType.REGULAR) {
+            studentType = StudentType.valueOf(remaining.substring(7, 14));
+            collegeCode = remaining.substring(14);
+        } else {
+            collegeCode = remaining.substring(9);
+        }
+
+        // Determine college name length (TAT = 3 chars, others = 4)
+        CollegeName collegeName;
+        if (collegeCode.startsWith("TAT")) {
+            collegeName = CollegeName.valueOf(collegeCode.substring(0, 3));
+        } else {
+            collegeName = CollegeName.valueOf(collegeCode.substring(0, 4));
+        }
+
+        return new BasicFeeBatchDetails(admYear, course, branchCode, studentType, collegeName);
     }
+
 }

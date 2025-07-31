@@ -76,7 +76,7 @@ public class SessionInitiationServiceImpl implements SessionInitiationService {
     }
 
     public List<StudentCourse> getStudentsForPromotion(SessionInitiationDto sessionInitiationDTO) {
-        return studentRepository.findAllByAdmissionYearAndCourseAndCurrentYearAndStudentType(String.valueOf(sessionInitiationDTO.admYear()), sessionInitiationDTO.courses(), sessionInitiationDTO.regdYear(), sessionInitiationDTO.studentType());
+        return studentRepository.findAllByAdmissionYearAndCourseAndCurrentYearAndStudentTypeAndCollegeName(String.valueOf(sessionInitiationDTO.admYear()), sessionInitiationDTO.courses(), sessionInitiationDTO.regdYear(), sessionInitiationDTO.studentType(), sessionInitiationDTO.collegeName());
 
     }
 

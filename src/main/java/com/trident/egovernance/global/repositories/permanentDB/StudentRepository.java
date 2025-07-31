@@ -18,7 +18,8 @@ import java.util.Set;
 
 @Repository
 public interface StudentRepository extends JpaRepository<Student, String> {
-//    List<StudentOfficeDTO> findAllByStatus(StudentStatus status);
+
+    //    List<StudentOfficeDTO> findAllByStatus(StudentStatus status);
     @Query("SELECT new com.trident.egovernance.dto.StudentOfficeFromDatabaseDTO(s.regdNo, s.studentName, s.course, s.branchCode, s.phNo, s.email, s.studentType, s.currentYear, p.parentContact) FROM STUDENT s LEFT JOIN s.personalDetails p WHERE s.status=:status")
     List<StudentOfficeFromDatabaseDTO> findAllByStatusAlongWithParentContact(@Param("status") StudentStatus status);
 
@@ -36,7 +37,7 @@ public interface StudentRepository extends JpaRepository<Student, String> {
 
     Long countAllByStatus(StudentStatus status);
     @Query
-    List<StudentCourse> findAllByAdmissionYearAndCourseAndCurrentYearAndStudentType(String admissionYear, Courses course, Integer currentYear, StudentType studentType);
+    List<StudentCourse> findAllByAdmissionYearAndCourseAndCurrentYearAndStudentTypeAndCollegeName(String admissionYear, Courses course, Integer currentYear, StudentType studentType, CollegeName collegeName);
     List<Student> findAllByCourseAndCurrentYear(Courses course, Integer currentYear);
     @Query("SELECT DISTINCT s FROM STUDENT s " +
     "LEFT JOIN FETCH STUDENT_ADMISSION_DETAILS " +

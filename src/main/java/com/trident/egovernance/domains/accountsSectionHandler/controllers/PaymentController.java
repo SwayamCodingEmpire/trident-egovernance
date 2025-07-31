@@ -71,9 +71,9 @@ public class PaymentController {
 
     @Operation(summary = "Fee Collection endpoint", description = "Insert into FeeCollection Entity along with path variable of regdNo")
     @PostMapping("/fees-payment/{regdNo}")
-    public ResponseEntity<MoneyReceipt> feesPayment(@RequestBody FeeCollection feeCollection, @PathVariable("regdNo") String regdNo, @RequestHeader("oboToken") String oboToken){
+    public ResponseEntity<MoneyReceipt> feesPayment(@RequestBody FeeCollection feeCollection, @PathVariable("regdNo") String regdNo, @RequestHeader("oboToken") String oboToken) {
         logger.info("feesPayment");
-        return ResponseEntity.ok(paymentProcessingService.processPaymentInterface(feeCollection,regdNo, oboToken.substring(7),false, null));
+        return ResponseEntity.ok(paymentProcessingService.processPaymentInterface(feeCollection, regdNo, oboToken.substring(7), false, null));
     }
 
 //    @GetMapping("/fees-payment/{mrNo}")

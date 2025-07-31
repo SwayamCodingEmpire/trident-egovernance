@@ -5,6 +5,7 @@ import com.trident.egovernance.dto.NSRDto;
 import com.trident.egovernance.global.entities.redisEntities.NSR;
 import com.trident.egovernance.exceptions.InvalidInputsException;
 import com.trident.egovernance.domains.nsrHandler.services.NSRService;
+import com.trident.egovernance.global.helpers.CollegeName;
 import com.trident.egovernance.global.helpers.RankType;
 import com.trident.egovernance.global.services.CourseFetchingServiceImpl;
 import com.trident.egovernance.global.services.MapperServiceImpl;
@@ -151,7 +152,7 @@ class NSRController {
 
     @Operation(summary = "Final Submit in multi step form of NSR")
     @PostMapping("/postByStudent/{jeeApplicationNo}")
-    public ResponseEntity<Boolean> finalSubmit(@PathVariable("jeeApplicationNo") String jeeApplicationNo){
+    public ResponseEntity<Boolean> finalSubmit(@PathVariable("jeeApplicationNo") String jeeApplicationNo, @RequestHeader("collegeName") CollegeName collegeName){
 //        CustomUserDetails customUserDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 //        NSRDto nsrDto1 = mapperService.convertToNSRDto(customUserDetails.getNsr());
         NSRDto nsrDto1 = nsrService.getNSRDataByJeeApplicationNo(jeeApplicationNo);
