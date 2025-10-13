@@ -160,6 +160,7 @@ public class OfficeServicesImpl implements OfficeServices {
                     updatedStudent.plpoolm(),
                     updatedStudent.cfPayMode(),
                     updatedStudent.religion(),
+                    updatedStudent.collegeName(),
 //                    updatedStudent.section(),
                     regdNo
             ) == 1) {

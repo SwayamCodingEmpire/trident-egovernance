@@ -114,7 +114,7 @@ public class Student {
         this.cfPayMode = studentOnlyDTO.cfPayMode();
         this.religion = studentOnlyDTO.religion();
         this.msUserPrincipalName = (studentOnlyDTO.msUserPrincipalName() == null ? "N/A" : studentOnlyDTO.msUserPrincipalName());
-        this.collegeName = studentOnlyDTO.collegeName();
+//        this.collegeName = studentOnlyDTO.collegeName();
     }
 
 

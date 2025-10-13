@@ -2,6 +2,7 @@ package com.trident.egovernance.global.entities.permanentDB;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.trident.egovernance.dto.OtherFeeCollection;
+import com.trident.egovernance.global.helpers.CollegeName;
 import com.trident.egovernance.global.helpers.FeeProcessingMode;
 import com.trident.egovernance.global.helpers.FeeTypesType;
 import com.trident.egovernance.global.helpers.PaymentMode;
@@ -45,6 +46,9 @@ public class FeeCollection {
     private String sessionId;
     @Column(name = "PAYMENTRECEIVER")
     private String paymentReceiver;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "COLLEGENAME")
+    private CollegeName collegeName;
     @Enumerated(EnumType.STRING)
     private FeeProcessingMode feeProcessingMode;
     @Transient

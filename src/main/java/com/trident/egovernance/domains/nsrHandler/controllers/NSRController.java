@@ -42,7 +42,7 @@ class NSRController {
 
     @Operation(summary = "Post NSR data by Admin", description = "Accessible by Office and Admin")
     @PostMapping("/post")
-    public ResponseEntity<NSRDto> postNSRData(@RequestBody NSR nsr,BindingResult rBindingResult){
+    public ResponseEntity<NSRDto> postNSRData(@RequestBody NSR nsr,BindingResult rBindingResult, @RequestHeader("collegeName") CollegeName collegeName) throws AccessDeniedException, InvalidInputsException {
         logger.info(nsr.toString());
         if(rBindingResult.hasErrors()){
             throw new InvalidInputsException(rBindingResult.getFieldError().getDefaultMessage());
@@ -52,7 +52,7 @@ class NSRController {
 
     @Operation(summary = "Bulk Post NSR data by Admin", description = "Accessible by Office and Admin")
     @PostMapping("/bulk-post")
-    public ResponseEntity<Boolean> bulkPostNSRData(@RequestBody @Valid Set<NSR> nsrs,BindingResult rBindingResult){
+    public ResponseEntity<Boolean> bulkPostNSRData(@RequestBody @Valid Set<NSR> nsrs,BindingResult rBindingResult, @RequestHeader("collegeName") CollegeName collegeName){
         logger.info(nsrs.toString());
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
@@ -94,7 +94,7 @@ class NSRController {
 
     @Operation(summary = "Post NSR data by Student", description = "Accessible by NSR roles")
     @PutMapping("/postByStudent")
-    public ResponseEntity<NSRDto> postNSRDataByStudentName(@RequestBody NSR nsr){
+    public ResponseEntity<NSRDto> postNSRDataByStudentName(@RequestBody NSR nsr, @RequestHeader("collegeName") CollegeName collegeName) throws InvalidInputsException {
         try
         {
             CustomUserDetails customUserDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -152,7 +152,8 @@ class NSRController {
 
     @Operation(summary = "Final Submit in multi step form of NSR")
     @PostMapping("/postByStudent/{jeeApplicationNo}")
-    public ResponseEntity<Boolean> finalSubmit(@PathVariable("jeeApplicationNo") String jeeApplicationNo, @RequestHeader("collegeName") CollegeName collegeName){
+//    , @RequestHeader("collegeName") CollegeName collegeName
+    public ResponseEntity<Boolean> finalSubmit(@PathVariable("jeeApplicationNo") String jeeApplicationNo){
 //        CustomUserDetails customUserDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 //        NSRDto nsrDto1 = mapperService.convertToNSRDto(customUserDetails.getNsr());
         NSRDto nsrDto1 = nsrService.getNSRDataByJeeApplicationNo(jeeApplicationNo);

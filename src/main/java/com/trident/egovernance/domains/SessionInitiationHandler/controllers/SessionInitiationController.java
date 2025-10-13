@@ -33,6 +33,7 @@ public class SessionInitiationController {
     }
 
     @GetMapping("/get-student-for-promotion")
+//    , @RequestHeader("collegeName") CollegeName collegeName
     public ResponseEntity<List<StudentCourse>> getStudentForPromotion(@RequestParam("admYear") int admYear, @RequestParam("course")Courses course, @RequestParam("regdyear") Integer regdYear, @RequestParam("studentType") StudentType studentType, @RequestHeader("collegeName") CollegeName collegeName) {
         return ResponseEntity.ok(sessionInitiationService.getStudentsForPromotion(new SessionInitiationDto(admYear, course, regdYear, studentType, collegeName)));
     }

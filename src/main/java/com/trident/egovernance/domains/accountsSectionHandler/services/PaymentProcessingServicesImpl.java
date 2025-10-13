@@ -7,6 +7,7 @@ import com.trident.egovernance.exceptions.InvalidStudentException;
 import com.trident.egovernance.exceptions.RecordNotFoundException;
 import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.global.entities.views.CurrentSession;
+import com.trident.egovernance.global.helpers.CollegeName;
 import com.trident.egovernance.global.helpers.FeeProcessingMode;
 import com.trident.egovernance.global.helpers.FeeTypesType;
 import com.trident.egovernance.global.repositories.permanentDB.DuesDetailsRepository;
@@ -140,13 +141,16 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
     }
 
     @Override
-    public MoneyReceipt processPaymentInterface(FeeCollection feeCollection, String regdNo, String graphToken, boolean isUpdate, Long oldMrNo) {
+    public MoneyReceipt processPaymentInterface(FeeCollection feeCollection, String regdNo, String graphToken, boolean isUpdate, Long oldMrNo, CollegeName collegeName) {
         try{
             String paymentReceiver = miscellaniousServices.getUserJobInformation().getLeft().name();
             if(feeCollectionRepository.existsById(feeCollection.getMrNo())){
                 throw new InvalidInputsException("Check Mr Details");
             }
             feeCollection.setPaymentReceiver(paymentReceiver);
+
+            feeCollection.setCollegeName(collegeName);
+
             MoneyReceipt moneyReceipt = new MoneyReceipt();
             Pair<MoneyReceipt, StudentBasicDTO> processedPayment;
             if (feeCollection.getFeeProcessingMode().equals(FeeProcessingMode.AUTO)) {
@@ -200,6 +204,7 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
     @Override
     public MoneyReceipt updateFeesCollection(FeeCollection feeCollection, String oboToken) {
         FeeCollection feeCollection1 = feeCollectionRepository.findByMrNo(feeCollection.getMrNo()).orElseThrow(() -> new InvalidInputsException("Invalid Money Receipt Number"));
+        feeCollection1.setCollegeName(feeCollection1.getCollegeName());
         Long oldMrNo = feeCollection1.getMrNo();
         if (feeCollectionTransactionServices.deleteFeeCollectionRecord(feeCollection1) > 0) {
             if (feeCollection.getFeeProcessingMode().equals(FeeProcessingMode.NA)) {
@@ -215,10 +220,11 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
                         feeCollection1.getStudent().getRegdNo(),
                         true,
                         oboToken,
-                        oldMrNo);
+                        oldMrNo,
+                        feeCollection.getCollegeName());
             }
             else {
-                return processPaymentInterface(feeCollection, feeCollection1.getStudent().getRegdNo(), oboToken, true, oldMrNo);
+                return processPaymentInterface(feeCollection, feeCollection1.getStudent().getRegdNo(), oboToken, true, oldMrNo, feeCollection1.getCollegeName());
             }
         } else {
             throw new RecordNotFoundException("Invalid Fee Collection");
@@ -233,18 +239,22 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
 
     @Override
     public Long getMaxMrNo() {
-        return feeCollectionRepository.getMaxMrNo() + 1;
+        Long maxMrNo = feeCollectionRepository.getMaxMrNo();
+        if (maxMrNo == null) {
+            return 1L;
+        }
+        return maxMrNo + 1;
     }
 
     @Override
-    public MoneyReceipt processOtherFessPaymentInterface(OtherFeesPayment otherFeesPayment, String regdNo, boolean isUpdate, String graphToken, Long oldMrNo) {
+    public MoneyReceipt processOtherFessPaymentInterface(OtherFeesPayment otherFeesPayment, String regdNo, boolean isUpdate, String graphToken, Long oldMrNo, CollegeName collegeName) {
         try{
             BigDecimal amountPaid = otherFeesPayment.feeCollection().collectedFee();
             String paymentReceiver = miscellaniousServices.getUserJobInformation().getLeft().name();
             MoneyReceipt moneyReceipt = new MoneyReceipt();
             Pair<MoneyReceipt, StudentBasicDTO> processedPayment;
-                processedPayment = processOtherFeesPayment(otherFeesPayment, regdNo,paymentReceiver);
-                moneyReceipt = processedPayment.getLeft();
+            processedPayment = processOtherFeesPayment(otherFeesPayment, regdNo,paymentReceiver, collegeName);
+            moneyReceipt = processedPayment.getLeft();
 
             String url = urlService.generateUrl(processedPayment.getLeft().getMrNo(),paymentReceiver);
 
@@ -278,7 +288,7 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
         }
     }
     @Override
-    public Pair<MoneyReceipt,StudentBasicDTO> processOtherFeesPayment(OtherFeesPayment otherFeesPayment, String regdNo, String paymentReceiver) {
+    public Pair<MoneyReceipt,StudentBasicDTO> processOtherFeesPayment(OtherFeesPayment otherFeesPayment, String regdNo, String paymentReceiver, CollegeName collegeName) {
         logger.info(otherFeesPayment.toString());
         Student student = studentRepository.findById(regdNo).orElseThrow(() -> new InvalidStudentException("Invalid Registration Number"));
 //        long mrNo = feeCollectionRepository.getMaxMrNo() + 1;
@@ -286,6 +296,7 @@ class PaymentProcessingServicesImpl implements PaymentProcessingServices {
         FeeCollection feeCollection = new FeeCollection(otherFeesPayment.feeCollection());
         feeCollection.setPaymentDate(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
         feeCollection.setPaymentReceiver(paymentReceiver);
+        feeCollection.setCollegeName(collegeName);
 //        feeCollection.setMrNo(mrNo);
         CurrentSession currentSession = currentSessionRepository.findById(regdNo).orElseThrow(() -> new InvalidStudentException("Invalid Registration Number"));
         feeCollection.setDueYear(currentSession.getCurrentYear());

@@ -85,7 +85,7 @@ SELECT DISTINCT
             "s.branchCode = :branchCode, s.admissionYear = :admissionYear, s.degreeYop = :degreeYop, s.phNo = :phNo, " +
             "s.email = :email, s.studentType = :studentType, s.hostelier = :hostelier, s.transportAvailed = :transportAvailed, " +
             "s.status = :status, s.batchId = :batchId, s.currentYear = :currentYear, s.aadhaarNo = :aadhaarNo, " +
-            "s.indortrng = :indortrng, s.plpoolm = :plpoolm, s.cfPayMode = :cfPayMode, s.religion = :religion WHERE s.regdNo = :oldRegdNo")
+            "s.indortrng = :indortrng, s.plpoolm = :plpoolm, s.cfPayMode = :cfPayMode, s.religion = :religion, s.collegeName = :collegeName WHERE s.regdNo = :oldRegdNo")
     int updateStudent(
             String studentName,
             Gender gender,
@@ -107,6 +107,7 @@ SELECT DISTINCT
             BooleanString plpoolm,
             CfPaymentMode cfPayMode,
             Religion religion,
+            CollegeName collegeName,
 //            String section,
             String oldRegdNo
     ) throws DataIntegrityViolationException, ConstraintViolationException, SQLException;
@@ -191,7 +192,7 @@ SELECT DISTINCT
 
     @Query("SELECT NEW com.trident.egovernance.dto.StudentBasicDTO(" +
             "s.regdNo, s.course, s.studentName, s.gender, s.branchCode, " +
-            "s.admissionYear, s.currentYear, s.email) " +
+            "s.admissionYear, s.currentYear, s.email, s.collegeName) " +
             "FROM STUDENT s WHERE s.regdNo = :regdNo")
     StudentBasicDTO findBasicStudentData(String regdNo);
 
@@ -228,7 +229,7 @@ SELECT DISTINCT
     StudentDetailsDTO findStudentDetailsDiagnostic(String regdNo);
 
     @Query("SELECT new com.trident.egovernance.dto.DueStatusReport(" +
-            "s.regdNo, s.currentYear, s.studentName, s.course, s.branchCode, " +
+            "s.regdNo, s.currentYear, s.studentName, s.course, s.branchCode, s.collegeName, " +
             "COALESCE((SELECT d2.amountDue FROM DUESDETAIL d2 WHERE d2.regdNo = s.regdNo AND d2.description = 'PREVIOUS DUE'), 0), " +  // arrearsDue with COALESCE
             "COALESCE(SUM(CASE WHEN d.description != 'PREVIOUS DUE' THEN d.amountDue ELSE 0 END), 0), " +  // currentDues
             "COALESCE(SUM(d.amountDue), 0), " +  // totalDues
@@ -245,15 +246,17 @@ SELECT DISTINCT
             "WHERE (:course IS NULL OR s.course = :course) " +  // If course is null, include all courses
             "AND (:branch IS NULL OR s.branchCode = :branch) " +  // If branch is null, include all branches
             "AND (:dueYear IS NULL OR s.currentYear = :dueYear) " +  // If dueYear is null, include all years
-            "GROUP BY s.regdNo, s.currentYear, s.studentName, s.course, s.branchCode, s.phNo, p.parentContact " +
+            "AND (:collegeName IS NULL OR s.collegeName = :collegeName) " +
+            "GROUP BY s.regdNo, s.currentYear, s.studentName, s.course, s.branchCode, s.phNo, p.parentContact, s.collegeName " +
             "HAVING COALESCE(SUM(d.balanceAmount), 0) > 0")
-    List<DueStatusReport> findAllByCourseAndBranchAndRegdYear(
+    List<DueStatusReport> findAllByCourseAndBranchAndRegdYearAndCollegeName(
             @Param("course") Courses course,
             @Param("branch") String branch,
-            @Param("dueYear") Integer dueYear);
+            @Param("dueYear") Integer dueYear,
+            @Param("collegeName") CollegeName collegeName);
 
     @Query("SELECT new com.trident.egovernance.dto.DueStatusReport(" +
-            "s.regdNo, s.currentYear, s.studentName, s.course, s.branchCode, " +
+            "s.regdNo, s.currentYear, s.studentName, s.course, s.branchCode, s.collegeName," +
             "COALESCE((SELECT d2.amountDue FROM DUESDETAIL d2 WHERE d2.regdNo = s.regdNo AND d2.description = 'PREVIOUS DUE'), 0), " +  // arrearsDue with COALESCE
             "COALESCE(SUM(CASE WHEN d.description != 'PREVIOUS DUE' THEN d.amountDue ELSE 0 END), 0), " +  // currentDues
             "COALESCE(SUM(d.amountDue), 0), " +  // totalDues
@@ -267,13 +270,13 @@ SELECT DISTINCT
             "FROM STUDENT s " +
             "LEFT JOIN DUESDETAIL d ON s.regdNo = d.regdNo " +
             "LEFT JOIN s.personalDetails p " +
-            "GROUP BY s.regdNo, s.currentYear, s.studentName, s.course, s.branchCode, s.phNo, p.parentContact")
+            "GROUP BY s.regdNo, s.currentYear, s.studentName, s.course, s.branchCode, s.phNo, p.parentContact, s.collegeName")
     List<DueStatusReport> findAllByCourseAndBranchAndRegdYear();
 
     @Query("SELECT s FROM STUDENT s LEFT JOIN FETCH s.studentAdmissionDetails sa WHERE s.regdNo IN :regdNoList")
     List<Student> findByRegdNoList(List<String> regdNoList);
 
-    @Query("SELECT new com.trident.egovernance.dto.StudentBasicDTO(s.regdNo, s.course, s.studentName, s.gender, s.branchCode, s.admissionYear, s.currentYear, s.email) FROM STUDENT s WHERE s.course = :course AND s.currentYear = :currentYear AND s.branchCode = :branchCode ORDER BY s.studentName")
+    @Query("SELECT new com.trident.egovernance.dto.StudentBasicDTO(s.regdNo, s.course, s.studentName, s.gender, s.branchCode, s.admissionYear, s.currentYear, s.email, s.collegeName) FROM STUDENT s WHERE s.course = :course AND s.currentYear = :currentYear AND s.branchCode = :branchCode AND s.collegeName = :collegeName ORDER BY s.studentName")
     List<StudentBasicDTO> findStudentWithCourseAndCurrentYearAndBranchCode(Courses course, Integer currentYear, String branchCode);
 
     @Modifying

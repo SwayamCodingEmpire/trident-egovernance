@@ -1,6 +1,7 @@
 package com.trident.egovernance.global.entities.permanentDB;
 
 import com.trident.egovernance.dto.ExcessRefundDTO;
+import com.trident.egovernance.global.helpers.CollegeName;
 import com.trident.egovernance.global.helpers.DuesDetailsId;
 import com.trident.egovernance.global.helpers.ExcessRefundID;
 import com.trident.egovernance.global.helpers.PaymentMode;
@@ -56,6 +57,10 @@ public class ExcessRefund {
     @Column(name = "PAYER")
     private String payer;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "COLLEGENAME")
+    private CollegeName collegeName;
+
     public ExcessRefund(ExcessRefundDTO excessRefundDTO) {
         this.voucherNo = excessRefundDTO.voucherNo();
         this.regdNo = excessRefundDTO.regdNo();
@@ -63,5 +68,6 @@ public class ExcessRefund {
         this.refundMode = excessRefundDTO.refundMode();
         this.chqNo = excessRefundDTO.chqNo();
         this.chqDate = excessRefundDTO.chqDate();
+        this.collegeName = excessRefundDTO.collegeName();
     }
 }

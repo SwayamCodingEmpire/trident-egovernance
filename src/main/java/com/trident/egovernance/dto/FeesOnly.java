@@ -66,5 +66,38 @@ public record FeesOnly(
 
         return new BasicFeeBatchDetails(admYear, course, branchCode, studentType, collegeName);
     }
-
+//
+//    private static BasicFeeBatchDetails extractBasicFeeBatchDetails(String batchId) {
+//        // Extract course (before digits)
+//        String courseString = batchId.replaceAll("\\d.*", "");
+//        Courses course = Courses.valueOf(courseString);
+//
+//        // Remove course from batchId
+//        String remaining = batchId.substring(courseString.length());
+//
+//        // Extract admission year (first 4 digits)
+//        int admYear = Integer.parseInt(remaining.substring(0, 4));
+//
+//        // Remaining after year
+//        String afterYear = remaining.substring(4);
+//
+//        // Determine studentType from the end
+//        StudentType studentType;
+//        String studentTypeStr;
+//
+//        if (afterYear.endsWith("REGULAR")) {
+//            studentType = StudentType.REGULAR;
+//            studentTypeStr = "REGULAR";
+//        } else if (afterYear.endsWith("LE")) {
+//            studentType = StudentType.LE;
+//            studentTypeStr = "LE";
+//        } else {
+//            throw new IllegalArgumentException("Invalid student type in batchId: " + batchId);
+//        }
+//
+//        // Extract branch code (between year and student type)
+//        String branchCode = afterYear.substring(0, afterYear.length() - studentTypeStr.length());
+//
+//        return new BasicFeeBatchDetails(admYear, course, branchCode, studentType);
+//    }
 }

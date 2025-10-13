@@ -9,6 +9,7 @@ import com.trident.egovernance.global.entities.permanentDB.Discount;
 import com.trident.egovernance.global.entities.permanentDB.FeeCollection;
 import com.trident.egovernance.domains.accountsSectionHandler.services.DiscountAndAdjustmentService;
 import com.trident.egovernance.domains.accountsSectionHandler.services.PaymentProcessingServices;
+import com.trident.egovernance.global.helpers.CollegeName;
 import com.trident.egovernance.global.repositories.permanentDB.StudentRepository;
 import com.trident.egovernance.global.services.PDFGenerationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,7 +46,7 @@ public class PaymentController {
 
 
     @Operation(summary = "Insert discount for a student", description = "Directly insert value into Discount entity. Returns true if successfull. Complete logic is in a database trigger")
-    @PostMapping("/insert-Discount-Data")
+    @PostMapping("/insert-discount-data")
     public ResponseEntity<Boolean> insertDiscountData(@RequestBody Discount discount){
         List<GrantedAuthority> newAuthorities = (List<GrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
         discount.setStaffId(newAuthorities.get(2).toString());
@@ -71,9 +72,9 @@ public class PaymentController {
 
     @Operation(summary = "Fee Collection endpoint", description = "Insert into FeeCollection Entity along with path variable of regdNo")
     @PostMapping("/fees-payment/{regdNo}")
-    public ResponseEntity<MoneyReceipt> feesPayment(@RequestBody FeeCollection feeCollection, @PathVariable("regdNo") String regdNo, @RequestHeader("oboToken") String oboToken) {
+    public ResponseEntity<MoneyReceipt> feesPayment(@RequestBody FeeCollection feeCollection, @PathVariable("regdNo") String regdNo, @RequestHeader("oboToken") String oboToken, @RequestHeader("collegeName") CollegeName collegeName) {
         logger.info("feesPayment");
-        return ResponseEntity.ok(paymentProcessingService.processPaymentInterface(feeCollection, regdNo, oboToken.substring(7), false, null));
+        return ResponseEntity.ok(paymentProcessingService.processPaymentInterface(feeCollection, regdNo, oboToken.substring(7), false, null, collegeName));
     }
 
 //    @GetMapping("/fees-payment/{mrNo}")
@@ -99,10 +100,10 @@ public class PaymentController {
 
     @Operation(summary = "Other Fee Collection endpoint", description = "Insert into Other FeeCollection Entity along with path variable of regdNo")
     @PostMapping("/other-fees-payment/{regdNo}")
-    public ResponseEntity<MoneyReceipt> otherFeesPayment(@RequestBody OtherFeesPayment otherFeesPayment, @PathVariable("regdNo") String regdNo, @RequestHeader("oboToken") String oboToken){
+    public ResponseEntity<MoneyReceipt> otherFeesPayment(@RequestBody OtherFeesPayment otherFeesPayment, @PathVariable("regdNo") String regdNo, @RequestHeader("oboToken") String oboToken, @RequestHeader("collegeName") CollegeName collegeName){
         logger.info("otherFeesPayment");
         logger.info(otherFeesPayment.toString());
-        return ResponseEntity.ok(paymentProcessingService.processOtherFessPaymentInterface(otherFeesPayment,regdNo, false, oboToken.substring(7), null));
+        return ResponseEntity.ok(paymentProcessingService.processOtherFessPaymentInterface(otherFeesPayment,regdNo, false, oboToken.substring(7), null, collegeName));
     }
 
     @PostMapping("/accept-fee-collection-edit")

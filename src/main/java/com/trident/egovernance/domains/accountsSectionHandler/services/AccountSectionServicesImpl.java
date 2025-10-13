@@ -7,10 +7,7 @@ import com.trident.egovernance.exceptions.RecordNotFoundException;
 import com.trident.egovernance.global.entities.permanentDB.*;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
 import com.trident.egovernance.global.entities.views.FeeCollectionView;
-import com.trident.egovernance.global.helpers.Courses;
-import com.trident.egovernance.global.helpers.DuesDetailsId;
-import com.trident.egovernance.global.helpers.ExcessRefundID;
-import com.trident.egovernance.global.helpers.FeeTypesType;
+import com.trident.egovernance.global.helpers.*;
 import com.trident.egovernance.global.repositories.permanentDB.*;
 import com.trident.egovernance.global.repositories.views.CollectionReportRepository;
 import com.trident.egovernance.global.repositories.views.DailyCollectionSummaryRepository;
@@ -261,8 +258,8 @@ public class AccountSectionServicesImpl implements AccountSectionService {
     }
 
     @Override
-    public List<DueStatusReport> fetchDueStatusReport(Optional<Courses> course, Optional<String> branch, Optional<Integer> regdYear) {
-        return studentRepository.findAllByCourseAndBranchAndRegdYear(course.orElse(null), branch.orElse(null), regdYear.orElse(null));
+    public List<DueStatusReport> fetchDueStatusReport(Optional<Courses> course, Optional<String> branch, Optional<Integer> regdYear, Optional<CollegeName> collegeName) {
+        return studentRepository.findAllByCourseAndBranchAndRegdYearAndCollegeName(course.orElse(null), branch.orElse(null), regdYear.orElse(null), collegeName.orElse(null));
     }
 
     @Override
@@ -289,7 +286,7 @@ public class AccountSectionServicesImpl implements AccountSectionService {
 //        String paymentReceiver = miscellaniousServices.getUserJobInformation().name();
         String paymentReceiver = "DemoReciever";
         ExcessFeeStudentData excessFeeStudentData = duesDetailsRepository.findStudentsWithExcessFee(excessRefund.getRegdNo()).orElseThrow(()->new RecordNotFoundException("Student has no pending Excess Fees"));
-        if(excessRefundRepository.existsById(new ExcessRefundID(excessRefund.getRegdNo(), excessRefund.getVoucherNo()))){
+        if(excessRefundRepository.existsById(new ExcessRefundID(excessRefund.getRegdNo(), excessRefund.getVoucherNo(), excessRefund.getCollegeName()))){
             throw new InvalidInputsException("Current Voucher number already used with this regdNo.");
         }
         excessRefund.setVoucherDate(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
@@ -297,6 +294,7 @@ public class AccountSectionServicesImpl implements AccountSectionService {
         excessRefund.setRegdYear(String.valueOf(excessFeeStudentData.regdyear()));
         excessRefund.setSessionId(excessFeeStudentData.sessionId());
         excessRefund.setPayer(paymentReceiver);
+        excessRefund.setCollegeName(excessFeeStudentData.collegeName());
         excessRefundRepository.save(excessRefund);
         StandardDeductionFormat standardDeductionFormat = standardDeductionFormatRepository.findById("EXCESS FEE REFUND").orElse(null);
         assert standardDeductionFormat != null;
@@ -309,6 +307,18 @@ public class AccountSectionServicesImpl implements AccountSectionService {
         }
     }
 
+    public Map<Integer,Map<TFWType,List<FeesOnly>>> getFeeStructure(String batchId){
+        Set<FeesOnly> fees = mapperService.convertToFeesOnly(feesRepository.findAllByBatchId(batchId));
+        if(!fees.isEmpty()){
+            Map<Integer,Map<TFWType,List<FeesOnly>>> result = fees.stream()
+                    .collect(Collectors.groupingBy(
+                            FeesOnly::regdYear,
+                            Collectors.groupingBy(FeesOnly::tfwType)
+                    ));
+            return result;
+        }
+        throw new RecordNotFoundException("No such batch exists");
+    }
 
 
     @Override

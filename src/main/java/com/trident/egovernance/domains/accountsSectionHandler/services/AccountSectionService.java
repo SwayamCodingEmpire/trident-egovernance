@@ -4,8 +4,10 @@ import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.permanentDB.AlterFeeCollection;
 import com.trident.egovernance.global.entities.permanentDB.ExcessRefund;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
+import com.trident.egovernance.global.helpers.CollegeName;
 import com.trident.egovernance.global.helpers.Courses;
 import com.trident.egovernance.global.helpers.FeeTypesType;
+import com.trident.egovernance.global.helpers.TFWType;
 
 import java.sql.Date;
 import java.util.List;
@@ -29,7 +31,7 @@ public interface AccountSectionService {
     List<FeeCollectionOnlyDTO> getFeeCollectionFilteredBySessionId(String sessionId);
     List<MrDetailsDTOMinimal> fetchMrDetailsByMrNo(Long mrNo);
 
-    List<DueStatusReport> fetchDueStatusReport(Optional<Courses> course, Optional<String> branch, Optional<Integer> regdYear);
+    List<DueStatusReport> fetchDueStatusReport(Optional<Courses> course, Optional<String> branch, Optional<Integer> regdYear, Optional<CollegeName> collegeName);
 
     Boolean addToAlterQueue(AlterFeeCollection feeCollection);
 
@@ -39,4 +41,5 @@ public interface AccountSectionService {
     void insertRefundData(ExcessRefund excessRefund);
 
     void insertFees(FeesCRUDDto feesCRUDDto);
+    Map<Integer,Map<TFWType,List<FeesOnly>>> getFeeStructure(String batchId);
 }

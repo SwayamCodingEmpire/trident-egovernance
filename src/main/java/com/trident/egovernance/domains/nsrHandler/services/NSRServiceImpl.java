@@ -115,7 +115,16 @@ class NSRServiceImpl implements NSRService {
     public Boolean saveToPermanentDatabase(String jeeApplicationNo) {
 //        SharedStateAmongDueInitiationAndNSRService sharedState = new SharedStateAmongDueInitiationAndNSRService();
         NSR nsr = nsrRepository.findById(jeeApplicationNo).orElseThrow(() -> new RecordNotFoundException("Record not found"));
-        nsr.setBatchId(miscellaniousServices.generateBatchId(new BasicFeeBatchDetails(Integer.valueOf(nsr.getAdmissionYear()), nsr.getCourse(), nsr.getBranchCode(), nsr.getStudentType(), nsr.getCollegeName())));
+//        , nsr.getCollegeName())
+        nsr.setBatchId(miscellaniousServices.generateBatchId(
+                new BasicFeeBatchDetails(
+                        Integer.valueOf(nsr.getAdmissionYear()),
+                        nsr.getCourse(),
+                        nsr.getBranchCode(),
+                        nsr.getStudentType(),
+                        nsr.getCollegeName()
+                )
+        ));
         nsr.setCurrentYear(((nsr.getStudentType().equals(StudentType.REGULAR)) ? 1 : 2));
         logger.info("Batch ID : {}", nsr.getBatchId());
         logger.info("Fetched from Redis");
