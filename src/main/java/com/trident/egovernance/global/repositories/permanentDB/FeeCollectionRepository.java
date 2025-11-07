@@ -17,7 +17,7 @@ import java.util.Set;
 
 @Repository
 public interface FeeCollectionRepository extends JpaRepository<FeeCollection,Long> {
-    @Query("select MAX(f.mrNo) from FEECOLLECTION f")
+    @Query("select NVL(MAX(f.mrNo),0) from FEECOLLECTION f")
     Long getMaxMrNo();
 
 

@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface MasterTableServices {
+    void updateFeeTypes(Set<FeeTypesWithDeductionOrder> feeTypes);
     List<Fees> getFeesByBatchIdAndRegdYear(String batchId, Integer regdYear);
     List<FeeTypesOnly> getFines();
     List<StandardDeductionFormat> getStandardDeductionformatByDescriptions(Set<String> descriptions);
@@ -34,9 +35,11 @@ public interface MasterTableServices {
     List<Fees> saveFeesToDatabase(FeesCRUDDto feesCRUDDto);
     Set<FeesOnly> getFeesByBatchId(BasicFeeBatchDetails basicFeeBatchDetails);
     List<Fees> updateFees(FeesCRUDDto feesCRUDDto);
-    Set<FeeTypesOnly> createNewFeeTypes(Set<FeeTypesOnly> feeTypes);
+    void createNewFeeTypes(Set<FeeTypesWithDeductionOrder> feeTypes);
     Set<FeeTypesOnly> getDescriptionByYear(Integer year);
     List<String> getSessionIdsByRegdyearAndCourse(Integer regdYear, Courses course);
 
+    FeeGroupAndPartOfDTO getFeeGroupAndPartOfDTO();
     List<Sessions> getOngoingSessionsData();
+    FeeTypesWithDeductionOrder  getFeeTypesWithDeductionOrder(String description);
 }

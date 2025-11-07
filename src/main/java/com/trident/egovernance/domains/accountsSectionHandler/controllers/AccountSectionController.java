@@ -9,6 +9,7 @@ import com.trident.egovernance.global.entities.permanentDB.ExcessRefund;
 import com.trident.egovernance.global.entities.permanentDB.PaymentMode;
 import com.trident.egovernance.global.entities.views.DailyCollectionSummary;
 import com.trident.egovernance.global.helpers.*;
+import com.trident.egovernance.global.services.MasterTableServices;
 import com.trident.egovernance.global.services.MasterTableServicesImpl;
 import com.trident.egovernance.global.services.MiscellaniousServicesImpl;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,14 +32,14 @@ public class AccountSectionController {
     private final MiscellaniousServicesImpl miscellaniousServices;
 
     private final Logger logger = LoggerFactory.getLogger(AccountSectionController.class);
-    private final MasterTableServicesImpl masterTableServicesImpl;
+    private final MasterTableServices masterTableServices;
     ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
-    public AccountSectionController(FeeCollectionTransactionsServiceImpl feeCollectionTransactionsServiceImpl, AccountSectionService accountSectionService, MiscellaniousServicesImpl miscellaniousServices, MasterTableServicesImpl masterTableServicesImpl) {
+    public AccountSectionController(FeeCollectionTransactionsServiceImpl feeCollectionTransactionsServiceImpl, AccountSectionService accountSectionService, MiscellaniousServicesImpl miscellaniousServices, MasterTableServices masterTableServices) {
         this.feeCollectionTransactionsServiceImpl = feeCollectionTransactionsServiceImpl;
         this.accountSectionService = accountSectionService;
         this.miscellaniousServices = miscellaniousServices;
-        this.masterTableServicesImpl = masterTableServicesImpl;
+        this.masterTableServices = masterTableServices;
     }
 
     @Operation(summary = "Get Dues Details Data sorted and classified by regdYear and semester by inputting regdNo as a path variable", description = "Data source DuesDetails and OldDuesDetails")
@@ -80,7 +81,7 @@ public class AccountSectionController {
         // Submit tasks to executor
         Future<Set<String>> allSessions = executor.submit(() -> {
             try {
-                return masterTableServicesImpl.getAllSessions();
+                return masterTableServices.getAllSessions();
             } finally {
                 latch.countDown();  // Decrement latch when task is finished
             }
@@ -88,7 +89,7 @@ public class AccountSectionController {
 
         Future<Set<String>> allParticulars = executor.submit(() -> {
             try {
-                return masterTableServicesImpl.getAllParticulars();
+                return masterTableServices.getAllParticulars();
             } finally {
                 latch.countDown();
             }
@@ -96,7 +97,7 @@ public class AccountSectionController {
 
         Future<Set<String>> allPaymentModes = executor.submit(() -> {
             try {
-                return masterTableServicesImpl.getAllPaymentModes().stream()
+                return masterTableServices.getAllPaymentModes().stream()
                         .map(PaymentMode::getPmo)
                         .collect(Collectors.toSet());
             } finally {
@@ -146,7 +147,7 @@ public class AccountSectionController {
     @Operation(summary = "Endpoint to get a set of desciptions(particulars)", description = "It results out a set of descriptions(String) having FeeType as OTHER FEES")
     @GetMapping("/get-other-fees")
     public ResponseEntity<Set<String>> getAllOtherFeesDescriptions() {
-        return ResponseEntity.ok(masterTableServicesImpl.getAllOtherFeesDescriptions());
+        return ResponseEntity.ok(masterTableServices.getAllOtherFeesDescriptions());
     }
 
 //    @Operation(summary = "Endpoint to get a set of desciptions(particulars)", description = "It results out a set of descriptions(String) having FeeType as OTHER FEES")
@@ -162,13 +163,14 @@ public class AccountSectionController {
 
     @Operation(summary = "Endpoint to get a set of Fees depending upon the input which is BatchId", description = "It results out a set of FeesOnly DTO")
     public ResponseEntity<Set<FeesOnly>> getFeesByBatch(@RequestBody BasicFeeBatchDetails basicFeeBatchDetails){
-        return ResponseEntity.ok(masterTableServicesImpl.getFeesByBatchId(basicFeeBatchDetails));
+        return ResponseEntity.ok(masterTableServices.getFeesByBatchId(basicFeeBatchDetails));
     }
 
-//    @PutMapping("/update-Fees")
-//    public ResponseEntity<List<Fees>> updateFees(@RequestBody FeesCRUDDto feesList){
-//        return ResponseEntity.ok(masterTableServicesImpl.updateFees(feesList));
-//    }
+    @PostMapping("/update-fee-types")
+    public ResponseEntity<Boolean> updateFeeTypes(@RequestBody Set<FeeTypesWithDeductionOrder> feeTypes){
+        masterTableServices.updateFeeTypes(feeTypes);
+        return ResponseEntity.ok(true);
+    }
 
     @Operation(summary = "Endpoint to get money Receipt", description = "It results out Money Receipt depending upon Mr No.")
     @GetMapping("/get-money-receipt/{mrNo}")
@@ -184,7 +186,7 @@ public class AccountSectionController {
     @Operation(summary = "Endpoint to get List of Fine Fees", description = "It results out a List of FeesTypesOnly DTO")
     @GetMapping("/get-fines-list")
     public ResponseEntity<List<FeeTypesOnly>> getFines(){
-        return ResponseEntity.ok(masterTableServicesImpl.getFines());
+        return ResponseEntity.ok(masterTableServices.getFines());
     }
 
     @Operation(summary = "Endpoint to get Due Status Report = List of DueStatusReport DTO", description = "It takes inputs a query params of branch, regdYear, course. Not giving a query param is equivalent to passing ALL")
@@ -218,7 +220,7 @@ public class AccountSectionController {
     @Operation(summary = "Endpoint to get Feetype list by inputting year as a query param", description = "It results a set of FeeTypesOnly")
     @GetMapping("/get-feeType-list")
     public ResponseEntity<Set<FeeTypesOnly>> getFeeTypeList(@RequestParam("year") Integer year){
-        return ResponseEntity.ok(masterTableServicesImpl.getDescriptionByYear(year));
+        return ResponseEntity.ok(masterTableServices.getDescriptionByYear(year));
     }
 
     @Operation(summary = "Endpoint to create Fees", description = "Create records in Fees Tables")
@@ -230,14 +232,15 @@ public class AccountSectionController {
 
     @Operation(summary = "Endpoint to create FeeTypes(Description)", description = "Create records in FeeTypes Tables")
     @PostMapping("/create-fee-types")
-    public ResponseEntity<Set<FeeTypesOnly>> createFeeTypes(@RequestBody Set<FeeTypesOnly> feeTypes){
-        return ResponseEntity.ok(masterTableServicesImpl.createNewFeeTypes(feeTypes));
+    public ResponseEntity<Boolean> createFeeTypes(@RequestBody Set<FeeTypesWithDeductionOrder> feeTypes){
+        masterTableServices.createNewFeeTypes(feeTypes);
+        return ResponseEntity.ok(true);
     }
 
     @Operation(summary = "Endpoint to get FEE GROUPS and PARTOFS")
     @GetMapping("/get-feeGroups-partOf")
     public ResponseEntity<FeeGroupAndPartOfDTO> getFeeGroupAndPartOf(){
-        return ResponseEntity.ok(masterTableServicesImpl.getFeeGroupAndPartOfDTO());
+        return ResponseEntity.ok(masterTableServices.getFeeGroupAndPartOfDTO());
     }
 
     @GetMapping("/get-fee-structure")
@@ -245,6 +248,11 @@ public class AccountSectionController {
         logger.info("Student Type : {}", studentType);
         String batchId = miscellaniousServices.generateBatchId(new BasicFeeBatchDetails(admYear, course, branchCode, studentType, collegeName));
         return ResponseEntity.ok(accountSectionService.getFeeStructure(batchId));
+    }
+
+    @GetMapping("/get-fee-types/{description}")
+    public ResponseEntity<FeeTypesWithDeductionOrder> getFeeTypes(@PathVariable String description){
+        return ResponseEntity.ok(masterTableServices.getFeeTypesWithDeductionOrder(description));
     }
 }
 

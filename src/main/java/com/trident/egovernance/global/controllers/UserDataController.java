@@ -60,7 +60,10 @@ public class UserDataController {
 
     @GetMapping("/get-menu-blade")
     public ResponseEntity<RoleDetails> getMenuBlade(){
-        return ResponseEntity.ok(miscellaniousServices.getMenuItems());
+        logger.info("Fetching the menu blade");
+        RoleDetails roleDetails = miscellaniousServices.getMenuItems();
+        logger.info(roleDetails.toString());
+        return ResponseEntity.ok(roleDetails);
     }
 
     @GetMapping("/get-user-photo")

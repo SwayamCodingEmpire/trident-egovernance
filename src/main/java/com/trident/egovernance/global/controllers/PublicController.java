@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/public")
 public class PublicController {
+    private final MenuBladeFetcherService menuBladeFetcherService;
     private final S3ServiceImpl s3Service;
     private final WebClient webClientGraph;
     private final DuesDetailsRepository duesDetailsRepository;
@@ -47,7 +48,7 @@ public class PublicController {
     private final MasterTableServices masterTableServices;
 
     public PublicController(S3ServiceImpl s3Service, DuesDetailsRepository duesDetailsRepository, AppBearerTokenService appBearerTokenService, AuthenticationServiceImpl authenticationService, EntityManager entityManager, StudentRepository studentRepository, CustomJwtServiceImpl customJwtService,
-                            FeesRepository feesRepository, BranchRepository branchRepository, URLService urlService, FeeCollectionTransactionsServiceImpl feeCollectionTransactionsServiceImpl, MicrosoftGraphService microsoftGraphService, MasterTableServices masterTableServices) {
+                            FeesRepository feesRepository, BranchRepository branchRepository, URLService urlService, FeeCollectionTransactionsServiceImpl feeCollectionTransactionsServiceImpl, MicrosoftGraphService microsoftGraphService, MasterTableServices masterTableServices, MenuBladeFetcherService menuBladeFetcherService) {
         this.s3Service = s3Service;
         this.duesDetailsRepository = duesDetailsRepository;
         this.appBearerTokenService = appBearerTokenService;
@@ -64,6 +65,7 @@ public class PublicController {
                 .build();
         this.microsoftGraphService = microsoftGraphService;
         this.masterTableServices = masterTableServices;
+        this.menuBladeFetcherService = menuBladeFetcherService;
     }
 
     @PostMapping("/login")
@@ -98,37 +100,11 @@ public class PublicController {
                 .map(entry -> new BranchGroup(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
         logger.info(branchGroups.toString());
+        NavigationMenu navigationMenu = menuBladeFetcherService.getNavigationMenu();
+        logger.info("Navigation menu  : {}", navigationMenu);
         return branchGroups.isEmpty() ? ResponseEntity.ok(null) : ResponseEntity.ok(branchGroups);
     }
 
-//    @PostMapping("/profile-test/{regdNo}")
-//    public void setProfilePicture(@PathVariable("regdNo") String regdNo) {
-//        String userId = "sweety.dash.csaiml2028@codingEmpire.onmicrosoft.com";
-//        String appToken = appBearerTokenService.getAppBearerToken("defaultKey");
-//        try {
-//            String key = regdNo + "/" + regdNo + "-Passport-Photo";
-//            logger.info(key);
-//            byte[] profilePicture = s3Service.getFileAsBytes("nsrdocbucket",key);
-//            logger.info(profilePicture.toString());
-//            webClientGraph.put()
-//                    .uri("/{userId}/photo/$value", userId)
-//                    .header("Authorization", "Bearer " + appToken)
-//                    .header("Content-Type", "image/jpeg")
-//                    .bodyValue(profilePicture)
-//                    .retrieve()
-//                    .onStatus(HttpStatusCode::isError, response -> response.bodyToMono(String.class).flatMap(body -> {
-//                        logger.error("Error setting profile picture: {}", body);
-//                        return Mono.error(new RuntimeException("Failed to set profile picture"));
-//                    }))
-//                    .toBodilessEntity()
-//                    .block();
-//
-//            logger.info("Profile picture set successfully for user ID: {}", userId);
-//        } catch (Exception e) {
-//            logger.error("Error setting profile picture for user ID: {}", userId, e);
-//            throw new IllegalStateException("Error setting profile picture for user ID: " + userId, e);
-//        }
-//    }
 
     @PostMapping("/resource")
     public ResponseEntity<MoneyReceipt> uploadFile(@RequestBody LoginResponse key) {

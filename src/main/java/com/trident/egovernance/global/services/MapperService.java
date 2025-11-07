@@ -27,7 +27,7 @@ public interface MapperService {
     List<DuesDetailsDto> convertToDuesDetailsDtoFromOldDuesDetails(List<OldDueDetails> duesDetailsList);
     List<NSRDto> convertToNSRDto(List<NSR> nsrS);
 
-//    List<CollectionReportDTO> convertFromTuplesToListOfCollectionReportDTO(List<Tuple> tuples);
+    //    List<CollectionReportDTO> convertFromTuplesToListOfCollectionReportDTO(List<Tuple> tuples);
     Set<NSRDto> convertToNSRDtoSet(Set<NSR> nsrS);
     Student convertToStudentFromStudentOnlyDTO(StudentOnlyDTO studentOnlyDTO);
 
@@ -49,7 +49,9 @@ public interface MapperService {
     Set<MrDetailsDTOMinimal> convertToMrDetailsDTOSet(Set<MrDetails> mrDetailsSet);
     Set<FeesOnly> convertToFeesOnly(List<Fees> fees);
     List<FeeTypes> convertToFeeTypesList(Set<FeeTypesOnly> feesList);
+    List<FeeTypes> convertToFeeTypesListFromDTO(Set<FeeTypesWithDeductionOrder> feeTypeList);
     Set<FeeTypesOnly> convertToFeeTypesOnlySet(List<FeeTypes> feesList);
+
     List<MrDetailsDto> convertToMrDetailsDtoSet(Set<MrDetails> mrDetailsSet);
 
     List<Subject_Details> convertToSubjectDetailsList(List<SubjectTempDTO> subjectList);
@@ -57,5 +59,9 @@ public interface MapperService {
     List<SubjectResultData> convertToSubjectResultsData(List<SemesterResult> semesterResults);
     List<FeeCollectionOnlyDTO> convertToFeeCollectionOnlyDTOList(List<FeeCollection> feeCollections);
     List<MrDetailsDTOMinimal> convertToMrDetailsDTOList(List<MrDetails> mrDetailsList);
+
+    Set<FeeTypesWithDeductionOrder> convertToFeeTypesDeductionSet(List<FeeTypes> feeTypes);
+
+    List<StandardDeductionFormat> convertToStandardDeductionEntity(Set<FeeTypesWithDeductionOrder> feeTypesEntities);
 //    Set<String> getListOfOtherFees();
 }

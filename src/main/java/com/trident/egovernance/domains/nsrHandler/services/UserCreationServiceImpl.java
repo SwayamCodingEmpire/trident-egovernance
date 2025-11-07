@@ -9,6 +9,7 @@ import com.trident.egovernance.global.services.MiscellaniousServicesImpl;
 import com.trident.egovernance.global.services.S3ServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,8 @@ import java.util.concurrent.CompletableFuture;
 
 @Service
 public class UserCreationServiceImpl implements UserCreationService {
+    @Value("${domain}")
+    private String domain;
     private final WebClient webClientGraph;
     private final S3ServiceImpl s3Service;
     private final AppBearerTokenService appBearerTokenService;
@@ -181,11 +184,12 @@ public class UserCreationServiceImpl implements UserCreationService {
         return lastName.isEmpty()
                 ? String.format("%s.%d@tridentbbsr.onmicrosoft.com", firstName.replace(" ", ""), yearOfPassing)
                 : String.format(
-                "%s.%s.%s%d@tridentbbsr.onmicrosoft.com",
+                "%s.%s.%s%d%s",
                 firstName.replace(" ", ""),
                 lastName,
                 branch.toLowerCase(),
-                yearOfPassing);
+                yearOfPassing,
+                domain);
 //        return lastName.isEmpty()
 //                ? String.format("%s.%d@codingEmpire.onmicrosoft.com", firstName.replace(" ", ""), yearOfPassing)
 //                : String.format(

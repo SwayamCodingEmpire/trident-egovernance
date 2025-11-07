@@ -70,7 +70,7 @@ class NSRController {
                 errorMessages.add(errorMessage);
             }
             if(violations.isEmpty()){
-                int duration = courseFetchingService.getCourseDetails(nsr.getCourse()).getDuration();
+                int duration = courseFetchingService.getCourseDetails(nsr.getCourse(), nsr.getStudentType()).getDuration();
                 nsr.setAdmissionYear(String.valueOf(Year.now()));
                 nsr.setDegreeYop(Year.now().getValue() + duration);
                 if(nsr.getRankType().equals(RankType.JEE)){
@@ -88,6 +88,7 @@ class NSRController {
         if (!errorMessages.isEmpty()) {
             throw new InvalidInputsException(String.join(", ", errorMessages));
         }
+        logger.info("Just before saving {}",nsrs);
         nsrService.bulkSaveNSRData(nsrs);
         return ResponseEntity.ok(true);
     }

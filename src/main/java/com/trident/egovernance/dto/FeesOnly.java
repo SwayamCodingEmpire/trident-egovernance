@@ -35,17 +35,37 @@ public record FeesOnly(
 
     private static BasicFeeBatchDetails extractBasicFeeBatchDetails(String batchId) {
         // Extract course part
-        String courseString = batchId.replaceAll("\\d.*", ""); // Get part before digits
-        Courses course = Courses.valueOf(courseString); // Map to enum
+        // Extract course (before digits)
+        String courseString = batchId.replaceAll("\\d.*", "");
+        Courses course = Courses.valueOf(courseString);
 
-        // Extract remaining part
+        // Remove course from batchId
         String remaining = batchId.substring(courseString.length());
-        int admYear = Integer.parseInt(remaining.substring(0, 4)); // Admission year
-        String branchCode = remaining.substring(4, 7); // Branch code
+
+        // Extract admission year (first 4 digits)
+        int admYear = Integer.parseInt(remaining.substring(0, 4));
+
+        // Remaining after year
+        String afterYear = remaining.substring(4);
 
         // Identify student type
         String studentTypeCode = remaining.substring(7, 9);
-        StudentType studentType = StudentType.valueOf(studentTypeCode);
+
+        StudentType studentType;
+        String studentTypeStr;
+
+        if (afterYear.endsWith("REGULAR")) {
+            studentType = StudentType.REGULAR;
+            studentTypeStr = "REGULAR";
+        } else if (afterYear.endsWith("LE")) {
+            studentType = StudentType.LE;
+            studentTypeStr = "LE";
+        } else {
+            throw new IllegalArgumentException("Invalid student type in batchId: " + batchId);
+        }
+
+        // Extract branch code (between year and student type)
+        String branchCode = afterYear.substring(0, afterYear.length() - studentTypeStr.length());
 
         // Parse college name based on student type
         String collegeCode;

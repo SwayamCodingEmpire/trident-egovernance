@@ -65,7 +65,7 @@ public class EmailSenderServiceImpl {
         String classStart = "1st November 2024";
         // Sender and Recipient
         helper.setFrom("mohantyswayam2001@gmail.com");
-        helper.setTo("elitecracker25@gmail.com");
+        helper.setTo("gamerhorizon1789@gmail.com");
         helper.setSubject("Trident : Credentials for Microsoft Teams");
 
         // HTML Content with colored text
@@ -353,7 +353,7 @@ public class EmailSenderServiceImpl {
 
         // Set the email content
 //        helper.setText(emailContent, true);
-        microsoftGraphService.sendEmailWithAttachment("elitecracker25@gmail.com",mrNumber + " : Trident Payment Receipt" ,emailContent, receiptPdfBytes, graphToken);
+        microsoftGraphService.sendEmailWithAttachment("debika.pradhan.csit2029@tactbbsr.onmicrosoft.com",mrNumber + " : Trident Payment Receipt" ,emailContent, receiptPdfBytes, graphToken);
 //
 //        // Attach the PDF receipt
 //        helper.addAttachment("Payment_Receipt.pdf", new ByteArrayResource(receiptPdfBytes));
