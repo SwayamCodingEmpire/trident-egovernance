@@ -34,7 +34,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }catch (Exception e){
             logger.error(String.valueOf(e));
             throw new BadCredentialsException("Invalid username or password");
-
         }
 
     }

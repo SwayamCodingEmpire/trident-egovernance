@@ -28,6 +28,26 @@ public class MenuBladeFetcherServiceImpl implements MenuBladeFetcherService {
     private final WebClient webClient;
 
 
+    public MenuBladeFetcherServiceImpl() {
+        this.webClient = WebClient.builder().baseUrl("https://admportal.s3.ap-south-1.amazonaws.com/menu.json").build();
+    }
+
+
+//    @Override
+//    @Cacheable(value = "Navigation")
+//    public NavigationMenu getNavigationMenu() {
+//        try {
+//            ObjectMapper mapper = new ObjectMapper();
+//            Map<String, RoleDetails> menuMap = mapper.readValue(
+//                    Paths.get("/home/likun10/Desktop/Menu.json").toFile(),
+//                    new TypeReference<Map<String, RoleDetails>>() {}
+//            );
+//            return new NavigationMenu(menuMap);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            throw new InvalidInputsException("Unable to read JSON file");
+//        }
+//    }
 
     @Override
     @Cacheable(value = "Navigation")

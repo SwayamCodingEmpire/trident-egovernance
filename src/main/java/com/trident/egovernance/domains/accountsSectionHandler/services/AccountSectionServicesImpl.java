@@ -333,4 +333,17 @@ public class AccountSectionServicesImpl implements AccountSectionService {
         }
         feesRepository.saveAllAndFlush(feesCRUDDto.feesList());
     }
+
+    public Map<Integer,Map<TFWType,List<FeesOnly>>> getFeeStructure(String batchId){
+        Set<FeesOnly> fees = mapperService.convertToFeesOnly(feesRepository.findAllByBatchId(batchId));
+        if(!fees.isEmpty()){
+            Map<Integer,Map<TFWType,List<FeesOnly>>> result = fees.stream()
+                    .collect(Collectors.groupingBy(
+                            FeesOnly::regdYear,
+                            Collectors.groupingBy(FeesOnly::tfwType)
+                    ));
+            return result;
+        }
+        throw new RecordNotFoundException("No such batch exists");
+    }
 }

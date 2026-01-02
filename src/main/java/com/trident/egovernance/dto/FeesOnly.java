@@ -32,7 +32,6 @@ public record FeesOnly(
                 fees.getPayType()
         );
     }
-
     private static BasicFeeBatchDetails extractBasicFeeBatchDetails(String batchId) {
         // Extract course part
         // Extract course (before digits)
