@@ -3,6 +3,7 @@ package com.trident.egovernance.global.services;
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.exceptions.InvalidInputsException;
 import com.trident.egovernance.global.entities.permanentDB.Fees;
+import com.trident.egovernance.global.entities.permanentDB.Staff;
 import com.trident.egovernance.global.helpers.BooleanString;
 import com.trident.egovernance.global.helpers.FeeTypesType;
 import com.trident.egovernance.global.helpers.TFWType;
@@ -53,6 +54,7 @@ public class MiscellaniousServicesImpl implements MiscellaniousServices {
         batchId.append(basicFeeBatchDetails.admYear());
         batchId.append(basicFeeBatchDetails.branchCode());
         batchId.append(basicFeeBatchDetails.studentType().getEnumName());
+        batchId.append(basicFeeBatchDetails.collegeName());
         return batchId.toString();
     }
 //    private static final Pattern DATE_PATTERN = Pattern.compile("^(\\d{2}-\\d{2}-\\d{4})(?:_(\\d{2}-\\d{2}-\\d{4}))?$|^\\d{4}-\\d{4}$");
@@ -242,5 +244,42 @@ public class MiscellaniousServicesImpl implements MiscellaniousServices {
         int endYear = Integer.parseInt(years[1]);
 
         return (startYear + 1) + "-" + (endYear + 1);
+    }
+
+    @Override
+    public String generateStaffUsername(UsernamePurposeOfStaff user){
+        StringBuilder code = new StringBuilder();
+        String newDes = user.staffDesignation().toLowerCase().replace(" ",".");
+        String newRole = user.staffRole().toLowerCase().replace(" ", ".");
+        String[] nameParts = user.staffName().trim().toLowerCase().split("\\s+");
+        String firstName = nameParts[0];
+        code.append(firstName);
+        code.append(newDes);
+        code.append(newRole);
+        return code.toString();
+    }
+
+    @Override
+    public String generateStaffUserPrincipalName(String displayName) {
+        if (displayName == null || displayName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Full name cannot be null or empty");
+        }
+
+        // Split the name into parts
+        String[] nameParts = displayName.trim().toLowerCase().split("\\s+");
+        if (nameParts.length == 0) {
+            throw new IllegalArgumentException("Full name must contain at least a first name");
+        }
+
+        String firstName = nameParts[0]; // Always at least the first name
+        String lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : ""; // Optional last name
+
+        // Combine parts to form UPN
+        return lastName.isEmpty()
+                ? String.format("%s@tactbbsr.onmicrosoft.com", firstName.replace(" ", ""))
+                : String.format(
+                "%s.%s@tactbbsr.onmicrosoft.com",
+                firstName.replace(" ", ""),
+                lastName);
     }
 }

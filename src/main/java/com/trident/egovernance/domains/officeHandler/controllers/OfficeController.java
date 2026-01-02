@@ -61,7 +61,7 @@ public class OfficeController {
         return ResponseEntity.ok(officeServices.getStudentByRegdNo(regdNo));
     }
 
-    @Operation(summary = "Updates student datain the table", description = "Replaces the data in the table with the inputted data")
+    @Operation(summary = "Updates student detail the table", description = "Replaces the data in the table with the inputted data")
     @PutMapping("/update-student-data/{table}/{regdNo}")
     public ResponseEntity<Boolean> updateStudentData(@PathVariable("table") String table, @RequestBody Object data,@PathVariable("regdNo")String regdNo){
         logger.info("Method for individual Student called");
@@ -75,10 +75,6 @@ public class OfficeController {
                         ResponseEntity.ok(officeServices.updateStudentAdmissionDetailsTable(new ObjectMapper().convertValue(data, StudentAdmissionDetailsOnlyDTO.class),regdNo));
                 case "student-career" ->
                         ResponseEntity.ok(officeServices.updateStudentCareerTable(new ObjectMapper().convertValue(data, StudentCareerOnlyDTO.class),regdNo));
-//                case "hostel" ->
-//                        ResponseEntity.ok(officeServices.updateHostelTable(new ObjectMapper().convertValue(data, HostelOnlyDTO.class),regdNo));
-//                case "transport" ->
-//                        ResponseEntity.ok(officeServices.updateTransportTable(new ObjectMapper().convertValue(data, TransportOnlyDTO.class),regdNo));
                 case "student-docs" ->
                         ResponseEntity.ok(
                                 officeServices.updateStudentDocsTable(

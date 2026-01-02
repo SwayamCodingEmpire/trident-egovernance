@@ -62,6 +62,7 @@ public class NSR implements Serializable {
     private AdmissionType admissionType;
     @NotNull(message = "studentType cannot be null")
     private StudentType studentType;
+    private CollegeName collegeName;
 
     //StudentCareer
     private Double tenthPercentage;

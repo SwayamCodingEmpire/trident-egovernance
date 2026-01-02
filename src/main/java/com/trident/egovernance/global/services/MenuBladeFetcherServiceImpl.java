@@ -27,6 +27,7 @@ public class MenuBladeFetcherServiceImpl implements MenuBladeFetcherService {
     private final Logger logger = LoggerFactory.getLogger(MenuBladeFetcherServiceImpl.class);
     private final WebClient webClient;
 
+
     public MenuBladeFetcherServiceImpl() {
         this.webClient = WebClient.builder().baseUrl("https://admportal.s3.ap-south-1.amazonaws.com/menu.json").build();
     }
@@ -69,7 +70,7 @@ public class MenuBladeFetcherServiceImpl implements MenuBladeFetcherService {
         try {
             ObjectMapper mapper = new ObjectMapper();
             Map<String, RoleDetails> menuMap = mapper.readValue(
-                    Paths.get("/home/likun10/Desktop/Menu.json").toFile(),
+                    Paths.get("C:/Users/gamer/Downloads/Menu.json/").toFile(),
                     new TypeReference<Map<String, RoleDetails>>() {}
             );
             return new NavigationMenu(menuMap);
@@ -107,4 +108,8 @@ public class MenuBladeFetcherServiceImpl implements MenuBladeFetcherService {
 //        logger.info(job_title);
 //        return menuBladeRepository.findById(job_title).orElseThrow(()-> new InvalidInputsException("Invalid job_title")).getMenu_blade();
 //    }
+
+    public MenuBladeFetcherServiceImpl() {
+        this.webClient = WebClient.builder().baseUrl("https://admportal.s3.ap-south-1.amazonaws.com/menu.json").build();
+    }
 }

@@ -1,6 +1,8 @@
 package com.trident.egovernance.dto;
 
 
+import com.trident.egovernance.global.helpers.CollegeName;
+
 import java.math.BigDecimal;
 
 public record ExcessFeeStudentData(
@@ -13,6 +15,7 @@ public record ExcessFeeStudentData(
         BigDecimal grandTotalDues,
         BigDecimal feeCollected,
         BigDecimal jeeFeePaid,
-        BigDecimal excessFeePaid
+        BigDecimal excessFeePaid,
+        CollegeName collegeName
 ) {
 }

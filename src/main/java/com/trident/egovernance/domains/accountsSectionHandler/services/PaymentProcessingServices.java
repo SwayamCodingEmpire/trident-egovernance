@@ -8,6 +8,7 @@ import com.trident.egovernance.global.entities.permanentDB.AlterFeeCollection;
 import com.trident.egovernance.global.entities.permanentDB.DuesDetails;
 import com.trident.egovernance.global.entities.permanentDB.FeeCollection;
 import com.trident.egovernance.global.entities.permanentDB.Student;
+import com.trident.egovernance.global.helpers.CollegeName;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.math.BigDecimal;
@@ -18,9 +19,9 @@ public interface PaymentProcessingServices {
     Pair<MoneyReceipt, StudentBasicDTO> processPaymentAutoMode(FeeCollection feeCollection, String regdNo);
     Pair<MoneyReceipt,StudentBasicDTO> processPaymentNonAutoModes(FeeCollection feeCollection, String regdNo);
 
-    MoneyReceipt processPaymentInterface(FeeCollection feeCollection, String regdNo, String graphToken, boolean isUpdate, Long oldMrNo);
-    Pair<MoneyReceipt,StudentBasicDTO> processOtherFeesPayment(OtherFeesPayment otherFeesPayment, String regdNo, String paymentReceiver);
-    MoneyReceipt processOtherFessPaymentInterface(OtherFeesPayment otherFeesPayment, String regdNo, boolean isUpdate, String graphToken, Long oldMrNo);
+    MoneyReceipt processPaymentInterface(FeeCollection feeCollection, String regdNo, String graphToken, boolean isUpdate, Long oldMrNo, CollegeName collegeName);
+    Pair<MoneyReceipt,StudentBasicDTO> processOtherFeesPayment(OtherFeesPayment otherFeesPayment, String regdNo, String paymentReceiver, CollegeName collegeName);
+    MoneyReceipt processOtherFessPaymentInterface(OtherFeesPayment otherFeesPayment, String regdNo, boolean isUpdate, String graphToken, Long oldMrNo, CollegeName collegeName);
     MoneyReceipt updateFeesCollection(FeeCollection feeCollection,String graphToken);
     boolean deleteFeeCollection(Long mrNo);
 

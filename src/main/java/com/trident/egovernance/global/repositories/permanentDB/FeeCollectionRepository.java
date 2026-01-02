@@ -2,6 +2,7 @@ package com.trident.egovernance.global.repositories.permanentDB;
 
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.entities.permanentDB.FeeCollection;
+import com.trident.egovernance.global.helpers.CollegeName;
 import com.trident.egovernance.global.helpers.FeeProcessingMode;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -64,6 +65,9 @@ public interface FeeCollectionRepository extends JpaRepository<FeeCollection,Lon
 
     @Query("SELECT f FROM FEECOLLECTION f LEFT JOIN FETCH f.mrDetails LEFT JOIN FETCH f.student WHERE f.mrNo = :mrNo")
     Optional<FeeCollection> findByMrNo(Long mrNo);
+
+    @Query("SELECT f FROM FEECOLLECTION f LEFT JOIN FETCH f.mrDetails LEFT JOIN FETCH f.student WHERE f.mrNo = :mrNo AND f.collegeName = :collegeName")
+    Optional<FeeCollection> findByMrNoAndCollegeName(Long mrNo, CollegeName collegeName);
 
 //    @Query("SELECT f FROM FEECOLLECTION f LEFT JOIN FETCH f.mrDetails WHERE f.paymentDate = :paymentDate")
     List<FeeCollection> findAllByPaymentDate(String paymentDate);

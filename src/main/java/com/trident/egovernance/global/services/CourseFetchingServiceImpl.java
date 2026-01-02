@@ -18,7 +18,6 @@ public class CourseFetchingServiceImpl {
 
     @Cacheable(value = "course", key = "#course")
     public Course getCourseDetails(Courses course, StudentType studentType){
-        ;
         return courseRepository.findById(new CourseId(course.getDisplayName(), studentType.toString()))
                 .orElseThrow(()-> new RuntimeException("Course not found"));
     }

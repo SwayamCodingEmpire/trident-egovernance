@@ -46,6 +46,7 @@ public class NSRDto implements Serializable {
     private TFWType tfw;
     private AdmissionType admissionType;
     private StudentType studentType;
+    private CollegeName collegeName;
 
     //StudentCareer
     private Double tenthPercentage;

@@ -48,7 +48,7 @@ public interface DuesDetailsRepository extends JpaRepository<DuesDetails, DuesDe
     Set<DuesDetailsDto> findAllByRegdNo(String regdNo);
 
     @Query("SELECT new com.trident.egovernance.dto.ExcessFeeStudentData(" +
-            "s.regdNo, "+
+            "s.regdNo, " +
             "s.studentName, " +
             "s.branchCode, " +
             "s.admissionYear, " +
@@ -57,7 +57,8 @@ public interface DuesDetailsRepository extends JpaRepository<DuesDetails, DuesDe
             "CAST(COALESCE(SUM(d.amountDue), 0) AS bigdecimal ), " +
             "CAST(COALESCE(SUM(d.amountPaid), 0) AS bigdecimal), " +
             "CAST(COALESCE(SUM(d.amountPaidToJee), 0) AS bigdecimal), " +
-            "CAST(ABS(COALESCE(SUM(d.balanceAmount), 0)) AS bigdecimal)) " +
+            "CAST(ABS(COALESCE(SUM(d.balanceAmount), 0)) AS bigdecimal), " +
+            "s.collegeName) " +
             "FROM DUESDETAIL d LEFT JOIN STUDENT s ON d.regdNo = s.regdNo " +
             "WHERE d.regdNo = :regdNo " +
             "GROUP BY s.studentName, s.branchCode, s.admissionYear, s.currentYear, d.sessionId, s.regdNo " +

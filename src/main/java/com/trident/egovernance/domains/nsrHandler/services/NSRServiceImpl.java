@@ -64,39 +64,38 @@ class NSRServiceImpl implements NSRService {
     }
 
     @Override
-    public NSRDto postNSRData(NSR nsr){
-        if(!nsrRepository.existsById(nsr.getJeeApplicationNo())){
-        if(nsr.getRankType().equals(RankType.JEE)){
-            nsr.setAieeeRank(nsr.getRank().toString());
-        }
-        else {
-            nsr.setOjeeRank(nsr.getRank().toString());
-        }
-        nsr.setAdmissionDate(Date.valueOf(LocalDate.now()));
+    public NSRDto postNSRData(NSR nsr) {
+        if (!nsrRepository.existsById(nsr.getJeeApplicationNo())) {
+            if (nsr.getRankType().equals(RankType.JEE)) {
+                nsr.setAieeeRank(nsr.getRank().toString());
+            } else {
+                nsr.setOjeeRank(nsr.getRank().toString());
+            }
+            nsr.setAdmissionDate(Date.valueOf(LocalDate.now()));
             return mapperService.convertToNSRDto(nsrRepository.save(nsr));
-        }else {
+        } else {
             throw new RecordAlreadyExistsException("Record already exists");
         }
     }
 
     @Override
-    public void bulkSaveNSRData(Set<NSR> nsrs){
+    public void bulkSaveNSRData(Set<NSR> nsrs) {
         nsrRepository.saveAll(nsrs);
     }
 
     @Override
-    public NSRDto postNSRDataByStudent(NSR nsr){
-        logger.info("Posting NSR data for student "+nsr.getJeeApplicationNo());
+    public NSRDto postNSRDataByStudent(NSR nsr) {
+        logger.info("Posting NSR data for student " + nsr.getJeeApplicationNo());
         return mapperService.convertToNSRDto(nsrRepository.save(nsr));
     }
 
     @Override
     @Cacheable(value = "nsr", key = "#rollNo")
     public NSRDto getNSRDataByRollNo(String rollNo) {
-        logger.info("Fetching NSR data for roll no. "+rollNo);
+        logger.info("Fetching NSR data for roll no. " + rollNo);
         return mapperService.convertToNSRDto(nsrRepository.findById(rollNo).orElseThrow(() -> new RecordNotFoundException("Record not found")));
     }
-    
+
 
     @Override
     public List<NSRDto> getAllNSRData() {
@@ -113,96 +112,103 @@ class NSRServiceImpl implements NSRService {
 
     @Transactional
     @Override
-    public Boolean saveToPermanentDatabase(String jeeApplicationNo){
+    public Boolean saveToPermanentDatabase(String jeeApplicationNo) {
 //        SharedStateAmongDueInitiationAndNSRService sharedState = new SharedStateAmongDueInitiationAndNSRService();
         NSR nsr = nsrRepository.findById(jeeApplicationNo).orElseThrow(() -> new RecordNotFoundException("Record not found"));
-        nsr.setBatchId(miscellaniousServices.generateBatchId(new BasicFeeBatchDetails(Integer.valueOf(nsr.getAdmissionYear()), nsr.getCourse(), nsr.getBranchCode(), nsr.getStudentType())));
-        nsr.setCurrentYear(((nsr.getStudentType().equals(StudentType.REGULAR))?1:2));
-        logger.info("Batch ID : {}",nsr.getBatchId());
+//        , nsr.getCollegeName())
+        nsr.setBatchId(miscellaniousServices.generateBatchId(
+                new BasicFeeBatchDetails(
+                        Integer.valueOf(nsr.getAdmissionYear()),
+                        nsr.getCourse(),
+                        nsr.getBranchCode(),
+                        nsr.getStudentType(),
+                        nsr.getCollegeName()
+                )
+        ));
+        nsr.setCurrentYear(((nsr.getStudentType().equals(StudentType.REGULAR)) ? 1 : 2));
+        logger.info("Batch ID : {}", nsr.getBatchId());
         logger.info("Fetched from Redis");
-            logger.info("Fetching from Redis");
-            Student student = mapperService.convertToStudent(nsr);
-            student.setHostelier(nsr.getHostelOption());
-            student.setTransportAvailed(nsr.getTransportOpted());
+        logger.info("Fetching from Redis");
+        Student student = mapperService.convertToStudent(nsr);
+        student.setHostelier(nsr.getHostelOption());
+        student.setTransportAvailed(nsr.getTransportOpted());
+        student.setCollegeName(nsr.getCollegeName());
 
-            logger.info("NSR object : {}",nsr);
-            StudentAdmissionDetails studentAdmissionDetails = mapperService.convertToStudentAdmissionDetails(nsr);
-            StudentCareer studentCareer = mapperService.convertToStudentCareer(nsr);
-            PersonalDetails personalDetails = mapperService.convertToPersonalDetails(nsr);
-            List<StudentDocs> studentDocs1;
-            if(nsr.getStudentDocsData()!=null){
-                logger.info("Student Docs : {}",nsr.getStudentDocsData());
-                 studentDocs1 = (mapperService.convertToStudentDocs(nsr.getStudentDocsData())).stream()
-                         .map(studentDocs2 ->
-                         {
-                             studentDocs2.setStudent(student);
-                             return studentDocs2;
-                         }).collect(Collectors.toList());
-            }
-            else{
-                studentDocs1 = null;
-            }
-            studentAdmissionDetails.setReportingDate(Date.valueOf(LocalDate.now()));
-            logger.info("Student Docs in databse entity format {}" , studentDocs1);
-            student.setStudentAdmissionDetails(studentAdmissionDetails);
-            studentAdmissionDetails.setStudent(student);
-            student.setStudentCareer(studentCareer);
-            studentCareer.setStudent(student);
-            personalDetails.setStudent(student);
-            student.setPersonalDetails(personalDetails);
-            student.setStudentDocs(studentDocs1);
-            Transport transport = mapperService.convertToTransport(nsr);
-            transport.setRegdYear(Year.now().getValue());
-            Hostel hostel = mapperService.convertToHostel(nsr);
-            if(nsr.getTransportOpted().equals(BooleanString.YES)){
-                transport.setTransportAvailed(BooleanString.NO);
-                transport.setRoute("N/A");
-            }
-            else {
-                transport.setTransportAvailed(BooleanString.NO);
-                transport.setPickUpPoint("N/A");
-                transport.setRoute("N/A");
+        logger.info("NSR object : {}", nsr);
+        StudentAdmissionDetails studentAdmissionDetails = mapperService.convertToStudentAdmissionDetails(nsr);
+        StudentCareer studentCareer = mapperService.convertToStudentCareer(nsr);
+        PersonalDetails personalDetails = mapperService.convertToPersonalDetails(nsr);
+        List<StudentDocs> studentDocs1;
+        if (nsr.getStudentDocsData() != null) {
+            logger.info("Student Docs : {}", nsr.getStudentDocsData());
+            studentDocs1 = (mapperService.convertToStudentDocs(nsr.getStudentDocsData())).stream()
+                    .map(studentDocs2 ->
+                    {
+                        studentDocs2.setStudent(student);
+                        return studentDocs2;
+                    }).collect(Collectors.toList());
+        } else {
+            studentDocs1 = null;
+        }
+        studentAdmissionDetails.setReportingDate(Date.valueOf(LocalDate.now()));
+        logger.info("Student Docs in databse entity format {}", studentDocs1);
+        student.setStudentAdmissionDetails(studentAdmissionDetails);
+        studentAdmissionDetails.setStudent(student);
+        student.setStudentCareer(studentCareer);
+        studentCareer.setStudent(student);
+        personalDetails.setStudent(student);
+        student.setPersonalDetails(personalDetails);
+        student.setStudentDocs(studentDocs1);
+        Transport transport = mapperService.convertToTransport(nsr);
+        transport.setRegdYear(Year.now().getValue());
+        Hostel hostel = mapperService.convertToHostel(nsr);
+        if (nsr.getTransportOpted().equals(BooleanString.YES)) {
+            transport.setTransportAvailed(BooleanString.YES);
+        } else {
+            transport.setTransportAvailed(BooleanString.NO);
+            transport.setPickUpPoint("N/A");
+            transport.setRoute("N/A");
 
-            }
-            hostel.setRegdyear(nsr.getStudentType().equals(StudentType.REGULAR) ? 1 : 2);
-            transport.setRegdYear(nsr.getStudentType().equals(StudentType.REGULAR) ? 1 : 2);
-            student.setStatus(StudentStatus.CONTINUING);
-            student.setTransport(transport);
-            transport.setStudent(student);
-            hostel.setHostelier(BooleanString.NO);
-            if(hostel.getHostelOption().equals(BooleanString.NO)){
-                hostel.setHostelChoice(HostelChoice.NONE);
-            }
-            student.setHostel(hostel);
-            hostel.setStudent(student);
-            logger.info("Student object : {}",student);
-            logger.info("Started saving to databse");
-            logger.info("Student before saving : {} ",student);
-            studentRepository.saveAndFlush(student);
-            Boolean processDues = duesInitiationServiceImpl.initiateDuesDetails(new DuesDetailsInitiationDTO(nsr));
-            logger.info("Saved to database");
-            String password = generateRandomPassword();
-                logger.info("Inside try block to process user creation");
-                String response = userCreationService.createUser(
-                        student.getStudentName(),
-                        "STUDENT",
-                        student.getBranchCode(),
-                        student.getRegdNo(),
-                        password,
-                        student.getEmail(),
-                        student.getDegreeYop(),
-                        nsr.getJeeApplicationNo());
-                logger.info("Response for Microsoft : {}",response);
-                studentRepository.updateMsUserPrincipalName(student.getRegdNo(), response);
+        }
+        hostel.setRegdyear(nsr.getStudentType().equals(StudentType.REGULAR) ? 1 : 2);
+        transport.setRegdYear(nsr.getStudentType().equals(StudentType.REGULAR) ? 1 : 2);
+        student.setStatus(StudentStatus.CONTINUING);
+        student.setTransport(transport);
+        transport.setStudent(student);
+//        hostel.setHostelier(BooleanString.NO);
+        if (hostel.getHostelOption().equals(BooleanString.NO)) {
+            hostel.setHostelChoice(HostelChoice.NONE);
+        }
+        student.setHostel(hostel);
+        hostel.setStudent(student);
+        logger.info("Student object : {}", student);
+        logger.info("Started saving to databse");
+        logger.info("Student before saving : {} ", student);
+        studentRepository.saveAndFlush(student);
+        Boolean processDues = duesInitiationServiceImpl.initiateDuesDetails(new DuesDetailsInitiationDTO(nsr));
+        logger.info("Saved to database");
+        String password = generateRandomPassword();
+        logger.info("Inside try block to process user creation");
+        String response = userCreationService.createUser(
+                student.getStudentName(),
+                "STUDENT",
+                student.getBranchCode(),
+                student.getRegdNo(),
+                password,
+                student.getEmail(),
+                student.getDegreeYop(),
+                nsr.getJeeApplicationNo());
+        logger.info("Response for Microsoft : {}", response);
+        studentRepository.updateMsUserPrincipalName(student.getRegdNo(), response);
 //                userCreationService.setProfilePicture(nsr.getRegdNo(), response);
         try {
             emailSenderServiceImpl.sendTridentCredentialsEmail(response, password);
         } catch (MessagingException e) {
             logger.error(e.getMessage());
-        }catch (IOException e) {
+        } catch (IOException e) {
             logger.error(e.getMessage());
         }
-            return true;
+        return true;
     }
 
     @Override
@@ -212,17 +218,16 @@ class NSRServiceImpl implements NSRService {
     }
 
 
-
     public String generateRandomPassword() {
         final int PASSWORD_LENGTH = 12;
         StringBuilder password = new StringBuilder(PASSWORD_LENGTH);
-        for (int i = 0; i < PASSWORD_LENGTH/3; i++) {
+        for (int i = 0; i < PASSWORD_LENGTH / 3; i++) {
             password.append(UPALPHASET.charAt(random.nextInt(UPALPHASET.length())));
         }
-        for (int i = 0; i < PASSWORD_LENGTH/3; i++) {
+        for (int i = 0; i < PASSWORD_LENGTH / 3; i++) {
             password.append(NUMSET.charAt(random.nextInt(NUMSET.length())));
         }
-        for (int i = 0; i < PASSWORD_LENGTH/3; i++) {
+        for (int i = 0; i < PASSWORD_LENGTH / 3; i++) {
             password.append(LOWALPHASET.charAt(random.nextInt(LOWALPHASET.length())));
         }
         return password.toString();

@@ -2,12 +2,13 @@ package com.trident.egovernance.domains.SessionInitiationHandler.controllers;
 
 import com.trident.egovernance.domains.SessionInitiationHandler.services.SessionInitiationServiceImpl;
 import com.trident.egovernance.domains.officeHandler.services.OfficeServicesImpl;
-import com.trident.egovernance.dto.SessionInitiationDTO;
+import com.trident.egovernance.dto.SessionInitiationDto;
 import com.trident.egovernance.dto.SessionInitiationData;
 import com.trident.egovernance.dto.StudentCourse;
 import com.trident.egovernance.dto.StudentOnlyDTO;
 import com.trident.egovernance.global.entities.permanentDB.Notpromoted;
 import com.trident.egovernance.global.entities.permanentDB.Sessions;
+import com.trident.egovernance.global.helpers.CollegeName;
 import com.trident.egovernance.global.helpers.Courses;
 import com.trident.egovernance.global.helpers.StudentType;
 import com.trident.egovernance.global.services.MasterTableServices;
@@ -32,8 +33,9 @@ public class SessionInitiationController {
     }
 
     @GetMapping("/get-student-for-promotion")
-    public ResponseEntity<List<StudentCourse>> getStudentForPromotion(@RequestParam("admYear") String admYear, @RequestParam("course")Courses course, @RequestParam("regdyear") Integer regdYear, @RequestParam("studentType") StudentType studentType) {
-        return ResponseEntity.ok(sessionInitiationService.getStudentsForPromotion(new SessionInitiationDTO(admYear, course, regdYear, studentType)));
+//    , @RequestHeader("collegeName") CollegeName collegeName
+    public ResponseEntity<List<StudentCourse>> getStudentForPromotion(@RequestParam("admYear") int admYear, @RequestParam("course")Courses course, @RequestParam("regdyear") Integer regdYear, @RequestParam("studentType") StudentType studentType, @RequestHeader("collegeName") CollegeName collegeName) {
+        return ResponseEntity.ok(sessionInitiationService.getStudentsForPromotion(new SessionInitiationDto(admYear, course, regdYear, studentType, collegeName)));
     }
 
 //    @PostMapping("/create-new-session")

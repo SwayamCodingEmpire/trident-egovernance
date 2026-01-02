@@ -22,7 +22,6 @@ public class Course {
     private Integer startYear;
     @Column(name = "DURATION")
     private Integer duration;
-    @Enumerated(EnumType.STRING)
     @Transient
     private StudentType studentTypes;
     @Id
@@ -35,7 +34,6 @@ public class Course {
     public void setCourse(Courses course) {
         this.course = course.getDisplayName();
     }
-
 
     public Course(String course, Integer startYear, Integer duration, StudentType studentTypes) {
         this.course = course;

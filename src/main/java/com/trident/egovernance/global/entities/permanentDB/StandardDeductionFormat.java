@@ -23,7 +23,7 @@ public class StandardDeductionFormat implements Serializable {
     private String description;
 
     public  StandardDeductionFormat(FeeTypesWithDeductionOrder  feeTypesWithDeductionOrder) {
-        this.description = feeTypesWithDeductionOrder.description();;
+        this.description = feeTypesWithDeductionOrder.description();
         this.deductionOrder = feeTypesWithDeductionOrder.deductionOrder();
     }
 

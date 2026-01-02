@@ -13,7 +13,8 @@ import java.util.Objects;
 
 public class ExcessRefundID {
     private String regdNo;
-    private String voucherNo;;
+    private String voucherNo;
+    private CollegeName collegeName;
 
 
     @Override
@@ -25,11 +26,11 @@ public class ExcessRefundID {
             return false;
         }
         ExcessRefundID excessRefundID = (ExcessRefundID)o;
-        return Objects.equals(regdNo,excessRefundID.regdNo) && Objects.equals(voucherNo,excessRefundID.voucherNo);
+        return Objects.equals(regdNo,excessRefundID.regdNo) && Objects.equals(voucherNo,excessRefundID.voucherNo) && Objects.equals(collegeName,excessRefundID.collegeName);
     }
 
     @Override
     public int hashCode(){
-        return Objects.hash(regdNo,voucherNo);
+        return Objects.hash(regdNo,voucherNo,collegeName);
     }
 }

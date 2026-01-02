@@ -1,6 +1,7 @@
 package com.trident.egovernance.dto;
 
 import com.trident.egovernance.global.entities.permanentDB.Student;
+import com.trident.egovernance.global.helpers.CollegeName;
 import com.trident.egovernance.global.helpers.Courses;
 import com.trident.egovernance.global.helpers.Gender;
 
@@ -12,7 +13,8 @@ public record StudentBasicDTO(
         String branchCode,
         String admissionYear,
         Integer currentYear,
-        String email
+        String email,
+        CollegeName collegeName
 ) {
     public StudentBasicDTO(Student student){
         this(
@@ -23,7 +25,8 @@ public record StudentBasicDTO(
                 student.getBranchCode(),
                 student.getAdmissionYear(),
                 student.getCurrentYear(),
-                student.getEmail()
+                student.getEmail(),
+                student.getCollegeName()
         );
     }
     public StudentBasicDTO(
@@ -34,7 +37,8 @@ public record StudentBasicDTO(
             String branchCode,
             String admissionYear,
             Integer currentYear,
-            String email
+            String email,
+            CollegeName collegeName
     ) {
         // Directly call the record constructor with the processed values
         this(
@@ -45,7 +49,8 @@ public record StudentBasicDTO(
                 branchCode,
                 admissionYear,
                 currentYear,
-                email
+                email,
+                collegeName
         );
     }
 }

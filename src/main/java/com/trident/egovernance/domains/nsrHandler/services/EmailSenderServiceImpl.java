@@ -2,6 +2,7 @@ package com.trident.egovernance.domains.nsrHandler.services;
 
 import com.trident.egovernance.dto.*;
 import com.trident.egovernance.global.services.*;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
@@ -64,7 +65,7 @@ public class EmailSenderServiceImpl {
         String classStart = "1st November 2024";
         // Sender and Recipient
         helper.setFrom("mohantyswayam2001@gmail.com");
-        helper.setTo("elitecracker25@gmail.com");
+        helper.setTo("gamerhorizon1789@gmail.com");
         helper.setSubject("Trident : Credentials for Microsoft Teams");
 
         // HTML Content with colored text
@@ -109,6 +110,90 @@ public class EmailSenderServiceImpl {
         mailSender.send(message);
         return CompletableFuture.completedFuture(null);
     }
+
+    @Operation(summary = "Send Microsoft Teams login credentials to staff",
+            description = "Async email service for staff credential delivery")
+    @Async
+    public CompletableFuture<Void> sendTridentCredentialsEmailToStaff(String microsoftMail, String password)
+            throws MessagingException, IOException {
+
+        // Input validation
+        if (microsoftMail == null || microsoftMail.isEmpty() ||
+                password == null || password.isEmpty()) {
+            throw new IllegalArgumentException("Email and password cannot be null or empty");
+        }
+
+        try {
+            logger.info("Sending Trident credentials to: {}", microsoftMail);
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            String receiverEmail = "gamerhorizon1789@gmail.com";
+
+            // Configure email
+            helper.setFrom("mohantyswayam2001@gmail.com"); // Use institutional email
+            helper.setTo(receiverEmail); // Send to staff's actual email
+            helper.setSubject("Trident: Microsoft Teams Credentials");
+
+            // HTML Content
+            String emailContent = String.format("""
+            <html>
+                <body>
+                    <p>Dear Staff Member,</p>
+            
+                    <p>Welcome to Trident Group of Institutions! Your official communication 
+                    will be conducted via <span style='color:blue;'>Microsoft Teams</span>. 
+                    Below are your credentials:</p>
+                    
+                    <p>Username: <b style='color:blue;'><a href="mailto:%s">%s</a></b><br>
+                    Temporary Password: <b style='color:blue;'>%s</b></p>
+                    
+                    <p style='color:red;'>*Please change your password after first login 
+                    and don't share your credentials.</p>
+                    
+                    %s
+                    
+                    <p>Best Regards,<br>IT Support Team<br>
+                    Trident Group of Institutions</p>
+                    
+                    <p>Contact IT Helpdesk:<br>
+                    Phone: <a href='tel:9124078910'>9124078910</a><br>
+                    Email: <a href='mailto:it-support@trident.edu'>it-support@trident.edu</a></p>
+                </body>
+            </html>
+            """,
+                    receiverEmail,
+                    microsoftMail,
+                    password,
+                    getAttachmentSection() // Add attachment if exists
+            );
+
+            helper.setText(emailContent, true);
+
+            // Add attachment if needed
+            // helper.addAttachment("Teams_Setup_Guide.pdf", new ClassPathResource("pdf/teams-guide.pdf"));
+
+            mailSender.send(message);
+            logger.info("Credentials email sent successfully to: {}", microsoftMail);
+            return CompletableFuture.completedFuture(null);
+
+        } catch (Exception e) {
+            logger.error("Failed to send credentials to: {}", microsoftMail, e);
+            throw e; // Or handle differently based on requirements
+        }
+    }
+
+    private String getAttachmentSection() {
+        return """
+        <p>Please find attached the Teams setup guide for reference.</p>
+        <p>First-time setup instructions:</p>
+        <ol>
+            <li>Download Microsoft Teams</li>
+            <li>Login with the credentials above</li>
+            <li>Change your password when prompted</li>
+        </ol>
+        """;
+    }
+
 
     @Async
     public CompletableFuture<Void> sendPaymentReceiptEditEmail(
